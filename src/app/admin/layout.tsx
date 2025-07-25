@@ -20,7 +20,8 @@ import {
   Settings,
   LogOut,
   ImageIcon,
-  Loader2
+  Loader2,
+  Package,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Logo } from '@/components/layout/logo';
@@ -70,6 +71,14 @@ export default function AdminLayout({
                   <Link href="/admin">
                     <LayoutGrid />
                     Tableau de bord
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/admin/orders">
+                    <Package />
+                    Commandes
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

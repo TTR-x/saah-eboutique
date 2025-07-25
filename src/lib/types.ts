@@ -45,3 +45,15 @@ export type SlideInput = {
     subtitle: string;
     image: File;
 }
+
+export type Review = {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  rating: number;
+  comment: string;
+  createdAt: any;
+}
+
+export type ReviewInput = Omit<Review, 'id' | 'createdAt'>;

@@ -22,6 +22,23 @@ export async function getProducts(): Promise<Product[]> {
     });
 }
 
+export async function getProduct(id: string): Promise<Product | null> {
+    const docRef = doc(db, 'products', id);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+        const data = docSnap.data();
+        return {
+            id: docSnap.id,
+            ...data,
+            createdAt: data.createdAt?.toDate()
+        } as Product;
+    } else {
+        return null;
+    }
+}
+
+
 export async function addProduct(productInput: Omit<ProductInput, 'images'> & { images: File[] }) {
     if (!productInput.images || productInput.images.length === 0) {
         throw new Error("At least one image is required");
@@ -48,6 +65,7 @@ export async function addProduct(productInput: Omit<ProductInput, 'images'> & { 
     await addDoc(productsCollectionRef, newProduct);
     revalidatePath('/');
     revalidatePath('/products');
+    revalidatePath(`/products/${newProduct.name.toLowerCase().replace(/ /g, '-')}`);
     revalidatePath('/admin/products');
 }
 

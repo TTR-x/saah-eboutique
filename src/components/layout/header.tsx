@@ -21,6 +21,7 @@ import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/use-auth';
 import { SignOutButton } from '../auth/sign-out-button';
 import { UserAvatar } from '../auth/user-avatar';
+import { useCart } from '@/hooks/use-cart';
 
 const navLinks = [
   { name: 'Accueil', href: '/' },
@@ -34,6 +35,8 @@ export function Header() {
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(false);
   const { user, loading } = useAuth();
+  const { items } = useCart();
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
 
   useEffect(() => {
@@ -112,9 +115,14 @@ export function Header() {
               </div>
             </form>
           </div>
-          <Button asChild variant="ghost" size="icon">
+          <Button asChild variant="ghost" size="icon" className="relative">
             <Link href="/cart" onClick={handleLinkClick}>
               <ShoppingCart className="h-5 w-5" />
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                  {itemCount}
+                </span>
+              )}
               <span className="sr-only">Panier</span>
             </Link>
           </Button>
