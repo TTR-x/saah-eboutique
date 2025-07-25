@@ -168,6 +168,13 @@ export function Header() {
                                 Déconnexion
                             </DropdownMenuItem>
                         </SignOutButton>
+                         <DropdownMenuSeparator />
+                         <DropdownMenuItem asChild>
+                            <Link href="/admin" onClick={handleLinkClick}>
+                                <Shield className="mr-2 h-4 w-4" />
+                                Administration
+                            </Link>
+                        </DropdownMenuItem>
                     </>
                 ) : (
                     <DropdownMenuItem asChild>
@@ -177,13 +184,6 @@ export function Header() {
                         </Link>
                     </DropdownMenuItem>
                 )}
-                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                    <Link href="/admin" onClick={handleLinkClick}>
-                        <Shield className="mr-2 h-4 w-4" />
-                        Administration
-                    </Link>
-                </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
