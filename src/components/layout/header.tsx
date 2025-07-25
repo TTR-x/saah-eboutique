@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Search, ShoppingCart, User, Moon, Sun } from 'lucide-react';
+import { Menu, Search, ShoppingCart, User, Moon, Sun, Shield } from 'lucide-react';
 import { Logo } from './logo';
 import { useTheme } from 'next-themes';
 import {
@@ -12,6 +12,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -33,9 +34,17 @@ export function Header() {
     setIsLoading(false);
   }, [pathname]);
 
-  const handleLinkClick = () => {
-    setIsLoading(true);
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (e.currentTarget.href.includes(pathname)) {
+        setIsLoading(false);
+    } else {
+        setIsLoading(true);
+    }
   };
+
+  if (pathname.startsWith('/admin')) {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -122,12 +131,26 @@ export function Header() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button asChild variant="ghost" size="icon">
-             <Link href="/login" onClick={handleLinkClick}>
-                <User className="h-5 w-5" />
-                <span className="sr-only">Compte</span>
-            </Link>
-          </Button>
+           <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                    <User className="h-5 w-5" />
+                    <span className="sr-only">Compte</span>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                    <Link href="/login" onClick={handleLinkClick}>Se connecter</Link>
+                </DropdownMenuItem>
+                 <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                    <Link href="/admin" onClick={handleLinkClick}>
+                        <Shield className="mr-2 h-4 w-4" />
+                        Administration
+                    </Link>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
