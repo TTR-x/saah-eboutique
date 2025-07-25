@@ -30,7 +30,7 @@ export default function SupportPage() {
     });
 
   const { toast } = useToast();
-  const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
+  const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleContactSubmit = async (e: React.FormEvent) => {
@@ -38,7 +38,7 @@ export default function SupportPage() {
     if (!contactForm.name || !contactForm.email || !contactForm.message) {
       toast({
         title: "Erreur",
-        description: "Veuillez remplir tous les champs du formulaire.",
+        description: "Veuillez remplir tous les champs obligatoires (Nom, Email, Message).",
         variant: "destructive",
       });
       return;
@@ -51,7 +51,7 @@ export default function SupportPage() {
         title: "Message envoyé !",
         description: "Merci de nous avoir contactés. Nous vous répondrons bientôt.",
       });
-      setContactForm({ name: '', email: '', message: '' });
+      setContactForm({ name: '', email: '', phone: '', message: '' });
     } catch (error) {
        toast({
         title: "Erreur",
@@ -109,6 +109,10 @@ export default function SupportPage() {
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input id="email" name="email" type="email" placeholder="votre@email.com" value={contactForm.email} onChange={handleInputChange} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Téléphone (facultatif)</Label>
+                  <Input id="phone" name="phone" type="tel" placeholder="Votre numéro de téléphone" value={contactForm.phone} onChange={handleInputChange} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="message">Message</Label>

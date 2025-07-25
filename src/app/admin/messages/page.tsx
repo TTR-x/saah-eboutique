@@ -54,6 +54,11 @@ export default function AdminMessagesPage() {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="p-4 bg-muted/50 rounded-md">
+                    {msg.phone && (
+                        <p className="mb-2">
+                            <strong>Téléphone:</strong> {msg.phone}
+                        </p>
+                    )}
                     <p>{msg.message}</p>
                   </AccordionContent>
                 </AccordionItem>
