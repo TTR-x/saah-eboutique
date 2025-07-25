@@ -10,8 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
+import { LogoSpinner } from '@/components/logo-spinner';
 
 
 export default function ProductsPage() {
@@ -110,7 +110,7 @@ export default function ProductsPage() {
           <div className="p-6 border rounded-lg bg-card">
             <h3 className="text-lg font-semibold mb-4">Filtres</h3>
             {isLoading ? (
-               <Loader2 className="h-6 w-6 animate-spin" />
+               <LogoSpinner className="h-6 w-6" />
             ) : (
               <div className="space-y-6">
                 <div>
@@ -179,7 +179,7 @@ export default function ProductsPage() {
           </div>
            {isLoading ? (
              <div className="flex justify-center items-center h-96">
-                <Loader2 className="h-12 w-12 animate-spin text-primary"/>
+                <LogoSpinner className="h-12 w-12"/>
             </div>
            ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

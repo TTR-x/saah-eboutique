@@ -1,7 +1,7 @@
 
 'use client'
 
-import { LifeBuoy, Send, Loader2 } from 'lucide-react';
+import { LifeBuoy, Send } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -19,6 +19,7 @@ import { useState, useEffect }
 from 'react';
 import { addMessage } from '@/lib/messages-service';
 import { usePathname, useRouter } from 'next/navigation';
+import { LogoSpinner } from '@/components/logo-spinner';
 
 const SECRET_CODE = "SAAH1000000@connectme";
 
@@ -137,7 +138,7 @@ export default function SupportPage() {
                   <Textarea id="message" name="message" placeholder="Comment pouvons-nous vous aider ?" rows={5} value={contactForm.message} onChange={handleInputChange} required />
                 </div>
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isSubmitting && <LogoSpinner className="mr-2 h-4 w-4" />}
                   Envoyer le message <Send className="ml-2 h-4 w-4" />
                 </Button>
               </form>

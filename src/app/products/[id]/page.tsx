@@ -10,7 +10,7 @@ import { getReviewsForProduct, addReview } from '@/lib/reviews-service';
 import type { Product, Review } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, CheckCircle, ShieldCheck, Truck, Loader2, Send } from 'lucide-react';
+import { Star, CheckCircle, ShieldCheck, Truck, Send } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -18,6 +18,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/hooks/use-cart';
+import { LogoSpinner } from '@/components/logo-spinner';
 
 function ReviewStars({ rating, onRatingChange, readOnly = false }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean }) {
   const [hoverRating, setHoverRating] = useState(0);
@@ -121,7 +122,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   if (isLoading) {
     return (
         <div className="container mx-auto px-4 md:px-6 py-12 flex justify-center items-center h-[60vh]">
-            <Loader2 className="h-16 w-16 animate-spin text-primary" />
+            <LogoSpinner className="h-16 w-16" />
         </div>
     );
   }
@@ -261,7 +262,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                        />
                    </div>
                    <Button type="submit" disabled={isSubmittingReview}>
-                       {isSubmittingReview && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                       {isSubmittingReview && <LogoSpinner className="mr-2 h-4 w-4" />}
                        Envoyer l'avis <Send className="ml-2 h-4 w-4" />
                    </Button>
               </form>

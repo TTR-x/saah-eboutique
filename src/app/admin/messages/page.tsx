@@ -4,10 +4,11 @@
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
-import { Loader2, Inbox } from "lucide-react";
+import { Inbox } from "lucide-react";
 import { getMessages } from "@/lib/messages-service";
 import type { ContactMessage } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
+import { LogoSpinner } from "@/components/logo-spinner";
 
 export default function AdminMessagesPage() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
@@ -35,7 +36,7 @@ export default function AdminMessagesPage() {
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center items-center h-40">
-              <Loader2 className="h-8 w-8 animate-spin" />
+              <LogoSpinner className="h-8 w-8" />
             </div>
           ) : messages.length > 0 ? (
             <Accordion type="single" collapsible className="w-full">

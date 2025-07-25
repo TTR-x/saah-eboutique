@@ -11,7 +11,7 @@ import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { LogoSpinner } from '@/components/logo-spinner';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -97,12 +97,12 @@ export default function LoginPage() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isLoading && <LogoSpinner className="mr-2 h-4 w-4" />}
               Se connecter
             </Button>
           </form>
           <Button variant="outline" className="w-full mt-4" onClick={handleGoogleLogin} disabled={isGoogleLoading}>
-            {isGoogleLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isGoogleLoading && <LogoSpinner className="mr-2 h-4 w-4" />}
             Se connecter avec Google
           </Button>
         </CardContent>

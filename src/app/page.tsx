@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/carousel';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Star, Loader2 } from 'lucide-react';
+import { ArrowRight, Star } from 'lucide-react';
 import { testimonials } from '@/lib/data';
 import { ProductCard } from '@/components/product-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -21,6 +21,7 @@ import { useEffect, useState } from 'react';
 import { getSlides } from '@/lib/slides-service';
 import { getProducts } from '@/lib/products-service';
 import type { Slide, Product } from '@/lib/types';
+import { LogoSpinner } from '@/components/logo-spinner';
 
 
 export default function Home() {
@@ -67,7 +68,7 @@ export default function Home() {
               {isLoading && slides.length === 0 ? (
                 <CarouselItem>
                   <div className="relative h-[60vh] md:h-[80vh] bg-muted flex items-center justify-center">
-                    <Loader2 className="h-12 w-12 animate-spin text-primary"/>
+                    <LogoSpinner className="h-12 w-12"/>
                   </div>
                 </CarouselItem>
               ) : (
@@ -102,7 +103,7 @@ export default function Home() {
         
         <div className="container mx-auto px-4 md:px-6 py-12 md:py-20 space-y-16">
           {isLoading ? (
-            <div className="flex justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary"/></div>
+            <div className="flex justify-center"><LogoSpinner className="h-12 w-12"/></div>
           ) : (
             <>
               <ProductSection title="Nouveautés" products={newArrivals} href="/products?sort=newest" />

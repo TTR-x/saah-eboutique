@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { PlusCircle, MoreHorizontal, Pencil, Trash2, Loader2 } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import Image from "next/image";
 import {
   DropdownMenu,
@@ -25,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { addSlide, getSlides, deleteSlide } from "@/lib/slides-service";
 import type { Slide } from "@/lib/types";
+import { LogoSpinner } from "@/components/logo-spinner";
 
 export default function AdminSlidesPage() {
   const [slides, setSlides] = useState<Slide[]>([]);
@@ -134,7 +135,7 @@ export default function AdminSlidesPage() {
           <div className="space-y-4">
             {isLoading ? (
                 <div className="flex justify-center items-center h-40">
-                    <Loader2 className="h-8 w-8 animate-spin" />
+                    <LogoSpinner className="h-8 w-8" />
                 </div>
             ) : slides.length > 0 ? (
               slides.map((slide) => (
@@ -237,7 +238,7 @@ export default function AdminSlidesPage() {
                 </Button>
               </DialogClose>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting && <LogoSpinner className="mr-2 h-4 w-4" />}
                 Ajouter
               </Button>
             </DialogFooter>

@@ -9,12 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, MoreHorizontal, Pencil, Trash2, Loader2 } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { addProduct, getProducts, deleteProduct } from "@/lib/products-service";
 import type { Product } from "@/lib/types";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { LogoSpinner } from "@/components/logo-spinner";
 
 const productCategories = ['high-tech', 'beauté', 'maison', 'artisanat', 'mode', 'divers'];
 
@@ -154,7 +155,7 @@ export default function AdminProductsPage() {
           <div className="space-y-4">
             {isLoading ? (
                 <div className="flex justify-center items-center h-40">
-                    <Loader2 className="h-8 w-8 animate-spin" />
+                    <LogoSpinner className="h-8 w-8" />
                 </div>
             ) : products.length > 0 ? (
               products.map((product) => (
@@ -271,7 +272,7 @@ export default function AdminProductsPage() {
                 <Button type="button" variant="secondary" onClick={resetForm}>Annuler</Button>
               </DialogClose>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting && <LogoSpinner className="mr-2 h-4 w-4" />}
                 Ajouter
               </Button>
             </DialogFooter>

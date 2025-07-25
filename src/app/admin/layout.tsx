@@ -20,7 +20,6 @@ import {
   Settings,
   LogOut,
   ImageIcon,
-  Loader2,
   Package,
   MessageSquare,
 } from 'lucide-react';
@@ -32,6 +31,7 @@ import { UserAvatar } from '@/components/auth/user-avatar';
 import { useAuth } from '@/hooks/use-auth';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { LogoSpinner } from '@/components/logo-spinner';
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
@@ -60,7 +60,7 @@ export default function AdminLayout({
   if (loading || !isAdmin) {
     return (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-            <Loader2 className="h-16 w-16 animate-spin text-primary" />
+            <LogoSpinner className="h-16 w-16" />
         </div>
     );
   }
