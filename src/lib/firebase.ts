@@ -3,6 +3,10 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
+if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+    throw new Error('NEXT_PUBLIC_FIREBASE_API_KEY is not set');
+}
+
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
