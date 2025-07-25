@@ -1,7 +1,10 @@
 
+'use client'
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { PlusCircle, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Pencil, Trash2, Loader2 } from "lucide-react";
 import Image from "next/image";
 import {
   DropdownMenu,
@@ -9,24 +12,117 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-// Données fictives en attendant la base de données
-const slides = [
-  {
-    id: "1",
-    image: "https://placehold.co/1600x800.png",
-    hint: "tech gadget",
-    title: "Technologie de Pointe",
-    subtitle: "Découvrez nos derniers arrivages high-tech",
-  },
-];
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { addSlide, getSlides, deleteSlide } from "@/lib/slides-service";
+import type { Slide } from "@/lib/types";
 
 export default function AdminSlidesPage() {
+  const [slides, setSlides] = useState<Slide[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newSlide, setNewSlide] = useState<{ title: string; subtitle: string; image: File | null }>({
+    title: "",
+    subtitle: "",
+    image: null,
+  });
+  const { toast } = useToast();
+
+  const fetchSlides = async () => {
+    setIsLoading(true);
+    const fetchedSlides = await getSlides();
+    setSlides(fetchedSlides);
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchSlides();
+  }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewSlide((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setNewSlide((prev) => ({ ...prev, image: e.target.files![0] }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!newSlide.title || !newSlide.subtitle || !newSlide.image) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await addSlide({
+        title: newSlide.title,
+        subtitle: newSlide.subtitle,
+        image: newSlide.image,
+      });
+      toast({
+        title: "Succès",
+        description: "Le slide a été ajouté avec succès.",
+      });
+      setIsDialogOpen(false);
+      setNewSlide({ title: "", subtitle: "", image: null });
+      fetchSlides(); // Refresh slides list
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'ajout du slide.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm("Êtes-vous sûr de vouloir supprimer ce slide ?")) {
+        try {
+            await deleteSlide(id);
+            toast({
+                title: "Succès",
+                description: "Le slide a été supprimé.",
+            });
+            fetchSlides();
+        } catch (error) {
+            console.error(error);
+            toast({
+                title: "Erreur",
+                description: "Une erreur est survenue lors de la suppression.",
+                variant: "destructive",
+            });
+        }
+    }
+  };
+
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-bold">Gestion des Slides</h2>
-        <Button>
+        <Button onClick={() => setIsDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un slide
         </Button>
       </div>
@@ -36,17 +132,20 @@ export default function AdminSlidesPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {slides.length > 0 ? (
+            {isLoading ? (
+                <div className="flex justify-center items-center h-40">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+            ) : slides.length > 0 ? (
               slides.map((slide) => (
                 <div key={slide.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <div className="flex items-center gap-4">
                     <Image
-                      src={slide.image}
+                      src={slide.imageUrl}
                       alt={slide.title}
                       width={120}
                       height={60}
                       className="rounded-md object-cover"
-                      data-ai-hint={slide.hint}
                     />
                     <div>
                       <h3 className="font-semibold">{slide.title}</h3>
@@ -61,11 +160,11 @@ export default function AdminSlidesPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
+                      <DropdownMenuItem disabled>
                         <Pencil className="mr-2 h-4 w-4" />
                         Modifier
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive hover:text-destructive focus:text-destructive">
+                      <DropdownMenuItem onClick={() => handleDelete(slide.id)} className="text-destructive hover:text-destructive focus:text-destructive">
                         <Trash2 className="mr-2 h-4 w-4" />
                         Supprimer
                       </DropdownMenuItem>
@@ -74,14 +173,77 @@ export default function AdminSlidesPage() {
                 </div>
               ))
             ) : (
-              <>
+              <div className="text-center py-10">
                 <p className="text-muted-foreground">Aucun slide à afficher pour le moment.</p>
                 <p className="text-muted-foreground mt-2">Cliquez sur "Ajouter un slide" pour commencer.</p>
-              </>
+              </div>
             )}
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Ajouter un nouveau slide</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="title" className="text-right">
+                  Titre
+                </Label>
+                <Input
+                  id="title"
+                  name="title"
+                  value={newSlide.title}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="subtitle" className="text-right">
+                  Sous-titre
+                </Label>
+                <Input
+                  id="subtitle"
+                  name="subtitle"
+                  value={newSlide.subtitle}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="image" className="text-right">
+                  Image
+                </Label>
+                <Input
+                  id="image"
+                  name="image"
+                  type="file"
+                  onChange={handleFileChange}
+                  className="col-span-3"
+                  accept="image/*"
+                  required
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button type="button" variant="secondary">
+                  Annuler
+                </Button>
+              </DialogClose>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Ajouter
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

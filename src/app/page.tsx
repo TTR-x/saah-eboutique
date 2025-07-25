@@ -12,43 +12,33 @@ import {
 } from '@/components/ui/carousel';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Star } from 'lucide-react';
+import { ArrowRight, Star, Loader2 } from 'lucide-react';
 import { products, testimonials } from '@/lib/data';
 import { ProductCard } from '@/components/product-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Autoplay from 'embla-carousel-autoplay';
+import { useEffect, useState } from 'react';
+import { getSlides } from '@/lib/slides-service';
+import type { Slide } from '@/lib/types';
+
 
 export default function Home() {
+  const [slides, setSlides] = useState<Slide[]>([]);
+  const [isLoadingSlides, setIsLoadingSlides] = useState(true);
+
+  useEffect(() => {
+    const fetchSlides = async () => {
+      setIsLoadingSlides(true);
+      const fetchedSlides = await getSlides();
+      setSlides(fetchedSlides);
+      setIsLoadingSlides(false);
+    }
+    fetchSlides();
+  }, []);
+
   const newArrivals = products.filter(p => p.tags?.includes('Nouveautés')).slice(0, 4);
   const flashSales = products.filter(p => p.tags?.includes('Offres flash')).slice(0, 4);
   const trendingProducts = products.filter(p => p.tags?.includes('Produits tendance')).slice(0, 4);
-
-  const heroSlides = [
-    {
-      image: "https://placehold.co/1600x800.png",
-      hint: "tech gadget",
-      title: "Technologie de Pointe",
-      subtitle: "Découvrez nos derniers arrivages high-tech",
-      buttonText: "Explorer",
-      href: "/products?category=high-tech"
-    },
-    {
-      image: "https://placehold.co/1600x800.png",
-      hint: "fashion model",
-      title: "Élégance & Style",
-      subtitle: "La mode qui vous ressemble",
-      buttonText: "Voir la collection",
-      href: "/products?category=mode"
-    },
-    {
-      image: "https://placehold.co/1600x800.png",
-      hint: "cozy home",
-      title: "Confort & Maison",
-      subtitle: "Tout pour un intérieur chaleureux",
-      buttonText: "Découvrir",
-      href: "/products?category=maison"
-    }
-  ];
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -60,29 +50,36 @@ export default function Home() {
             plugins={[Autoplay({ delay: 5000 })]}
           >
             <CarouselContent>
-              {heroSlides.map((slide, index) => (
-                <CarouselItem key={index}>
-                  <div className="relative h-[60vh] md:h-[80vh]">
-                    <Image
-                      src={slide.image}
-                      alt={slide.title}
-                      data-ai-hint={slide.hint}
-                      fill
-                      className="object-cover"
-                      priority={index === 0}
-                    />
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="text-center text-white p-4">
-                        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">{slide.title}</h1>
-                        <p className="mt-4 text-lg md:text-xl max-w-2xl">{slide.subtitle}</p>
-                        <Button asChild size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground">
-                          <Link href={slide.href}>{slide.buttonText}</Link>
-                        </Button>
-                      </div>
-                    </div>
+              {isLoadingSlides ? (
+                <CarouselItem>
+                  <div className="relative h-[60vh] md:h-[80vh] bg-muted flex items-center justify-center">
+                    <Loader2 className="h-12 w-12 animate-spin text-primary"/>
                   </div>
                 </CarouselItem>
-              ))}
+              ) : (
+                slides.map((slide, index) => (
+                  <CarouselItem key={slide.id}>
+                    <div className="relative h-[60vh] md:h-[80vh]">
+                      <Image
+                        src={slide.imageUrl}
+                        alt={slide.title}
+                        fill
+                        className="object-cover"
+                        priority={index === 0}
+                      />
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <div className="text-center text-white p-4">
+                          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">{slide.title}</h1>
+                          <p className="mt-4 text-lg md:text-xl max-w-2xl">{slide.subtitle}</p>
+                          <Button asChild size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground">
+                            <Link href={"/products"}>{slide.buttonText || "Explorer"}</Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))
+              )}
             </CarouselContent>
             <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-10 hidden md:flex" />
             <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-10 hidden md:flex" />

@@ -1,3 +1,4 @@
+
 export type Product = {
   id: string;
   name: string;
@@ -21,3 +22,20 @@ export type Testimonial = {
   avatar: string;
   comment: string;
 };
+
+export type Slide = {
+  id: string;
+  title: string;
+  subtitle: string;
+  imageUrl: string;
+  publicId: string;
+  buttonText?: string;
+  href?: string;
+  createdAt: any;
+};
+
+export type SlideInput = {
+    title: string;
+    subtitle: string;
+    image: File;
+}

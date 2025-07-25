@@ -1,10 +1,11 @@
+
 'use client';
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Search, ShoppingCart, User, Moon, Sun, Shield } from 'lucide-react';
+import { Menu, Search, ShoppingCart, User, Moon, Sun, Shield, LogOut, LogIn } from 'lucide-react';
 import { Logo } from './logo';
 import { useTheme } from 'next-themes';
 import {
@@ -17,6 +18,9 @@ import {
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Progress } from '@/components/ui/progress';
+import { useAuth } from '@/hooks/use-auth';
+import { SignOutButton } from '../auth/sign-out-button';
+import { UserAvatar } from '../auth/user-avatar';
 
 const navLinks = [
   { name: 'Accueil', href: '/' },
@@ -29,16 +33,19 @@ export function Header() {
   const { setTheme } = useTheme();
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(false);
+  const { user, loading } = useAuth();
+
 
   useEffect(() => {
     setIsLoading(false);
   }, [pathname]);
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (e.currentTarget.href.includes(pathname)) {
-        setIsLoading(false);
+    const newPath = new URL(e.currentTarget.href).pathname;
+    if (newPath === pathname) {
+      setIsLoading(false);
     } else {
-        setIsLoading(true);
+      setIsLoading(true);
     }
   };
 
@@ -134,14 +141,34 @@ export function Header() {
            <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
-                    <User className="h-5 w-5" />
+                    {user ? <UserAvatar /> : <User className="h-5 w-5" />}
                     <span className="sr-only">Compte</span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                    <Link href="/login" onClick={handleLinkClick}>Se connecter</Link>
-                </DropdownMenuItem>
+                {user ? (
+                    <>
+                        <DropdownMenuItem asChild>
+                            <div className="flex flex-col items-start p-2">
+                                <p className="font-medium text-sm">{user.displayName || user.email}</p>
+                            </div>
+                        </DropdownMenuItem>
+                         <DropdownMenuSeparator />
+                        <SignOutButton>
+                            <DropdownMenuItem>
+                                <LogOut className="mr-2 h-4 w-4" />
+                                Déconnexion
+                            </DropdownMenuItem>
+                        </SignOutButton>
+                    </>
+                ) : (
+                    <DropdownMenuItem asChild>
+                        <Link href="/login" onClick={handleLinkClick}>
+                            <LogIn className="mr-2 h-4 w-4" />
+                            Se connecter
+                        </Link>
+                    </DropdownMenuItem>
+                )}
                  <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                     <Link href="/admin" onClick={handleLinkClick}>

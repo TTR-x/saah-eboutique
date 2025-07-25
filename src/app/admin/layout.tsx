@@ -12,23 +12,31 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import {
-  Home,
   LayoutGrid,
   ShoppingBag,
   Users,
-  GalleryVertical,
   Settings,
   LogOut,
-  Image as ImageIcon
+  ImageIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import { Logo } from '@/components/layout/logo';
+import { redirect } from 'next/navigation';
+import { auth } from '@/lib/firebase';
+import { SignOutButton } from '@/components/auth/sign-out-button';
+import { UserAvatar } from '@/components/auth/user-avatar';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+
+  if (!auth.currentUser) {
+    return redirect('/login?redirect=/admin');
+  }
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-background">
@@ -74,6 +82,14 @@ export default function AdminLayout({
           </SidebarContent>
           <SidebarFooter>
              <SidebarMenu>
+                <SidebarMenuItem>
+                    <SignOutButton>
+                        <SidebarMenuButton>
+                            <LogOut/>
+                            Déconnexion
+                        </SidebarMenuButton>
+                    </SignOutButton>
+                </SidebarMenuItem>
                <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Link href="/">
@@ -89,6 +105,7 @@ export default function AdminLayout({
           <header className="flex items-center justify-between p-4 border-b">
             <SidebarTrigger/>
             <h1 className="text-2xl font-bold">Espace Administration</h1>
+            <UserAvatar/>
           </header>
           <main className="p-6">
             {children}
