@@ -1,0 +1,11 @@
+# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+#
+# Allow all crawling from all user-agents
+User-agent: *
+Allow: /
+
+# Allow crawling of all content for Gemini
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://saahbusiness.com/sitemap.xml
