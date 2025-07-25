@@ -1,13 +1,43 @@
+
+'use client'
+
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { products } from '@/lib/data';
+import { getProducts } from '@/lib/products-service';
+import type { Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, CheckCircle, ShieldCheck, Truck } from 'lucide-react';
+import { Star, CheckCircle, ShieldCheck, Truck, Loader2 } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  const product = products.find(p => p.id === params.id);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setIsLoading(true);
+      // In a real app, you would fetch a single product by ID
+      // For now, we fetch all and find the one.
+      const allProducts = await getProducts();
+      const foundProduct = allProducts.find(p => p.id === params.id);
+      if (foundProduct) {
+        setProduct(foundProduct);
+      }
+      setIsLoading(false);
+    };
+    fetchProduct();
+  }, [params.id]);
+
+
+  if (isLoading) {
+    return (
+        <div className="container mx-auto px-4 md:px-6 py-12 flex justify-center items-center h-[60vh]">
+            <Loader2 className="h-16 w-16 animate-spin text-primary" />
+        </div>
+    );
+  }
 
   if (!product) {
     notFound();

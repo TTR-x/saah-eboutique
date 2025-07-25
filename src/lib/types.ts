@@ -5,6 +5,7 @@ export type Product = {
   description: string;
   longDescription: string;
   images: string[];
+  imagePublicIds: string[];
   price: number;
   originalPrice?: number;
   category: 'high-tech' | 'beauté' | 'maison' | 'artisanat' | 'mode' | 'divers';
@@ -14,6 +15,11 @@ export type Product = {
   reviews: number;
   tags?: ('Nouveautés' | 'Offres flash' | 'Produits tendance')[];
   attributes?: { [key: string]: string };
+  createdAt: any;
+};
+
+export type ProductInput = Omit<Product, 'id' | 'images' | 'imagePublicIds' | 'createdAt' | 'rating' | 'reviews'> & {
+  images: File[];
 };
 
 export type Testimonial = {

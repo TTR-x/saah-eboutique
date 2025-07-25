@@ -8,14 +8,14 @@ cloudinary.config({
   secure: true,
 });
 
-export async function uploadImage(file: File) {
+export async function uploadImage(file: File, upload_preset: string) {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = new Uint8Array(arrayBuffer);
   
   const results = await new Promise((resolve, reject) => {
     cloudinary.uploader.upload_stream(
       {
-        folder: 'saah-business-hub',
+        upload_preset: upload_preset,
         resource_type: 'image',
       },
       (error, result) => {

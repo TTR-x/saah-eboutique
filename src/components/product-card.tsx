@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +12,8 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const isNew = product.createdAt && (new Date().getTime() - new Date(product.createdAt).getTime()) < 7 * 24 * 60 * 60 * 1000;
+
   return (
     <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
       <CardHeader className="p-0 relative">
@@ -24,14 +27,19 @@ export function ProductCard({ product }: ProductCardProps) {
             className="w-full h-56 object-cover"
           />
         </Link>
-        {product.tags?.includes('Offres flash') && (
-            <Badge variant="destructive" className="absolute top-2 right-2">PROMO</Badge>
-        )}
+        <div className="absolute top-2 right-2 flex flex-col gap-2 items-end">
+            {isNew && (
+                <Badge variant="default" className="bg-accent text-accent-foreground">NOUVEAU</Badge>
+            )}
+            {product.tags?.includes('Offres flash') && (
+                <Badge variant="destructive">PROMO</Badge>
+            )}
+        </div>
       </CardHeader>
       <CardContent className="p-4 flex-grow">
         <p className="text-xs text-muted-foreground uppercase">{product.category}</p>
-        <CardTitle className="text-lg mt-1 mb-2">
-            <Link href={`/products/${product.id}`} className="hover:text-primary transition-colors">
+        <CardTitle className="text-lg mt-1 mb-2 h-12 overflow-hidden">
+            <Link href={`/products/${product.id}`} className="hover:text-primary transition-colors line-clamp-2">
                 {product.name}
             </Link>
         </CardTitle>

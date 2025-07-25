@@ -13,7 +13,14 @@ const slidesCollectionRef = collection(db, 'slides');
 export async function getSlides(): Promise<Slide[]> {
   const q = query(slidesCollectionRef, orderBy('createdAt', 'desc'));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Slide));
+  return snapshot.docs.map(doc => {
+      const data = doc.data();
+      return { 
+        id: doc.id, 
+        ...data,
+        createdAt: data.createdAt?.toDate() // Convert Firestore Timestamp to Date
+      } as Slide
+  });
 }
 
 // Add a new slide
@@ -23,7 +30,7 @@ export async function addSlide(slideInput: SlideInput) {
     }
 
     // Upload image to Cloudinary
-    const { secure_url, public_id } = await uploadImage(slideInput.image);
+    const { secure_url, public_id } = await uploadImage(slideInput.image, "testimonials");
 
     // Add slide data to Firestore
     const newSlide = {
@@ -48,7 +55,7 @@ export async function deleteSlide(id: string) {
         throw new Error("Slide not found");
     }
 
-    const slideData = slideDoc.data() as Slide;
+    const slideData = slideDoc.data();
     const publicId = slideData.publicId;
 
     if (publicId) {

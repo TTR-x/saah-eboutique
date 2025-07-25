@@ -13,32 +13,46 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Star, Loader2 } from 'lucide-react';
-import { products, testimonials } from '@/lib/data';
+import { testimonials } from '@/lib/data';
 import { ProductCard } from '@/components/product-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Autoplay from 'embla-carousel-autoplay';
 import { useEffect, useState } from 'react';
 import { getSlides } from '@/lib/slides-service';
-import type { Slide } from '@/lib/types';
+import { getProducts } from '@/lib/products-service';
+import type { Slide, Product } from '@/lib/types';
 
 
 export default function Home() {
   const [slides, setSlides] = useState<Slide[]>([]);
-  const [isLoadingSlides, setIsLoadingSlides] = useState(true);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSlides = async () => {
-      setIsLoadingSlides(true);
-      const fetchedSlides = await getSlides();
-      setSlides(fetchedSlides);
-      setIsLoadingSlides(false);
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const [fetchedSlides, fetchedProducts] = await Promise.all([
+          getSlides(),
+          getProducts()
+        ]);
+        setSlides(fetchedSlides);
+        setProducts(fetchedProducts);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }
-    fetchSlides();
+    fetchData();
   }, []);
 
-  const newArrivals = products.filter(p => p.tags?.includes('Nouveautés')).slice(0, 4);
+  const newArrivals = products
+    .sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 4);
+    
   const flashSales = products.filter(p => p.tags?.includes('Offres flash')).slice(0, 4);
-  const trendingProducts = products.filter(p => p.tags?.includes('Produits tendance')).slice(0, 4);
+  const trendingProducts = products.sort((a,b) => b.reviews - a.reviews).slice(0, 4);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -50,7 +64,7 @@ export default function Home() {
             plugins={[Autoplay({ delay: 5000 })]}
           >
             <CarouselContent>
-              {isLoadingSlides ? (
+              {isLoading && slides.length === 0 ? (
                 <CarouselItem>
                   <div className="relative h-[60vh] md:h-[80vh] bg-muted flex items-center justify-center">
                     <Loader2 className="h-12 w-12 animate-spin text-primary"/>
@@ -87,9 +101,15 @@ export default function Home() {
         </section>
         
         <div className="container mx-auto px-4 md:px-6 py-12 md:py-20 space-y-16">
-          <ProductSection title="Nouveautés" products={newArrivals} href="/products?tag=Nouveautés" />
-          <ProductSection title="Offres Flash" products={flashSales} href="/products?tag=Offres+flash" />
-          <ProductSection title="Produits Tendance" products={trendingProducts} href="/products?tag=Produits+tendance" />
+          {isLoading ? (
+            <div className="flex justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary"/></div>
+          ) : (
+            <>
+              <ProductSection title="Nouveautés" products={newArrivals} href="/products?sort=newest" />
+              <ProductSection title="Offres Flash" products={flashSales} href="/products?tag=Offres+flash" />
+              <ProductSection title="Produits Tendance" products={trendingProducts} href="/products?sort=trending" />
+            </>
+          )}
 
           <section>
             <h2 className="text-3xl font-bold text-center mb-10">Ce que nos clients disent</h2>
