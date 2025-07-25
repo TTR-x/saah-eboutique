@@ -38,8 +38,8 @@ export function Footer() {
               <a href="#" aria-label="Facebook" className="text-muted-foreground hover:text-primary">
                 <FacebookIcon className="h-6 w-6" />
               </a>
-              <a href="#" aria-label="Twitter" className="text-muted-foreground hover:text-primary">
-                <TwitterIcon className="h-6 w-6" />
+              <a href="#" aria-label="Tiktok" className="text-muted-foreground hover:text-primary">
+                <TiktokIcon className="h-6 w-6" />
               </a>
               <a href="#" aria-label="Instagram" className="text-muted-foreground hover:text-primary">
                 <InstagramIcon className="h-6 w-6" />
@@ -63,10 +63,10 @@ function FacebookIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-function TwitterIcon(props: React.SVGProps<SVGSVGElement>) {
+function TiktokIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M22.46 6c-.77.35-1.6.58-2.46.67.88-.53 1.56-1.37 1.88-2.38-.83.49-1.74.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98-3.56-.18-6.72-1.89-8.84-4.48-.37.63-.58 1.37-.58 2.15 0 1.49.76 2.8 1.91 3.56-.71 0-1.37-.22-1.95-.54v.05c0 2.08 1.48 3.82 3.44 4.21-.36.1-.74.15-1.13.15-.28 0-.55-.03-.81-.08.55 1.7 2.14 2.94 4.03 2.97-1.47 1.15-3.33 1.83-5.35 1.83-.35 0-.69-.02-1.03-.06 1.9 1.21 4.16 1.92 6.58 1.92 7.9 0 12.21-6.56 12.21-12.21 0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.22z" />
+      <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-2.43.03-4.83-.95-6.43-2.88-1.59-1.94-2.15-4.52-1.74-7.05.32-1.95 1.58-3.63 3.19-4.73 1.66-1.14 3.61-1.72 5.59-1.71.02 1.59-.01 3.18-.01 4.77-.58-.04-1.15-.08-1.73-.08-1.07 0-2.14.31-3.08.85-.93.53-1.63 1.39-1.94 2.45-.33 1.11-.31 2.38.05 3.48.38 1.14 1.09 2.12 2.12 2.68 1.03.56 2.23.75 3.42.59.01-2.19.01-4.38.01-6.57 0-2.26 0-4.52-.02-6.78l.02-.02Z" />
     </svg>
   );
 }
