@@ -67,14 +67,14 @@ export default function Home() {
             <CarouselContent>
               {isLoading && slides.length === 0 ? (
                 <CarouselItem>
-                  <div className="relative h-[60vh] md:h-[80vh] bg-muted flex items-center justify-center">
+                  <div className="relative h-[50vh] md:h-[70vh] bg-muted flex items-center justify-center">
                     <LogoSpinner className="h-12 w-12"/>
                   </div>
                 </CarouselItem>
               ) : (
                 slides.map((slide, index) => (
                   <CarouselItem key={slide.id}>
-                    <div className="relative h-[60vh] md:h-[80vh]">
+                    <div className="relative h-[50vh] md:h-[70vh]">
                       <Image
                         src={slide.imageUrl}
                         alt={slide.title}

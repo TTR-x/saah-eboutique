@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { Logo } from './logo';
 
@@ -5,7 +6,7 @@ export function Footer() {
   return (
     <footer className="border-t bg-background">
       <div className="container mx-auto px-4 md:px-6 py-8">
-        <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
+        <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
           <div className="flex flex-col items-start">
             <Link href="/" className="mb-4">
               <Logo />

@@ -82,16 +82,15 @@ export function Header() {
           </nav>
         </div>
 
-        <div className="md:hidden">
-          <Sheet>
+        <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="md:hidden">
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Ouvrir le menu</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="left">
-              <Link href="/" className="mb-8" onClick={handleLinkClick}>
+              <Link href="/" className="mb-8 flex items-center" onClick={handleLinkClick}>
                 <Logo />
               </Link>
               <div className="flex flex-col space-y-4">
@@ -108,7 +107,6 @@ export function Header() {
               </div>
             </SheetContent>
           </Sheet>
-        </div>
         
         <div className="flex flex-1 items-center justify-end space-x-2 md:justify-end">
           <div className="w-full flex-1 md:w-auto md:flex-none">
@@ -152,13 +150,13 @@ export function Header() {
           </DropdownMenu>
            <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" disabled={loading || !user}>
-                    {user ? <UserAvatar /> : <User className="h-5 w-5" />}
+                <Button variant="ghost" size="icon" disabled={loading}>
+                     {user ? <UserAvatar /> : <User className="h-5 w-5" />}
                     <span className="sr-only">Compte</span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                {user && (
+                {user ? (
                     <>
                         <DropdownMenuItem asChild>
                             <div className="flex flex-col items-start p-2">
@@ -166,24 +164,26 @@ export function Header() {
                             </div>
                         </DropdownMenuItem>
                          <DropdownMenuSeparator />
-                        <SignOutButton>
-                            <DropdownMenuItem>
-                                <LogOut className="mr-2 h-4 w-4" />
-                                Déconnexion
-                            </DropdownMenuItem>
-                        </SignOutButton>
                         {isAdmin && (
-                            <>
-                             <DropdownMenuSeparator />
                              <DropdownMenuItem asChild>
                                 <Link href="/admin" onClick={handleLinkClick}>
                                     <Shield className="mr-2 h-4 w-4" />
                                     Administration
                                 </Link>
                             </DropdownMenuItem>
-                            </>
                         )}
+                        <SignOutButton>
+                            <DropdownMenuItem>
+                                <LogOut className="mr-2 h-4 w-4" />
+                                Déconnexion
+                            </DropdownMenuItem>
+                        </SignOutButton>
                     </>
+                ) : (
+                  <DropdownMenuItem asChild>
+                    {/* Le lien vers /login est intentionnellement omis pour renforcer la sécurité */}
+                    <span className="px-2 py-1.5 text-sm text-muted-foreground">Veuillez vous connecter</span>
+                  </DropdownMenuItem>
                 )}
             </DropdownMenuContent>
           </DropdownMenu>
