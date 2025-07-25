@@ -27,7 +27,7 @@ export default function ProductsPage() {
   const [filters, setFilters] = useState({
     category: 'tous',
     brand: 'tous',
-    priceRange: [0, maxPrice],
+    priceRange: [0, 100000],
     sort: searchParams.get('sort') || 'rating-desc',
   });
   
@@ -39,7 +39,7 @@ export default function ProductsPage() {
       const newMaxPrice = Math.max(...fetchedProducts.map(p => p.price), 0)
       setFilters(prev => ({
         ...prev,
-        priceRange: [0, newMaxPrice]
+        priceRange: [0, newMaxPrice > 0 ? newMaxPrice : 100000]
       }));
       setIsLoading(false);
     }
@@ -47,7 +47,9 @@ export default function ProductsPage() {
   }, []);
   
   useEffect(() => {
-     setFilters(prev => ({ ...prev, priceRange: [0, maxPrice] }));
+     if (maxPrice > 0) {
+        setFilters(prev => ({ ...prev, priceRange: [0, maxPrice] }));
+     }
   }, [maxPrice])
 
   const handlePriceChange = (value: number[]) => {
@@ -70,7 +72,7 @@ export default function ProductsPage() {
     setFilters({
       category: 'tous',
       brand: 'tous',
-      priceRange: [0, maxPrice],
+      priceRange: [0, maxPrice > 0 ? maxPrice : 100000],
       sort: 'rating-desc',
     });
   };
@@ -141,7 +143,7 @@ export default function ProductsPage() {
                   <Label className="text-base">Gamme de Prix</Label>
                   <Slider
                     min={0}
-                    max={maxPrice}
+                    max={maxPrice > 0 ? maxPrice : 100000}
                     step={1000}
                     value={filters.priceRange}
                     onValueChange={handlePriceChange}
@@ -181,9 +183,13 @@ export default function ProductsPage() {
             </div>
            ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredAndSortedProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
-                ))}
+                {filteredAndSortedProducts.length > 0 ? (
+                    filteredAndSortedProducts.map(product => (
+                        <ProductCard key={product.id} product={product} />
+                    ))
+                ) : (
+                    <p className="text-muted-foreground col-span-full text-center">Aucun produit ne correspond à vos critères de recherche.</p>
+                )}
             </div>
            )}
         </main>

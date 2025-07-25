@@ -15,8 +15,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { addMessage } from '@/lib/messages-service';
+import { usePathname } from 'next/navigation';
 
 export default function SupportPage() {
   const faqs = faqContent
@@ -32,6 +33,12 @@ export default function SupportPage() {
   const { toast } = useToast();
   const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    // Reset form if path changes (e.g., after secret code redirect)
+    setContactForm({ name: '', email: '', phone: '', message: '' });
+  }, [pathname]);
 
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
