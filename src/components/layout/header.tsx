@@ -13,6 +13,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Progress } from '@/components/ui/progress';
 
 const navLinks = [
   { name: 'Accueil', href: '/' },
@@ -23,12 +26,23 @@ const navLinks = [
 
 export function Header() {
   const { setTheme } = useTheme();
+  const pathname = usePathname();
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setIsLoading(false);
+  }, [pathname]);
+
+  const handleLinkClick = () => {
+    setIsLoading(true);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      {isLoading && <Progress value={100} className="absolute top-0 h-1 animate-pulse duration-1000" />}
       <div className="container flex h-16 items-center">
         <div className="mr-4 hidden md:flex">
-          <Link href="/" className="mr-6">
+          <Link href="/" className="mr-6" onClick={handleLinkClick}>
             <Logo />
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
@@ -36,6 +50,7 @@ export function Header() {
               <Link
                 key={link.name}
                 href={link.href}
+                onClick={handleLinkClick}
                 className="transition-colors hover:text-foreground/80 text-foreground/60"
               >
                 {link.name}
@@ -53,7 +68,7 @@ export function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left">
-              <Link href="/" className="mb-8">
+              <Link href="/" className="mb-8" onClick={handleLinkClick}>
                 <Logo />
               </Link>
               <div className="flex flex-col space-y-4">
@@ -61,6 +76,7 @@ export function Header() {
                   <Link
                     key={link.name}
                     href={link.href}
+                    onClick={handleLinkClick}
                     className="text-lg font-medium transition-colors hover:text-foreground/80 text-foreground"
                   >
                     {link.name}
@@ -81,7 +97,7 @@ export function Header() {
             </form>
           </div>
           <Button asChild variant="ghost" size="icon">
-            <Link href="/cart">
+            <Link href="/cart" onClick={handleLinkClick}>
               <ShoppingCart className="h-5 w-5" />
               <span className="sr-only">Panier</span>
             </Link>
@@ -107,7 +123,7 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
           <Button asChild variant="ghost" size="icon">
-             <Link href="/login">
+             <Link href="/login" onClick={handleLinkClick}>
                 <User className="h-5 w-5" />
                 <span className="sr-only">Compte</span>
             </Link>
