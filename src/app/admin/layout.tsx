@@ -32,12 +32,15 @@ import { UserAvatar } from '@/components/auth/user-avatar';
 import { useAuth } from '@/hooks/use-auth';
 import { useEffect } from 'react';
 
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const { user, loading } = useAuth();
+  const isAdmin = user?.email === ADMIN_EMAIL;
 
   useEffect(() => {
     if (!loading && !user) {
@@ -142,7 +145,7 @@ export default function AdminLayout({
           <header className="flex items-center justify-between p-4 border-b">
             <SidebarTrigger/>
             <h1 className="text-2xl font-bold">Espace Administration</h1>
-            <UserAvatar/>
+            {isAdmin && <UserAvatar />}
           </header>
           <main className="p-6">
             {children}
