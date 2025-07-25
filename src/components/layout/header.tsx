@@ -30,6 +30,9 @@ const navLinks = [
   { name: 'Support', href: '/support' },
 ];
 
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+
+
 export function Header() {
   const { setTheme } = useTheme();
   const pathname = usePathname();
@@ -37,6 +40,7 @@ export function Header() {
   const { user, loading } = useAuth();
   const { items } = useCart();
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const isAdmin = user?.email === ADMIN_EMAIL;
 
 
   useEffect(() => {
@@ -148,13 +152,13 @@ export function Header() {
           </DropdownMenu>
            <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" disabled={loading || !user}>
                     {user ? <UserAvatar /> : <User className="h-5 w-5" />}
                     <span className="sr-only">Compte</span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                {user ? (
+                {user && (
                     <>
                         <DropdownMenuItem asChild>
                             <div className="flex flex-col items-start p-2">
@@ -168,21 +172,18 @@ export function Header() {
                                 Déconnexion
                             </DropdownMenuItem>
                         </SignOutButton>
-                         <DropdownMenuSeparator />
-                         <DropdownMenuItem asChild>
-                            <Link href="/admin" onClick={handleLinkClick}>
-                                <Shield className="mr-2 h-4 w-4" />
-                                Administration
-                            </Link>
-                        </DropdownMenuItem>
+                        {isAdmin && (
+                            <>
+                             <DropdownMenuSeparator />
+                             <DropdownMenuItem asChild>
+                                <Link href="/admin" onClick={handleLinkClick}>
+                                    <Shield className="mr-2 h-4 w-4" />
+                                    Administration
+                                </Link>
+                            </DropdownMenuItem>
+                            </>
+                        )}
                     </>
-                ) : (
-                    <DropdownMenuItem asChild>
-                        <Link href="/login" onClick={handleLinkClick}>
-                            <LogIn className="mr-2 h-4 w-4" />
-                            Se connecter
-                        </Link>
-                    </DropdownMenuItem>
                 )}
             </DropdownMenuContent>
           </DropdownMenu>

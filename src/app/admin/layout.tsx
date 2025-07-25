@@ -31,6 +31,7 @@ import { SignOutButton } from '@/components/auth/sign-out-button';
 import { UserAvatar } from '@/components/auth/user-avatar';
 import { useAuth } from '@/hooks/use-auth';
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
@@ -40,26 +41,29 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const { user, loading } = useAuth();
+  const router = useRouter();
   const isAdmin = user?.email === ADMIN_EMAIL;
 
   useEffect(() => {
-    if (!loading && !user) {
-      redirect('/login?redirect=/admin');
-    }
-  }, [user, loading]);
+    if (loading) return; // Wait for auth state to be determined
 
-  if (loading) {
+    if (!user) {
+      redirect('/login?redirect=/admin'); // Redirect to login if not authenticated
+      return;
+    }
+
+    if (!isAdmin) {
+      router.push('/'); // Redirect to home if not admin
+    }
+  }, [user, loading, isAdmin, router]);
+
+  if (loading || !isAdmin) {
     return (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
             <Loader2 className="h-16 w-16 animate-spin text-primary" />
         </div>
     );
   }
-  
-  if (!user) {
-    return null; // The redirect is handled in the useEffect
-  }
-
 
   return (
     <SidebarProvider>
