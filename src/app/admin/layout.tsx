@@ -1,4 +1,6 @@
 
+'use client'
+
 import {
   SidebarProvider,
   Sidebar,
@@ -17,25 +19,42 @@ import {
   Users,
   Settings,
   LogOut,
-  ImageIcon
+  ImageIcon,
+  Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 import { Logo } from '@/components/layout/logo';
 import { redirect } from 'next/navigation';
-import { auth } from '@/lib/firebase';
 import { SignOutButton } from '@/components/auth/sign-out-button';
 import { UserAvatar } from '@/components/auth/user-avatar';
-import { onAuthStateChanged } from 'firebase/auth';
+import { useAuth } from '@/hooks/use-auth';
+import { useEffect } from 'react';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { user, loading } = useAuth();
 
-  if (!auth.currentUser) {
-    return redirect('/login?redirect=/admin');
+  useEffect(() => {
+    if (!loading && !user) {
+      redirect('/login?redirect=/admin');
+    }
+  }, [user, loading]);
+
+  if (loading) {
+    return (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+            <Loader2 className="h-16 w-16 animate-spin text-primary" />
+        </div>
+    );
   }
+  
+  if (!user) {
+    return null; // The redirect is handled in the useEffect
+  }
+
 
   return (
     <SidebarProvider>

@@ -2,7 +2,7 @@
 'use server'
 
 import { db } from './firebase';
-import { collection, getDocs, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy, getDoc } from 'firebase/firestore';
 import { uploadImage, deleteImage } from './cloudinary';
 import type { Slide, SlideInput } from './types';
 import { revalidatePath } from 'next/cache';
@@ -41,17 +41,21 @@ export async function addSlide(slideInput: SlideInput) {
 
 // Delete a slide
 export async function deleteSlide(id: string) {
-    const slideToDelete = slides.find(slide => slide.id === id); // This needs to be fetched from firestore
-    
-    // For now we assume we have public_id, but it should be fetched from firestore
-    // const publicId = slideToDelete.publicId; 
-    // await deleteImage(publicId);
-
     const slideDocRef = doc(db, 'slides', id);
+    const slideDoc = await getDoc(slideDocRef);
+    
+    if (!slideDoc.exists()) {
+        throw new Error("Slide not found");
+    }
+
+    const slideData = slideDoc.data() as Slide;
+    const publicId = slideData.publicId;
+
+    if (publicId) {
+        await deleteImage(publicId);
+    }
+
     await deleteDoc(slideDocRef);
     revalidatePath('/');
     revalidatePath('/admin/slides');
 }
-
-// Dummy data for now, will be replaced with Firestore fetch
-const slides = [] as Slide[];
