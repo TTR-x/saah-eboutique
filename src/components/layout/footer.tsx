@@ -49,7 +49,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 border-t pt-6 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} SAAH Business Hub. Tous droits réservés.</p>
+          <p>&copy; {new Date().getFullYear()} SAAH Business. Tous droits réservés.</p>
         </div>
       </div>
     </footer>

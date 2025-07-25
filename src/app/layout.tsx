@@ -10,10 +10,10 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { CartProvider } from '@/hooks/use-cart';
 
 const siteConfig = {
-  name: 'SAAH Business Hub',
+  name: 'SAAH Business',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'https://saahbusiness.com',
-  description: 'SAAH Business Hub est une plateforme e-commerce innovante pour tous vos besoins. Découvrez nos sélections en high-tech, mode, maison, et artisanat. Qualité et service client garantis. Le nom est SAAH, à ne pas confondre avec Sarah.',
-  keywords: ['saah', 'saahbusiness', 'saah business', 'saah business hub', 'e-commerce saah', 'shopping en ligne saah', 'high-tech', 'mode', 'maison', 'artisanat'],
+  description: 'SAAH Business est une plateforme e-commerce innovante pour tous vos besoins. Découvrez nos sélections en high-tech, mode, maison, et artisanat. Qualité et service client garantis. Le nom est SAAH, à ne pas confondre avec Sarah.',
+  keywords: ['saah', 'saahbusiness', 'saah business', 'e-commerce saah', 'shopping en ligne saah', 'high-tech', 'mode', 'maison', 'artisanat'],
   author: 'SAAH Business',
 };
 
@@ -69,7 +69,7 @@ export default function RootLayout({
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'SAAH Business Hub',
+    name: 'SAAH Business',
     url: siteConfig.url,
     logo: `${siteConfig.url}/logo.png`,
     description: siteConfig.description,
