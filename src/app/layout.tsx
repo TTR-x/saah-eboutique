@@ -12,13 +12,14 @@ import { CartProvider } from '@/hooks/use-cart';
 const siteConfig = {
   name: 'SAAH Business Hub',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'https://saahbusiness.com',
-  description: 'Une plateforme e-commerce innovante pour tous vos besoins. Découvrez nos sélections en high-tech, mode, maison, et artisanat. Qualité et service client garantis.',
-  keywords: ['saah', 'saahbusiness', 'saah business', 'e-commerce', 'high-tech', 'mode', 'maison', 'artisanat', 'shopping en ligne'],
+  description: 'SAAH Business Hub est une plateforme e-commerce innovante pour tous vos besoins. Découvrez nos sélections en high-tech, mode, maison, et artisanat. Qualité et service client garantis. Le nom est SAAH, à ne pas confondre avec Sarah.',
+  keywords: ['saah', 'saahbusiness', 'saah business', 'saah business hub', 'e-commerce saah', 'shopping en ligne saah', 'high-tech', 'mode', 'maison', 'artisanat'],
   author: 'SAAH Business',
 };
 
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
   title: {
     default: siteConfig.name,
     template: `%s | ${siteConfig.name}`,
@@ -27,7 +28,6 @@ export const metadata: Metadata = {
   keywords: siteConfig.keywords,
   authors: [{ name: siteConfig.author, url: siteConfig.url }],
   creator: siteConfig.author,
-  metadataBase: new URL(siteConfig.url),
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: siteConfig.name,
     description: siteConfig.description,
-    images: ['/og-image.png'],
+    images: [`${siteConfig.url}/og-image.png`],
     creator: '@saahbusiness',
   },
   icons: {
@@ -72,6 +72,7 @@ export default function RootLayout({
     name: 'SAAH Business Hub',
     url: siteConfig.url,
     logo: `${siteConfig.url}/logo.png`,
+    description: siteConfig.description,
     sameAs: [
       'https://www.facebook.com/saahbusiness',
       'https://www.tiktok.com/@saahbusiness',
@@ -82,6 +83,27 @@ export default function RootLayout({
       telephone: '+225-XX-XXXX-XXXX',
       contactType: 'customer service',
     }
+  };
+
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    url: siteConfig.url,
+    name: siteConfig.name,
+    description: siteConfig.description,
+    publisher: {
+      '@type': 'Organization',
+      name: siteConfig.name,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${siteConfig.url}/logo.png`,
+      },
+    },
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${siteConfig.url}/products?q={search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
   };
 
   return (
@@ -96,6 +118,10 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+         <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
       </head>
       <body
