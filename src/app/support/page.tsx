@@ -15,9 +15,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useState, useEffect } from 'react';
+import { useState, useEffect }
+from 'react';
 import { addMessage } from '@/lib/messages-service';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+
+const SECRET_CODE = "SAAH1000000@connectme";
 
 export default function SupportPage() {
   const faqs = faqContent
@@ -34,9 +37,10 @@ export default function SupportPage() {
   const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
-    // Reset form if path changes (e.g., after secret code redirect)
+    // Reset form if path changes
     setContactForm({ name: '', email: '', phone: '', message: '' });
   }, [pathname]);
 
@@ -72,6 +76,13 @@ export default function SupportPage() {
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    
+    if (name === 'message' && value === SECRET_CODE) {
+        router.push('/login');
+        setContactForm({ name: '', email: '', phone: '', message: '' });
+        return;
+    }
+
     setContactForm(prev => ({...prev, [name]: value}));
   }
 

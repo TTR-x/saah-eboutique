@@ -8,7 +8,6 @@ import { Footer } from '@/components/layout/footer';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 import { CartProvider } from '@/hooks/use-cart';
-import { SecretCodeProvider } from '@/hooks/use-secret-code';
 
 export const metadata: Metadata = {
   title: 'SAAH Business Hub',
@@ -48,14 +47,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <CartProvider>
-            <SecretCodeProvider>
               <div className="relative flex min-h-screen flex-col">
                 <Header />
                 <main className="flex-1">{children}</main>
                 <Footer />
               </div>
               <Toaster />
-            </SecretCodeProvider>
           </CartProvider>
         </ThemeProvider>
       </body>
