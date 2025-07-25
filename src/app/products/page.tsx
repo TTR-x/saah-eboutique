@@ -107,14 +107,14 @@ export default function ProductsPage() {
                 <Slider
                   min={0}
                   max={maxPrice}
-                  step={10}
+                  step={1000}
                   value={filters.priceRange}
                   onValueChange={handlePriceChange}
                   className="mt-4"
                 />
                 <div className="flex justify-between text-sm text-muted-foreground mt-2">
-                  <span>{filters.priceRange[0]}€</span>
-                  <span>{filters.priceRange[1]}€</span>
+                  <span>{filters.priceRange[0].toLocaleString('fr-FR')} FCFA</span>
+                  <span>{filters.priceRange[1].toLocaleString('fr-FR')} FCFA</span>
                 </div>
               </div>
             </div>

@@ -47,11 +47,11 @@ export function ProductCard({ product }: ProductCardProps) {
       <CardFooter className="p-4 pt-0 flex justify-between items-center">
         <div>
           <p className="text-xl font-bold text-foreground">
-            {product.price.toFixed(2)}€
+            {product.price.toLocaleString('fr-FR')} FCFA
           </p>
           {product.originalPrice && (
             <p className="text-sm text-muted-foreground line-through">
-              {product.originalPrice.toFixed(2)}€
+              {product.originalPrice.toLocaleString('fr-FR')} FCFA
             </p>
           )}
         </div>

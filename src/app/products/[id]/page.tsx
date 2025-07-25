@@ -52,9 +52,9 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
               <p className="text-sm text-muted-foreground">({product.reviews} avis)</p>
             </div>
 
-            <p className="mt-6 text-3xl font-bold text-foreground">{product.price.toFixed(2)}€</p>
+            <p className="mt-6 text-3xl font-bold text-foreground">{product.price.toLocaleString('fr-FR')} FCFA</p>
             {product.originalPrice && (
-              <p className="text-md text-muted-foreground line-through">Prix d'origine: {product.originalPrice.toFixed(2)}€</p>
+              <p className="text-md text-muted-foreground line-through">Prix d'origine: {product.originalPrice.toLocaleString('fr-FR')} FCFA</p>
             )}
 
             <p className="mt-6 text-muted-foreground">{product.longDescription}</p>
