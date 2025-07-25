@@ -16,7 +16,9 @@ import {
 
 const navLinks = [
   { name: 'Accueil', href: '/' },
-  { name: 'Catalogue', href: '/products' },
+  { name: 'Produits', href: '/products' },
+  { name: 'Import', href: '/import' },
+  { name: 'Support', href: '/support' },
 ];
 
 export function Header() {

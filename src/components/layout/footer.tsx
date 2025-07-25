@@ -18,7 +18,9 @@ export function Footer() {
             <h3 className="font-semibold mb-4">Navigation</h3>
             <ul className="space-y-2">
               <li><Link href="/" className="text-sm text-muted-foreground hover:text-primary">Accueil</Link></li>
-              <li><Link href="/products" className="text-sm text-muted-foreground hover:text-primary">Catalogue</Link></li>
+              <li><Link href="/products" className="text-sm text-muted-foreground hover:text-primary">Produits</Link></li>
+              <li><Link href="/import" className="text-sm text-muted-foreground hover:text-primary">Import</Link></li>
+              <li><Link href="/support" className="text-sm text-muted-foreground hover:text-primary">Support</Link></li>
               <li><Link href="/cart" className="text-sm text-muted-foreground hover:text-primary">Panier</Link></li>
             </ul>
           </div>
