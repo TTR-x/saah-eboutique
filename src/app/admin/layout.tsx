@@ -22,6 +22,7 @@ import {
   ImageIcon,
   Loader2,
   Package,
+  MessageSquare,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Logo } from '@/components/layout/logo';
@@ -71,6 +72,14 @@ export default function AdminLayout({
                   <Link href="/admin">
                     <LayoutGrid />
                     Tableau de bord
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/admin/messages">
+                    <MessageSquare />
+                    Messages
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

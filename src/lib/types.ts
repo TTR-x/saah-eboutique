@@ -57,3 +57,14 @@ export type Review = {
 }
 
 export type ReviewInput = Omit<Review, 'id' | 'createdAt'>;
+
+export type ContactMessage = {
+    id: string;
+    name: string;
+    email: string;
+    message: string;
+    createdAt: any;
+    isRead: boolean;
+}
+
+export type ContactMessageInput = Omit<ContactMessage, 'id' | 'createdAt' | 'isRead'>;

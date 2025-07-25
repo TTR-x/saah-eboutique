@@ -1,7 +1,7 @@
 
 'use client'
 
-import { LifeBuoy, Send } from 'lucide-react';
+import { LifeBuoy, Send, Loader2 } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -16,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
+import { addMessage } from '@/lib/messages-service';
 
 export default function SupportPage() {
   const faqs = faqContent
@@ -30,21 +31,35 @@ export default function SupportPage() {
 
   const { toast } = useToast();
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (contactForm.name && contactForm.email && contactForm.message) {
-      toast({
-        title: "Message envoyé !",
-        description: "Merci de nous avoir contactés. Nous vous répondrons bientôt.",
-      });
-      setContactForm({ name: '', email: '', message: '' });
-    } else {
+    if (!contactForm.name || !contactForm.email || !contactForm.message) {
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs du formulaire.",
         variant: "destructive",
       });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      await addMessage(contactForm);
+      toast({
+        title: "Message envoyé !",
+        description: "Merci de nous avoir contactés. Nous vous répondrons bientôt.",
+      });
+      setContactForm({ name: '', email: '', message: '' });
+    } catch (error) {
+       toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi du message.",
+        variant: "destructive",
+      });
+    } finally {
+        setIsSubmitting(false);
     }
   };
   
@@ -99,7 +114,8 @@ export default function SupportPage() {
                   <Label htmlFor="message">Message</Label>
                   <Textarea id="message" name="message" placeholder="Comment pouvons-nous vous aider ?" rows={5} value={contactForm.message} onChange={handleInputChange} required />
                 </div>
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Envoyer le message <Send className="ml-2 h-4 w-4" />
                 </Button>
               </form>
