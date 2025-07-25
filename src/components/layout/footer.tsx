@@ -19,7 +19,6 @@ export function Footer() {
             <ul className="space-y-2">
               <li><Link href="/" className="text-sm text-muted-foreground hover:text-primary">Accueil</Link></li>
               <li><Link href="/products" className="text-sm text-muted-foreground hover:text-primary">Catalogue</Link></li>
-              <li><Link href="/support" className="text-sm text-muted-foreground hover:text-primary">Support</Link></li>
               <li><Link href="/cart" className="text-sm text-muted-foreground hover:text-primary">Panier</Link></li>
             </ul>
           </div>
