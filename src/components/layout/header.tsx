@@ -42,11 +42,6 @@ export function Header() {
   const isAdmin = user?.email === ADMIN_EMAIL;
   const pathname = usePathname();
 
-  // Affiche le lien "Tableau de bord" uniquement si l'utilisateur est admin
-  const navLinks = isAdmin
-    ? [...baseNavLinks, { name: 'Tableau de bord', href: '/admin' }]
-    : baseNavLinks;
-
   // Cache le header sur les pages de l'espace admin
   if (pathname.startsWith('/admin')) {
     return null;
@@ -61,7 +56,7 @@ export function Header() {
             <Logo />
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
-            {navLinks.map(link => (
+            {baseNavLinks.map(link => (
               <Link
                 key={link.name}
                 href={link.href}
@@ -71,6 +66,11 @@ export function Header() {
                 {link.name}
               </Link>
             ))}
+             {isAdmin && (
+              <Link href="/admin" onClick={handleLinkClick} className="transition-colors hover:text-foreground/80 text-foreground/60">
+                Tableau de bord
+              </Link>
+            )}
           </nav>
         </div>
 
@@ -86,7 +86,7 @@ export function Header() {
                 <Logo />
               </Link>
               <div className="flex flex-col space-y-4">
-                {navLinks.map(link => (
+                {baseNavLinks.map(link => (
                   <Link
                     key={link.name}
                     href={link.href}
@@ -96,6 +96,11 @@ export function Header() {
                     {link.name}
                   </Link>
                 ))}
+                {isAdmin && (
+                  <Link href="/admin" onClick={handleLinkClick} className="text-lg font-medium transition-colors hover:text-foreground/80 text-foreground">
+                    Tableau de bord
+                  </Link>
+                )}
               </div>
             </SheetContent>
           </Sheet>
