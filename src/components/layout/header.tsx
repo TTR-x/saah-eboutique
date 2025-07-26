@@ -23,7 +23,7 @@ import { UserAvatar } from '../auth/user-avatar';
 import { useCart } from '@/hooks/use-cart';
 import { useNavigation } from '@/hooks/use-navigation';
 
-const navLinks = [
+const baseNavLinks = [
   { name: 'Accueil', href: '/' },
   { name: 'Produits', href: '/products' },
   { name: 'Import', href: '/import' },
@@ -41,6 +41,10 @@ export function Header() {
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const isAdmin = user?.email === ADMIN_EMAIL;
   const pathname = usePathname();
+
+  const navLinks = isAdmin
+    ? [...baseNavLinks, { name: 'Tableau de bord', href: '/admin' }]
+    : baseNavLinks;
 
   if (pathname.startsWith('/admin')) {
     return null;
@@ -144,20 +148,15 @@ export function Header() {
             <DropdownMenuContent align="end">
                 {user ? (
                     <>
-                        <DropdownMenuItem asChild>
-                            <div className="flex flex-col items-start p-2">
-                                <p className="font-medium text-sm">{user.displayName || user.email}</p>
-                            </div>
+                         <DropdownMenuItem asChild>
+                           <Link href={isAdmin ? "/admin" : "#"} onClick={isAdmin ? handleLinkClick : (e) => e.preventDefault()} className="flex items-center w-full cursor-pointer">
+                              <div className="flex flex-col items-start">
+                                  <p className="font-medium text-sm">{user.displayName || user.email}</p>
+                                  {isAdmin && <p className="text-xs text-muted-foreground">Administration</p>}
+                              </div>
+                           </Link>
                         </DropdownMenuItem>
                          <DropdownMenuSeparator />
-                        {isAdmin && (
-                             <DropdownMenuItem asChild>
-                                <Link href="/admin" onClick={handleLinkClick}>
-                                    <Shield className="mr-2 h-4 w-4" />
-                                    Administration
-                                </Link>
-                            </DropdownMenuItem>
-                        )}
                         <SignOutButton>
                             <DropdownMenuItem>
                                 <LogOut className="mr-2 h-4 w-4" />
@@ -169,7 +168,7 @@ export function Header() {
                   <DropdownMenuItem>
                      <Link href="/login" onClick={handleLinkClick} className="flex items-center w-full">
                       <LogIn className="mr-2 h-4 w-4" />
-                       Connexion
+                       Visiteur
                     </Link>
                   </DropdownMenuItem>
                 )}
