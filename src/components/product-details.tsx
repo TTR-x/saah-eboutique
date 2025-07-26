@@ -66,6 +66,13 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
     });
   };
 
+  const handleBuyNow = () => {
+    const phoneNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
+    const message = `Bonjour, je suis intéressé(e) par le produit "${product.name}".`;
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newReviewName.trim() || newReviewRating === 0 || !newReviewComment.trim()) {
@@ -179,7 +186,7 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
             </div>
             
             <div className="mt-8 space-y-4">
-              <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" disabled={product.stock === 0}>
+              <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleBuyNow} disabled={product.stock === 0}>
                 Acheter maintenant
               </Button>
               <Button size="lg" variant="outline" className="w-full" onClick={handleAddToCart} disabled={product.stock === 0}>
@@ -266,4 +273,5 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
       </div>
   );
 }
+
 
