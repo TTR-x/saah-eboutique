@@ -29,11 +29,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!authLoading && user) {
-        if (user.email === ADMIN_EMAIL) {
-            router.push(redirectUrl.startsWith('/admin') ? redirectUrl : '/admin');
-        } else {
-            router.push('/');
-        }
+        router.push(redirectUrl);
     }
   }, [user, authLoading, router, redirectUrl]);
 
@@ -72,9 +68,17 @@ export default function LoginPage() {
     }
   };
 
-  if (authLoading || (!authLoading && user)) {
+  if (authLoading) {
     return (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="flex items-center justify-center min-h-screen">
+            <LogoSpinner className="h-16 w-16" />
+        </div>
+    );
+  }
+  
+  if (user) {
+     return (
+        <div className="flex items-center justify-center min-h-screen">
             <LogoSpinner className="h-16 w-16" />
         </div>
     );

@@ -57,9 +57,9 @@ export default function AdminLayout({
 
   if (loading || !user || user.email !== ADMIN_EMAIL) {
     return (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-            <LogoSpinner className="h-16 w-16" />
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+          <LogoSpinner className="h-16 w-16" />
+      </div>
     );
   }
 
