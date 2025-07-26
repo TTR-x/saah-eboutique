@@ -17,9 +17,10 @@ import { ArrowRight, Star, PlusCircle, Send } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Autoplay from 'embla-carousel-autoplay';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { getSlides } from '@/lib/slides-service';
 import { getProducts } from '@/lib/products-service';
+import { getTestimonials, addTestimonial } from '@/lib/testimonials-service';
 import type { Slide, Product, Testimonial, Review } from '@/lib/types';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { useNavigation } from '@/hooks/use-navigation';
@@ -52,28 +53,10 @@ function ReviewStars({ rating, onRatingChange, readOnly = false }: { rating: num
   )
 }
 
-const initialTestimonials: Testimonial[] = [
-  {
-    name: 'Alice Dubois',
-    role: 'Cliente Vérifiée',
-    avatar: 'https://placehold.co/100x100.png',
-    comment: 'Une expérience d\'achat incroyable ! Le site est magnifique, la navigation fluide et mon produit est arrivé en 48h. Je recommande vivement SAAH Business.',
-    rating: 5,
-  },
-  {
-    name: 'Marc Petit',
-    role: 'Passionné de Tech',
-    avatar: 'https://placehold.co/100x100.png',
-    comment: 'Enfin une plateforme qui propose des produits high-tech de qualité avec des descriptions claires. Le casque que j\'ai acheté est une pure merveille.',
-    rating: 5,
-  },
-];
-
-
 export default function Home() {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [testimonials, setTestimonials] = useState<Testimonial[]>(initialTestimonials);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   const [newReview, setNewReview] = useState({ name: '', role: '', comment: '', rating: 0 });
@@ -81,17 +64,20 @@ export default function Home() {
   
   const { handleLinkClick } = useNavigation();
   const { toast } = useToast();
+  const [_, startTransition] = useTransition();
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const [fetchedSlides, fetchedProducts] = await Promise.all([
+        const [fetchedSlides, fetchedProducts, fetchedTestimonials] = await Promise.all([
           getSlides(),
-          getProducts()
+          getProducts(),
+          getTestimonials()
         ]);
         setSlides(fetchedSlides);
         setProducts(fetchedProducts);
+        setTestimonials(fetchedTestimonials);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
@@ -108,15 +94,30 @@ export default function Home() {
       return;
     }
     setIsSubmittingReview(true);
-    // Here you would typically send the review to your backend
-    // For now, we just add it to the local state
-    setTimeout(() => {
-      setTestimonials(prev => [...prev, {...newReview, avatar: ''}]);
-      setIsSubmittingReview(false);
-      setIsReviewDialogOpen(false);
-      setNewReview({ name: '', role: '', comment: '', rating: 0 });
-      toast({ title: 'Avis ajouté !', description: 'Merci pour votre retour.' });
-    }, 1000);
+
+    const optimisticTestimonial: Testimonial = {
+      id: `optimistic-${Date.now()}`,
+      createdAt: new Date(),
+      ...newReview
+    };
+
+    setTestimonials(prev => [optimisticTestimonial, ...prev]);
+    setIsReviewDialogOpen(false);
+    setNewReview({ name: '', role: '', comment: '', rating: 0 });
+
+    try {
+       await addTestimonial(newReview);
+       toast({ title: 'Avis ajouté !', description: 'Merci pour votre retour.' });
+       // Re-fetch testimonials to get the new one from the server
+       const updatedTestimonials = await getTestimonials();
+       setTestimonials(updatedTestimonials);
+    } catch (error) {
+        toast({ title: 'Erreur', description: 'Impossible d\'ajouter l\'avis.', variant: 'destructive'});
+        // Revert optimistic update
+        setTestimonials(prev => prev.filter(t => t.id !== optimisticTestimonial.id));
+    } finally {
+        setIsSubmittingReview(false);
+    }
   }
 
   const newArrivals = products
@@ -187,10 +188,10 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-center mb-10">Ce que nos clients disent</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {testimonials.map((testimonial, index) => (
-                <Card key={index} className="bg-card">
+                <Card key={testimonial.id || index} className="bg-card">
                   <CardContent className="p-6">
                     <div className="flex items-center mb-4">
-                      <Avatar className="h-12 w-12 mr-4">
+                       <Avatar className="h-12 w-12 mr-4">
                         <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div>

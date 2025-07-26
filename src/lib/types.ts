@@ -1,4 +1,5 @@
 
+
 export type Product = {
   id: string;
   name: string;
@@ -23,12 +24,16 @@ export type ProductInput = Omit<Product, 'id' | 'images' | 'imagePublicIds' | 'c
 };
 
 export type Testimonial = {
+  id: string;
   name: string;
   role: string;
-  avatar: string;
   comment: string;
   rating: number;
+  createdAt: any;
 };
+
+export type TestimonialInput = Omit<Testimonial, 'id' | 'createdAt'>;
+
 
 export type Slide = {
   id: string;
