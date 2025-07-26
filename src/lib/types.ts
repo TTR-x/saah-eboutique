@@ -27,6 +27,7 @@ export type Testimonial = {
   role: string;
   avatar: string;
   comment: string;
+  rating: number;
 };
 
 export type Slide = {

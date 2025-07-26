@@ -1,27 +1,30 @@
 
-import type { Product, Testimonial } from './types';
+import type { Testimonial } from './types';
 
 // This file now only contains static data for testimonials and FAQ.
 // Products are fetched from Firestore.
 
-export const testimonials: Testimonial[] = [
+export const initialTestimonials: Testimonial[] = [
   {
     name: 'Alice Dubois',
     role: 'Cliente Vérifiée',
     avatar: 'https://placehold.co/100x100.png',
-    comment: 'Une expérience d\'achat incroyable ! Le site est magnifique, la navigation fluide et mon produit est arrivé en 48h. Je recommande vivement SAAH Business.'
+    comment: 'Une expérience d\'achat incroyable ! Le site est magnifique, la navigation fluide et mon produit est arrivé en 48h. Je recommande vivement SAAH Business.',
+    rating: 5,
   },
   {
     name: 'Marc Petit',
     role: 'Passionné de Tech',
     avatar: 'https://placehold.co/100x100.png',
-    comment: 'Enfin une plateforme qui propose des produits high-tech de qualité avec des descriptions claires. Le casque que j\'ai acheté est une pure merveille.'
+    comment: 'Enfin une plateforme qui propose des produits high-tech de qualité avec des descriptions claires. Le casque que j\'ai acheté est une pure merveille.',
+    rating: 5,
   },
   {
     name: 'Sophie Martin',
     role: 'Décoratrice d\'intérieur',
     avatar: 'https://placehold.co/100x100.png',
-    comment: 'J\'ai trouvé des pièces artisanales uniques pour mes projets. La qualité est au rendez-vous et le service client est très réactif. Une excellente découverte !'
+    comment: 'J\'ai trouvé des pièces artisanales uniques pour mes projets. La qualité est au rendez-vous et le service client est très réactif. Une excellente découverte !',
+    rating: 5,
   },
 ];
 
