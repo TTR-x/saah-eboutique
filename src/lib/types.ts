@@ -48,7 +48,7 @@ export type SlideInput = {
 
 export type Review = {
   id: string;
-  userId: string;
+  userId?: string;
   userName: string;
   userAvatar?: string;
   rating: number;
@@ -56,7 +56,7 @@ export type Review = {
   createdAt: any;
 }
 
-export type ReviewInput = Omit<Review, 'id' | 'createdAt'>;
+export type ReviewInput = Omit<Review, 'id' | 'createdAt' | 'userId' | 'userAvatar'>;
 
 export type ContactMessage = {
     id: string;

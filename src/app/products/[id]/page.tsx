@@ -20,6 +20,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/hooks/use-cart';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { useNavigation } from '@/hooks/use-navigation';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 function ReviewStars({ rating, onRatingChange, readOnly = false }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean }) {
   const [hoverRating, setHoverRating] = useState(0);
@@ -49,6 +51,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [newReviewName, setNewReviewName] = useState('');
   const [newReviewRating, setNewReviewRating] = useState(0);
   const [newReviewComment, setNewReviewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
@@ -93,22 +96,21 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newReviewRating === 0 || !newReviewComment.trim()) {
-      toast({ title: "Erreur", description: "Veuillez donner une note et un commentaire.", variant: 'destructive' });
+    if (!newReviewName.trim() || newReviewRating === 0 || !newReviewComment.trim()) {
+      toast({ title: "Erreur", description: "Veuillez renseigner votre nom, une note et un commentaire.", variant: 'destructive' });
       return;
     }
-    if (!user || !product) return;
+    if (!product) return;
 
     setIsSubmittingReview(true);
     try {
       await addReview(product.id, {
         rating: newReviewRating,
         comment: newReviewComment,
-        userId: user.uid,
-        userName: user.displayName || user.email || 'Anonyme',
-        userAvatar: user.photoURL || undefined
+        userName: newReviewName,
       });
       toast({ title: "Avis envoyé !", description: "Merci pour votre contribution." });
+      setNewReviewName('');
       setNewReviewRating(0);
       setNewReviewComment('');
       fetchProductAndReviews(); // Refresh reviews and product data (avg rating)
@@ -283,40 +285,40 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
           <div>
             <h2 className="text-2xl font-bold mb-6">Laisser un avis</h2>
-              {user ? (
-                <form onSubmit={handleReviewSubmit} className="space-y-4">
-                    <div>
-                        <Label>Votre note</Label>
-                        <ReviewStars rating={newReviewRating} onRatingChange={setNewReviewRating} />
-                    </div>
-                    <div>
-                        <Label htmlFor="comment">Votre commentaire</Label>
-                        <Textarea 
-                          id="comment"
-                          value={newReviewComment}
-                          onChange={(e) => setNewReviewComment(e.target.value)}
-                          placeholder="Partagez votre expérience avec ce produit..."
-                          rows={4}
-                        />
-                    </div>
-                    <Button type="submit" disabled={isSubmittingReview}>
-                        {isSubmittingReview && <LogoSpinner className="mr-2 h-4 w-4" />}
-                        Envoyer l'avis <Send className="ml-2 h-4 w-4" />
-                    </Button>
-                </form>
-              ) : (
-                <div className="p-4 border rounded-lg bg-muted text-center">
-                    <p className="text-muted-foreground">Vous devez être connecté pour laisser un avis.</p>
-                    <Button asChild variant="link" className="mt-2">
-                        <Link href={`/login?redirect=/products/${product.id}`} onClick={handleLinkClick}>Se connecter</Link>
-                    </Button>
-                </div>
-              )}
+              <form onSubmit={handleReviewSubmit} className="space-y-4">
+                  <div>
+                      <Label htmlFor="name">Nom</Label>
+                      <Input 
+                        id="name" 
+                        value={newReviewName} 
+                        onChange={(e) => setNewReviewName(e.target.value)} 
+                        placeholder="Votre nom" 
+                        required
+                      />
+                  </div>
+                  <div>
+                      <Label>Votre note</Label>
+                      <ReviewStars rating={newReviewRating} onRatingChange={setNewReviewRating} />
+                  </div>
+                  <div>
+                      <Label htmlFor="comment">Votre commentaire</Label>
+                      <Textarea 
+                        id="comment"
+                        value={newReviewComment}
+                        onChange={(e) => setNewReviewComment(e.target.value)}
+                        placeholder="Partagez votre expérience avec ce produit..."
+                        rows={4}
+                        required
+                      />
+                  </div>
+                  <Button type="submit" disabled={isSubmittingReview}>
+                      {isSubmittingReview && <LogoSpinner className="mr-2 h-4 w-4" />}
+                      Envoyer l'avis <Send className="ml-2 h-4 w-4" />
+                  </Button>
+              </form>
           </div>
         </div>
       </div>
     </>
   );
 }
-
-    
