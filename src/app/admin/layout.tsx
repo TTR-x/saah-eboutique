@@ -25,13 +25,11 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { Logo } from '@/components/layout/logo';
-import { redirect } from 'next/navigation';
 import { SignOutButton } from '@/components/auth/sign-out-button';
 import { UserAvatar } from '@/components/auth/user-avatar';
 import { useAuth } from '@/hooks/use-auth';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogoSpinner } from '@/components/logo-spinner';
 import { LogoIcon } from '@/components/layout/logo-icon';
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
@@ -46,15 +44,15 @@ export default function AdminLayout({
   const isAdmin = user?.email === ADMIN_EMAIL;
 
   useEffect(() => {
-    if (loading) return; // Wait for auth state to be determined
+    if (loading) return; 
 
     if (!user) {
-      redirect('/login?redirect=/admin'); // Redirect to login if not authenticated
+      router.push('/login?redirect=/admin'); 
       return;
     }
 
     if (!isAdmin) {
-      router.push('/'); // Redirect to home if not admin
+      router.push('/');
     }
   }, [user, loading, isAdmin, router]);
 
