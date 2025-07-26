@@ -167,8 +167,6 @@ export function Header() {
                         </SignOutButton>
                     </>
                 ) : (
-                  // Si l'utilisateur n'est pas connecté, ne rien afficher ou un lien vers la page de support/contact
-                  // pour l'accès secret, au lieu de la page de login directe.
                   <DropdownMenuItem>
                      <div className="flex items-center w-full">
                       <LogIn className="mr-2 h-4 w-4" />
