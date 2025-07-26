@@ -167,8 +167,7 @@ export function Header() {
                     </>
                 ) : (
                   <DropdownMenuItem asChild>
-                    {/* Le lien vers /login est intentionnellement omis pour renforcer la sécurité */}
-                    <span className="px-2 py-1.5 text-sm text-muted-foreground">Veuillez vous connecter</span>
+                    <span className="px-2 py-1.5 text-sm text-muted-foreground">Visiteur</span>
                   </DropdownMenuItem>
                 )}
             </DropdownMenuContent>
