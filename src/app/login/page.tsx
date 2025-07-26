@@ -24,21 +24,33 @@ export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectUrl = searchParams.get('redirect') || '/';
   const { user, loading: authLoading } = useAuth();
+  
+  // Affiche un spinner tant que l'état d'authentification n'est pas connu
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && user) {
-        router.push(redirectUrl);
+    if (!authLoading) {
+      setIsCheckingAuth(false);
+      // Si l'utilisateur est déjà connecté
+      if (user) {
+        // S'il est admin, rediriger vers le tableau de bord
+        if (user.email === ADMIN_EMAIL) {
+            router.push('/admin');
+        } else {
+            // Sinon (client normal), rediriger vers l'accueil
+            router.push('/');
+        }
+      }
     }
-  }, [user, authLoading, router, redirectUrl]);
-
+  }, [user, authLoading, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      // Redirection gérée par le useEffect ci-dessus
       toast({ title: "Connexion réussie!" });
     } catch (error: any) {
       toast({
@@ -56,6 +68,7 @@ export default function LoginPage() {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
+      // Redirection gérée par le useEffect ci-dessus
       toast({ title: "Connexion avec Google réussie!" });
     } catch (error: any) {
       toast({
@@ -68,7 +81,8 @@ export default function LoginPage() {
     }
   };
 
-  if (authLoading) {
+  // Affiche un spinner pendant la vérification initiale
+  if (isCheckingAuth) {
     return (
         <div className="flex items-center justify-center min-h-screen">
             <LogoSpinner className="h-16 w-16" />
@@ -76,6 +90,7 @@ export default function LoginPage() {
     );
   }
   
+  // Si un utilisateur est déjà connecté après la vérification, ne rien afficher en attendant la redirection
   if (user) {
      return (
         <div className="flex items-center justify-center min-h-screen">
@@ -84,6 +99,7 @@ export default function LoginPage() {
     );
   }
 
+  // Si pas d'utilisateur, afficher le formulaire de connexion
   return (
     <div className="flex items-center justify-center py-12 px-4">
       <Card className="w-full max-w-sm">

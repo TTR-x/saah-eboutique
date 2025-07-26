@@ -42,10 +42,12 @@ export function Header() {
   const isAdmin = user?.email === ADMIN_EMAIL;
   const pathname = usePathname();
 
+  // Affiche le lien "Tableau de bord" uniquement si l'utilisateur est admin
   const navLinks = isAdmin
     ? [...baseNavLinks, { name: 'Tableau de bord', href: '/admin' }]
     : baseNavLinks;
 
+  // Cache le header sur les pages de l'espace admin
   if (pathname.startsWith('/admin')) {
     return null;
   }
@@ -165,11 +167,13 @@ export function Header() {
                         </SignOutButton>
                     </>
                 ) : (
+                  // Si l'utilisateur n'est pas connecté, ne rien afficher ou un lien vers la page de support/contact
+                  // pour l'accès secret, au lieu de la page de login directe.
                   <DropdownMenuItem>
-                     <Link href="/login" onClick={handleLinkClick} className="flex items-center w-full">
+                     <div className="flex items-center w-full">
                       <LogIn className="mr-2 h-4 w-4" />
                        Visiteur
-                    </Link>
+                    </div>
                   </DropdownMenuItem>
                 )}
             </DropdownMenuContent>

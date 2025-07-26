@@ -43,18 +43,20 @@ export default function AdminLayout({
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) return; 
-
-    if (!user) {
-      router.push('/login?redirect=/admin'); 
+    // Ne rien faire pendant que les informations d'authentification se chargent
+    if (loading) {
       return;
     }
 
-    if (user.email !== ADMIN_EMAIL) {
+    // Si le chargement est terminé et qu'il n'y a pas d'utilisateur 
+    // ou si l'utilisateur n'est pas l'administrateur, rediriger vers la page d'accueil.
+    if (!user || user.email !== ADMIN_EMAIL) {
       router.push('/');
     }
   }, [user, loading, router]);
 
+  // Pendant le chargement ou si l'utilisateur n'est pas l'administrateur,
+  // afficher un écran de chargement pour empêcher l'affichage du contenu de l'administration.
   if (loading || !user || user.email !== ADMIN_EMAIL) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -63,6 +65,7 @@ export default function AdminLayout({
     );
   }
 
+  // Si l'utilisateur est bien l'administrateur, afficher la mise en page de l'administration.
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-background">
