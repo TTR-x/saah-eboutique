@@ -66,11 +66,6 @@ export function Header() {
                 {link.name}
               </Link>
             ))}
-             {isAdmin && (
-              <Link href="/admin" onClick={handleLinkClick} className="transition-colors hover:text-foreground/80 text-foreground/60">
-                Tableau de bord
-              </Link>
-            )}
           </nav>
         </div>
 
@@ -96,11 +91,6 @@ export function Header() {
                     {link.name}
                   </Link>
                 ))}
-                {isAdmin && (
-                  <Link href="/admin" onClick={handleLinkClick} className="text-lg font-medium transition-colors hover:text-foreground/80 text-foreground">
-                    Tableau de bord
-                  </Link>
-                )}
               </div>
             </SheetContent>
           </Sheet>
