@@ -32,6 +32,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { LogoSpinner } from '@/components/logo-spinner';
+import { LogoIcon } from '@/components/layout/logo-icon';
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
@@ -60,7 +61,7 @@ export default function AdminLayout({
   if (loading || !isAdmin) {
     return (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-            <LogoSpinner className="h-16 w-16" />
+            <LogoIcon className="h-16 w-16 logo-pulse" />
         </div>
     );
   }
