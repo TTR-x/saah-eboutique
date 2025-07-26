@@ -14,7 +14,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Star, PlusCircle, Send } from 'lucide-react';
-import { initialTestimonials } from '@/lib/data';
 import { ProductCard } from '@/components/product-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Autoplay from 'embla-carousel-autoplay';
@@ -52,6 +51,23 @@ function ReviewStars({ rating, onRatingChange, readOnly = false }: { rating: num
     </div>
   )
 }
+
+const initialTestimonials: Testimonial[] = [
+  {
+    name: 'Alice Dubois',
+    role: 'Cliente Vérifiée',
+    avatar: 'https://placehold.co/100x100.png',
+    comment: 'Une expérience d\'achat incroyable ! Le site est magnifique, la navigation fluide et mon produit est arrivé en 48h. Je recommande vivement SAAH Business.',
+    rating: 5,
+  },
+  {
+    name: 'Marc Petit',
+    role: 'Passionné de Tech',
+    avatar: 'https://placehold.co/100x100.png',
+    comment: 'Enfin une plateforme qui propose des produits high-tech de qualité avec des descriptions claires. Le casque que j\'ai acheté est une pure merveille.',
+    rating: 5,
+  },
+];
 
 
 export default function Home() {
