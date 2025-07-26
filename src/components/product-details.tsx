@@ -58,11 +58,6 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
   const { addItem } = useCart();
   const { handleLinkClick } = useNavigation();
 
-  const fetchReviews = async () => {
-    const foundReviews = await getReviewsForProduct(product.id);
-    setReviews(foundReviews);
-  };
-
   const handleAddToCart = () => {
     addItem(product);
     toast({
@@ -79,6 +74,21 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
     }
 
     setIsSubmittingReview(true);
+    
+    const optimisticReview: Review = {
+        id: `optimistic-${Date.now()}`,
+        userName: newReviewName,
+        rating: newReviewRating,
+        comment: newReviewComment,
+        createdAt: new Date(),
+    };
+
+    // Optimistic UI update
+    setReviews(prevReviews => [optimisticReview, ...prevReviews]);
+    setNewReviewName('');
+    setNewReviewRating(0);
+    setNewReviewComment('');
+
     try {
       await addReview(product.id, {
         rating: newReviewRating,
@@ -86,13 +96,14 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
         userName: newReviewName,
       });
       toast({ title: "Avis envoyé !", description: "Merci pour votre contribution." });
-      setNewReviewName('');
-      setNewReviewRating(0);
-      setNewReviewComment('');
-      fetchReviews(); // Refresh reviews
+      // The server will revalidate, but we can also trigger a manual refetch
+      const updatedReviews = await getReviewsForProduct(product.id);
+      setReviews(updatedReviews);
     } catch (error) {
       console.error(error);
       toast({ title: "Erreur", description: "Impossible de soumettre l'avis.", variant: 'destructive' });
+      // Revert optimistic update on error
+      setReviews(prevReviews => prevReviews.filter(r => r.id !== optimisticReview.id));
     } finally {
       setIsSubmittingReview(false);
     }
@@ -255,3 +266,4 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
       </div>
   );
 }
+
