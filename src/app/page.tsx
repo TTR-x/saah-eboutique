@@ -82,8 +82,8 @@ export default function Home() {
                         className="object-cover"
                         priority={index === 0}
                       />
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-start">
-                        <div className="text-left text-white p-4 md:p-12 lg:p-24 max-w-2xl">
+                      <div className="absolute inset-0 bg-black/50 flex items-end justify-start">
+                        <div className="text-left text-white p-4 pb-8 md:p-12 md:pb-16 lg:p-24 lg:pb-24 max-w-2xl">
                           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">{slide.title}</h1>
                           <p className="mt-4 text-lg md:text-xl">{slide.subtitle}</p>
                           <Button asChild size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground">
