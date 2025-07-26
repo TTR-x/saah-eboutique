@@ -29,16 +29,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      // If a user is logged in, redirect them based on their role.
-      // Admins trying to access non-admin pages are handled by other layouts.
-      // Non-admins trying to access admin pages are handled by the admin layout.
-      if (user.email === ADMIN_EMAIL) {
-        // If admin is on login page, push to redirectUrl (might be /admin) or /admin
-        router.push(redirectUrl.startsWith('/admin') ? redirectUrl : '/admin');
-      } else {
-         // If non-admin is on login page, push to home.
-        router.push('/');
-      }
+        if (user.email === ADMIN_EMAIL) {
+            router.push(redirectUrl.startsWith('/admin') ? redirectUrl : '/admin');
+        } else {
+            router.push('/');
+        }
     }
   }, [user, authLoading, router, redirectUrl]);
 
@@ -49,7 +44,6 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({ title: "Connexion réussie!" });
-      // The useEffect above will handle redirection.
     } catch (error: any) {
       toast({
         title: "Erreur de connexion",
@@ -67,7 +61,6 @@ export default function LoginPage() {
     try {
       await signInWithPopup(auth, provider);
       toast({ title: "Connexion avec Google réussie!" });
-      // The useEffect above will handle redirection.
     } catch (error: any) {
       toast({
         title: "Erreur de connexion Google",
