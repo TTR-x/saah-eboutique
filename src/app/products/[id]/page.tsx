@@ -263,7 +263,6 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   reviews.map(review => (
                       <div key={review.id} className="flex gap-4">
                           <Avatar>
-                              <AvatarImage src={review.userAvatar} />
                               <AvatarFallback>{review.userName.charAt(0)}</AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
@@ -319,3 +318,5 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     </>
   );
 }
+
+    
