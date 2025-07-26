@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/carousel';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Star } from 'lucide-react';
+import { ArrowRight, Star, PlusCircle } from 'lucide-react';
 import { testimonials } from '@/lib/data';
 import { ProductCard } from '@/components/product-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -116,13 +117,12 @@ export default function Home() {
 
           <section>
             <h2 className="text-3xl font-bold text-center mb-10">Ce que nos clients disent</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {testimonials.map((testimonial, index) => (
                 <Card key={index} className="bg-card">
                   <CardContent className="p-6">
                     <div className="flex items-center mb-4">
                       <Avatar className="h-12 w-12 mr-4">
-                        <AvatarImage src={testimonial.avatar} alt={testimonial.name} data-ai-hint="person" />
                         <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div>
@@ -139,6 +139,13 @@ export default function Home() {
                   </CardContent>
                 </Card>
               ))}
+               <Link href="/support" onClick={handleLinkClick}>
+                <Card className="bg-card h-full flex flex-col items-center justify-center text-center p-6 hover:bg-muted transition-colors">
+                    <PlusCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="font-semibold">Ajouter votre avis</h3>
+                    <p className="text-sm text-muted-foreground">Partagez votre expérience</p>
+                </Card>
+              </Link>
             </div>
           </section>
         </div>
