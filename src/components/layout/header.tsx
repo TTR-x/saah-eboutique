@@ -166,8 +166,11 @@ export function Header() {
                         </SignOutButton>
                     </>
                 ) : (
-                  <DropdownMenuItem asChild>
-                    <span className="px-2 py-1.5 text-sm text-muted-foreground">Visiteur</span>
+                  <DropdownMenuItem>
+                     <Link href="/login" onClick={handleLinkClick} className="flex items-center w-full">
+                      <LogIn className="mr-2 h-4 w-4" />
+                       Connexion
+                    </Link>
                   </DropdownMenuItem>
                 )}
             </DropdownMenuContent>

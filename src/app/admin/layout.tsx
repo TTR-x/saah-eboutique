@@ -30,7 +30,7 @@ import { UserAvatar } from '@/components/auth/user-avatar';
 import { useAuth } from '@/hooks/use-auth';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogoIcon } from '@/components/layout/logo-icon';
+import { LogoSpinner } from '@/components/logo-spinner';
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
@@ -41,7 +41,6 @@ export default function AdminLayout({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const isAdmin = user?.email === ADMIN_EMAIL;
 
   useEffect(() => {
     if (loading) return; 
@@ -51,15 +50,15 @@ export default function AdminLayout({
       return;
     }
 
-    if (!isAdmin) {
+    if (user.email !== ADMIN_EMAIL) {
       router.push('/');
     }
-  }, [user, loading, isAdmin, router]);
+  }, [user, loading, router]);
 
-  if (loading || !isAdmin) {
+  if (loading || !user || user.email !== ADMIN_EMAIL) {
     return (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-            <LogoIcon className="h-16 w-16 logo-pulse" />
+            <LogoSpinner className="h-16 w-16" />
         </div>
     );
   }
@@ -148,7 +147,7 @@ export default function AdminLayout({
           <header className="flex items-center justify-between p-4 border-b">
             <SidebarTrigger/>
             <h1 className="text-2xl font-bold">Espace Administration</h1>
-            {isAdmin && <UserAvatar />}
+            <UserAvatar />
           </header>
           <main className="p-6">
             {children}
