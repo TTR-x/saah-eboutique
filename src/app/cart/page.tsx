@@ -7,9 +7,11 @@ import Link from 'next/link';
 import { useCart } from '@/hooks/use-cart';
 import Image from 'next/image';
 import { Input } from '@/components/ui/input';
+import { useNavigation } from '@/hooks/use-navigation';
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, total } = useCart();
+  const { handleLinkClick } = useNavigation();
 
   if (items.length === 0) {
     return (
@@ -22,7 +24,7 @@ export default function CartPage() {
           On dirait que vous n'avez encore rien ajouté.
         </p>
         <Button asChild size="lg" className="mt-8">
-          <Link href="/products">Continuer mes achats</Link>
+          <Link href="/products" onClick={handleLinkClick}>Continuer mes achats</Link>
         </Button>
       </div>
     );
@@ -45,7 +47,7 @@ export default function CartPage() {
                     className="rounded-md object-cover"
                   />
                   <div>
-                    <Link href={`/products/${item.id}`} className="font-semibold hover:underline">{item.name}</Link>
+                    <Link href={`/products/${item.id}`} onClick={handleLinkClick} className="font-semibold hover:underline">{item.name}</Link>
                     <p className="text-sm text-muted-foreground">{item.price.toLocaleString('fr-FR')} FCFA</p>
                   </div>
                 </div>

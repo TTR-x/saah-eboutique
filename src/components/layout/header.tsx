@@ -16,12 +16,12 @@ import {
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/use-auth';
 import { SignOutButton } from '../auth/sign-out-button';
 import { UserAvatar } from '../auth/user-avatar';
 import { useCart } from '@/hooks/use-cart';
+import { useNavigation } from '@/hooks/use-navigation';
 
 const navLinks = [
   { name: 'Accueil', href: '/' },
@@ -35,26 +35,12 @@ const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
 export function Header() {
   const { setTheme } = useTheme();
-  const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState(false);
   const { user, loading } = useAuth();
   const { items } = useCart();
+  const { isLoading, handleLinkClick } = useNavigation();
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const isAdmin = user?.email === ADMIN_EMAIL;
-
-
-  useEffect(() => {
-    setIsLoading(false);
-  }, [pathname]);
-
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    const newPath = new URL(e.currentTarget.href).pathname;
-    if (newPath === pathname) {
-      setIsLoading(false);
-    } else {
-      setIsLoading(true);
-    }
-  };
+  const pathname = usePathname();
 
   if (pathname.startsWith('/admin')) {
     return null;

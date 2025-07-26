@@ -19,6 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/hooks/use-cart';
 import { LogoSpinner } from '@/components/logo-spinner';
+import { useNavigation } from '@/hooks/use-navigation';
 
 function ReviewStars({ rating, onRatingChange, readOnly = false }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean }) {
   const [hoverRating, setHoverRating] = useState(0);
@@ -55,6 +56,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const { user } = useAuth();
   const { toast } = useToast();
   const { addItem } = useCart();
+  const { handleLinkClick } = useNavigation();
 
   const fetchProductAndReviews = async () => {
       setIsLoading(true);
@@ -164,9 +166,9 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
       />
       <div className="container mx-auto px-4 md:px-6 py-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-          <Link href="/" className="hover:text-primary"><Home className="h-4 w-4"/></Link>
+          <Link href="/" onClick={handleLinkClick} className="hover:text-primary"><Home className="h-4 w-4"/></Link>
           <span>/</span>
-          <Link href="/products" className="hover:text-primary">Produits</Link>
+          <Link href="/products" onClick={handleLinkClick} className="hover:text-primary">Produits</Link>
           <span>/</span>
           <span className="font-medium text-foreground">{product.name}</span>
         </div>
@@ -307,7 +309,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 <div className="p-4 border rounded-lg bg-muted text-center">
                     <p className="text-muted-foreground">Vous devez être connecté pour laisser un avis.</p>
                     <Button asChild variant="link" className="mt-2">
-                        <Link href={`/login?redirect=/products/${product.id}`}>Se connecter</Link>
+                        <Link href={`/login?redirect=/products/${product.id}`} onClick={handleLinkClick}>Se connecter</Link>
                     </Button>
                 </div>
               )}

@@ -8,6 +8,7 @@ import { Footer } from '@/components/layout/footer';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 import { CartProvider } from '@/hooks/use-cart';
+import { NavigationProvider } from '@/hooks/use-navigation';
 
 const siteConfig = {
   name: 'SAAH Business',
@@ -136,14 +137,16 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <CartProvider>
-              <div className="relative flex min-h-screen flex-col">
-                <Header />
-                <main className="flex-1">{children}</main>
-                <Footer />
-              </div>
-              <Toaster />
-          </CartProvider>
+          <NavigationProvider>
+            <CartProvider>
+                <div className="relative flex min-h-screen flex-col">
+                  <Header />
+                  <main className="flex-1">{children}</main>
+                  <Footer />
+                </div>
+                <Toaster />
+            </CartProvider>
+          </NavigationProvider>
         </ThemeProvider>
       </body>
     </html>

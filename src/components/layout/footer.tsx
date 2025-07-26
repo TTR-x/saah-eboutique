@@ -1,14 +1,19 @@
 
+'use client';
+
 import Link from 'next/link';
 import { Logo } from './logo';
+import { useNavigation } from '@/hooks/use-navigation';
 
 export function Footer() {
+  const { handleLinkClick } = useNavigation();
+
   return (
     <footer className="border-t bg-background">
       <div className="container mx-auto px-4 md:px-6 py-8">
         <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
           <div className="flex flex-col items-start">
-            <Link href="/" className="mb-4">
+            <Link href="/" className="mb-4" onClick={handleLinkClick}>
               <Logo />
             </Link>
             <p className="text-sm text-muted-foreground">
@@ -18,11 +23,11 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Navigation</h3>
             <ul className="space-y-2">
-              <li><Link href="/" className="text-sm text-muted-foreground hover:text-primary">Accueil</Link></li>
-              <li><Link href="/products" className="text-sm text-muted-foreground hover:text-primary">Produits</Link></li>
-              <li><Link href="/import" className="text-sm text-muted-foreground hover:text-primary">Import</Link></li>
-              <li><Link href="/support" className="text-sm text-muted-foreground hover:text-primary">Support</Link></li>
-              <li><Link href="/cart" className="text-sm text-muted-foreground hover:text-primary">Panier</Link></li>
+              <li><Link href="/" onClick={handleLinkClick} className="text-sm text-muted-foreground hover:text-primary">Accueil</Link></li>
+              <li><Link href="/products" onClick={handleLinkClick} className="text-sm text-muted-foreground hover:text-primary">Produits</Link></li>
+              <li><Link href="/import" onClick={handleLinkClick} className="text-sm text-muted-foreground hover:text-primary">Import</Link></li>
+              <li><Link href="/support" onClick={handleLinkClick} className="text-sm text-muted-foreground hover:text-primary">Support</Link></li>
+              <li><Link href="/cart" onClick={handleLinkClick} className="text-sm text-muted-foreground hover:text-primary">Panier</Link></li>
             </ul>
           </div>
           <div>

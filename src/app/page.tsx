@@ -22,12 +22,14 @@ import { getSlides } from '@/lib/slides-service';
 import { getProducts } from '@/lib/products-service';
 import type { Slide, Product } from '@/lib/types';
 import { LogoSpinner } from '@/components/logo-spinner';
+import { useNavigation } from '@/hooks/use-navigation';
 
 
 export default function Home() {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { handleLinkClick } = useNavigation();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,7 +89,7 @@ export default function Home() {
                           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">{slide.title}</h1>
                           <p className="mt-4 text-lg md:text-xl">{slide.subtitle}</p>
                           <Button asChild size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground">
-                            <Link href={"/products"}>{slide.buttonText || "Explorer"}</Link>
+                            <Link href={"/products"} onClick={handleLinkClick}>{slide.buttonText || "Explorer"}</Link>
                           </Button>
                         </div>
                       </div>
@@ -147,13 +149,14 @@ export default function Home() {
 
 const ProductSection = ({ title, products: productList, href }: { title: string; products: any[]; href: string }) => {
   if (!productList || productList.length === 0) return null;
+  const { handleLinkClick } = useNavigation();
 
   return (
     <section>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-bold">{title}</h2>
         <Button asChild variant="link" className="text-accent">
-          <Link href={href}>
+          <Link href={href} onClick={handleLinkClick}>
             Voir plus <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>

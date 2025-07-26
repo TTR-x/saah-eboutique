@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
 import { Star } from 'lucide-react';
 import { Button } from './ui/button';
+import { useNavigation } from '@/hooks/use-navigation';
 
 interface ProductCardProps {
   product: Product;
@@ -13,11 +14,12 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const isNew = product.createdAt && (new Date().getTime() - new Date(product.createdAt).getTime()) < 7 * 24 * 60 * 60 * 1000;
+  const { handleLinkClick } = useNavigation();
 
   return (
     <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
       <CardHeader className="p-0 relative">
-        <Link href={`/products/${product.id}`} className="block">
+        <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block">
           <Image
             src={product.images[0]}
             alt={product.name}
@@ -39,7 +41,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <CardContent className="p-4 flex-grow">
         <p className="text-xs text-muted-foreground uppercase">{product.category}</p>
         <CardTitle className="text-lg mt-1 mb-2 h-12 overflow-hidden">
-            <Link href={`/products/${product.id}`} className="hover:text-primary transition-colors line-clamp-2">
+            <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="hover:text-primary transition-colors line-clamp-2">
                 {product.name}
             </Link>
         </CardTitle>
@@ -64,7 +66,7 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
         <Button asChild size="sm" variant="outline">
-          <Link href={`/products/${product.id}`}>Voir</Link>
+          <Link href={`/products/${product.id}`} onClick={handleLinkClick}>Voir</Link>
         </Button>
       </CardFooter>
     </Card>
