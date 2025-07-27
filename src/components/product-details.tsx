@@ -56,7 +56,8 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
   const [canShare, setCanShare] = useState(false);
 
   useEffect(() => {
-    if (navigator.share) {
+    // navigator.share is available on the client-side
+    if (typeof navigator !== 'undefined' && navigator.share) {
       setCanShare(true);
     }
   }, []);
