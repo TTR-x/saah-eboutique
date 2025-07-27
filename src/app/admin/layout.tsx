@@ -31,7 +31,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { LogoSpinner } from '@/components/logo-spinner';
 
-const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+const ADMIN_EMAIL = "sabbataka02@gmail.com";
 
 export default function AdminLayout({
   children,
