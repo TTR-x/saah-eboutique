@@ -1,11 +1,48 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Règle temporaire la plus permissive possible pour le débogage.
-    // ATTENTION: N'utilisez pas ceci en production.
+
+    // Par défaut, refuser l'accès
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
+    }
+
+    // Autoriser la lecture publique des collections nécessaires au site
+    match /products/{productId} {
+      allow read: if true;
+    }
+    match /products/{productId}/reviews/{reviewId} {
+      allow read: if true;
+    }
+    match /slides/{slideId} {
+      allow read: if true;
+    }
+     match /testimonials/{testimonialId} {
+      allow read: if true;
+    }
+
+    // Autoriser la création de messages, avis et témoignages par tout le monde
+    match /contact-messages/{messageId} {
+      allow create: if true;
+    }
+     match /testimonials/{testimonialId} {
+      allow create: if true;
+    }
+    match /products/{productId}/reviews/{reviewId} {
+      allow create: if true;
+    }
+    
+    // Autoriser les administrateurs (authentifiés) à tout faire sur les produits, slides et messages
+    match /products/{productId} {
+      allow write: if request.auth != null;
+    }
+    match /slides/{slideId} {
+      allow write: if request.auth != null;
+    }
+    match /contact-messages/{messageId} {
+      allow read, update, delete: if request.auth != null;
     }
   }
 }
