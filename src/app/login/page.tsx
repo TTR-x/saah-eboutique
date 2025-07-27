@@ -25,28 +25,22 @@ export default function LoginPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
 
-  const handleSuccess = (userCredential: UserCredential) => {
-    toast({ title: "Connexion réussie!" });
-    if (userCredential.user?.email === ADMIN_EMAIL) {
-      router.push('/admin');
-    } else {
-      router.push('/');
-    }
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      handleSuccess(userCredential);
+      await signInWithEmailAndPassword(auth, email, password);
+      toast({ title: "Connexion réussie !" });
+      // Redirection retirée pour éviter les conflits. L'utilisateur naviguera manuellement.
+      // Si l'utilisateur est admin, il peut maintenant aller sur /admin
     } catch (error: any) {
       toast({
         title: "Erreur de connexion",
         description: "Vérifiez votre email et votre mot de passe.",
         variant: "destructive",
       });
-      setIsLoading(false);
+    } finally {
+        setIsLoading(false);
     }
   };
 
@@ -54,8 +48,8 @@ export default function LoginPage() {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      const userCredential = await signInWithPopup(auth, provider);
-      handleSuccess(userCredential);
+      await signInWithPopup(auth, provider);
+      toast({ title: "Connexion réussie !" });
     } catch (error: any) {
       toast({
         title: "Erreur de connexion Google",
@@ -67,29 +61,48 @@ export default function LoginPage() {
     }
   };
   
+  // Si l'utilisateur est déjà connecté, on l'empêche de voir la page de login.
+  // L'admin sera redirigé par le layout admin si besoin. Les autres, vers l'accueil.
   useEffect(() => {
-    // This effect handles the case where a user is ALREADY logged in
-    // and navigates to the login page.
     if (!authLoading && user) {
-        if (user.email === ADMIN_EMAIL) {
-            // Already logged in as admin, should be on admin page
-            router.replace('/admin');
-        } else {
-            // Logged in as regular user, should be on home page
+        if (user.email !== ADMIN_EMAIL) {
             router.replace('/');
         }
     }
   }, [user, authLoading, router]);
 
 
-  // While loading auth state, or if user is already logged in, show a spinner.
-  // The useEffect above will handle the redirection.
-  if (authLoading || user) {
+  // Si l'authentification est en cours ou si l'utilisateur est déjà connecté en tant que non-admin, on affiche un spinner.
+  // Le useEffect ci-dessus gère la redirection.
+  if (authLoading || (user && user.email !== ADMIN_EMAIL)) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
         <LogoSpinner className="h-16 w-16" />
       </div>
     );
+  }
+
+  // Si l'utilisateur est l'admin, il ne devrait pas être ici, mais on n'affiche pas le formulaire pour éviter les doubles connexions.
+  if (user && user.email === ADMIN_EMAIL) {
+      return (
+         <div className="flex items-center justify-center py-12 px-4 text-center">
+            <Card className="w-full max-w-sm">
+                 <CardHeader>
+                    <CardTitle className="text-2xl">Déjà connecté</CardTitle>
+                    <CardDescription>
+                        Vous êtes connecté en tant qu'administrateur.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button asChild className="w-full">
+                        <Link href="/admin">
+                            Aller au Tableau de bord
+                        </Link>
+                    </Button>
+                </CardContent>
+            </Card>
+         </div>
+      )
   }
 
   return (
