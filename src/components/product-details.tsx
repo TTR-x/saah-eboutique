@@ -8,7 +8,7 @@ import { getReviewsForProduct, addReview } from '@/lib/reviews-service';
 import type { Product, Review } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, CheckCircle, ShieldCheck, Truck, Send, Home } from 'lucide-react';
+import { Star, CheckCircle, ShieldCheck, Truck, Send, Home, Share2 } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -53,6 +53,13 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
   const [newReviewRating, setNewReviewRating] = useState(0);
   const [newReviewComment, setNewReviewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [canShare, setCanShare] = useState(false);
+
+  useEffect(() => {
+    if (navigator.share) {
+      setCanShare(true);
+    }
+  }, []);
   
   const { toast } = useToast();
   const { addItem } = useCart();
@@ -72,6 +79,25 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.name,
+          text: product.description,
+          url: window.location.href,
+        });
+        toast({ title: 'Partagé !', description: 'Le produit a été partagé avec succès.' });
+      } catch (error) {
+        console.error('Error sharing:', error);
+        toast({ title: 'Erreur', description: 'Le partage a échoué.', variant: 'destructive' });
+      }
+    } else {
+      toast({ title: 'Non supporté', description: 'Le partage web n\'est pas supporté sur ce navigateur.', variant: 'destructive' });
+    }
+  };
+
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,14 +211,23 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
               </div>
             </div>
             
-            <div className="mt-8 space-y-4">
-              <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleBuyNow} disabled={product.stock === 0}>
-                Acheter maintenant
-              </Button>
-              <Button size="lg" variant="outline" className="w-full" onClick={handleAddToCart} disabled={product.stock === 0}>
-                Ajouter au panier
-              </Button>
+            <div className="mt-8 grid grid-cols-1 gap-2">
+                <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleBuyNow} disabled={product.stock === 0}>
+                    Acheter maintenant
+                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                    <Button size="lg" variant="outline" className="w-full" onClick={handleAddToCart} disabled={product.stock === 0}>
+                        Ajouter au panier
+                    </Button>
+                     {canShare && (
+                        <Button size="lg" variant="outline" className="w-full" onClick={handleShare}>
+                            <Share2 className="mr-2 h-5 w-5" />
+                            Partager
+                        </Button>
+                    )}
+                </div>
             </div>
+
 
             <div className="mt-8 border-t pt-6 space-y-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-3">
@@ -273,5 +308,3 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
       </div>
   );
 }
-
-
