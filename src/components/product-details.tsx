@@ -236,7 +236,7 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
               </div>
               <div className="flex items-center gap-3">
                 <ShieldCheck className="h-5 w-5"/>
-                <span>Garantie 2 ans</span>
+                <span>Qualité</span>
               </div>
             </div>
           </div>
