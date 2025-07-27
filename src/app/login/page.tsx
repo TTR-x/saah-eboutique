@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { auth } from '@/lib/firebase';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, UserCredential } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { LogoSpinner } from '@/components/logo-spinner';
@@ -25,23 +25,31 @@ export default function LoginPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
 
+  const handleSuccess = (credential: UserCredential) => {
+    toast({ title: "Connexion réussie !" });
+    if (credential.user.email === ADMIN_EMAIL) {
+      router.push('/admin');
+    } else {
+      router.push('/');
+    }
+  };
+
+  const handleError = (error: any, provider: string = "") => {
+    toast({
+      title: `Erreur de connexion ${provider}`,
+      description: "Vérifiez vos identifiants ou réessayez.",
+      variant: "destructive",
+    });
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       const credential = await signInWithEmailAndPassword(auth, email, password);
-      toast({ title: "Connexion réussie !" });
-      if (credential.user.email === ADMIN_EMAIL) {
-        router.push('/admin');
-      } else {
-        router.push('/');
-      }
+      handleSuccess(credential);
     } catch (error: any) {
-      toast({
-        title: "Erreur de connexion",
-        description: "Vérifiez votre email et votre mot de passe.",
-        variant: "destructive",
-      });
+      handleError(error);
     } finally {
         setIsLoading(false);
     }
@@ -52,22 +60,21 @@ export default function LoginPage() {
     const provider = new GoogleAuthProvider();
     try {
       const credential = await signInWithPopup(auth, provider);
-      toast({ title: "Connexion réussie !" });
-      if (credential.user.email === ADMIN_EMAIL) {
-        router.push('/admin');
-      } else {
-        router.push('/');
-      }
+      handleSuccess(credential);
     } catch (error: any) {
-      toast({
-        title: `Erreur de connexion Google`,
-        description: error.message,
-        variant: "destructive",
-      });
+      handleError(error, "Google");
     } finally {
         setIsGoogleLoading(false);
     }
   };
+  
+  // Si l'utilisateur est déjà connecté, on affiche des options.
+  useEffect(() => {
+    if (!authLoading && user) {
+      // Pas de redirection automatique ici pour éviter les conflits.
+      // On affiche simplement une interface adaptée.
+    }
+  }, [user, authLoading, router]);
 
   if (authLoading) {
     return (
@@ -84,7 +91,7 @@ export default function LoginPage() {
                <CardHeader>
                   <CardTitle className="text-2xl">Déjà connecté</CardTitle>
                   <CardDescription>
-                      Vous êtes déjà connecté{user.email === ADMIN_EMAIL ? ' en tant qu\'administrateur' : ''}.
+                      Vous êtes déjà connecté en tant que {user.email}.
                   </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
