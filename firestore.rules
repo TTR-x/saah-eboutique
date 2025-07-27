@@ -4,15 +4,17 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Default rule: block all access unless specified otherwise
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    // Allow public read on products, slides, and testimonials
+    // N'importe qui peut lire les données publiques (produits, slides, etc.)
     match /products/{productId} {
       allow read: if true;
-      allow write: if request.auth != null; // Create, Update, Delete for authenticated users
+      allow write: if request.auth != null; // Seul l'admin connecté peut écrire
+      
+      // Les avis peuvent être lus par tous, et créés par tous
+      match /reviews/{reviewId} {
+        allow read: if true;
+        allow create: if true; // Tout le monde peut ajouter un avis
+        allow update, delete: if request.auth != null; // Seul l'admin peut modifier/supprimer
+      }
     }
 
     match /slides/{slideId} {
@@ -22,23 +24,13 @@ service cloud.firestore {
 
     match /testimonials/{testimonialId} {
       allow read: if true;
-      allow create: if true; // Anyone can submit a testimonial
-      allow update, delete: if request.auth != null; // Only admin can manage them
+      allow create: if true; // Tout le monde peut ajouter un témoignage
+      allow update, delete: if request.auth != null;
     }
 
-    // Reviews can be read by anyone. Anyone can create one.
-    // Only authenticated users can update/delete (future proofing for admin).
-    match /products/{productId}/reviews/{reviewId} {
-        allow read: if true;
-        allow create: if true;
-        allow update, delete: if request.auth != null;
-    }
-
-    // Contact messages can only be created by anyone.
-    // Only authenticated users (admin) can read or delete them.
     match /contact-messages/{messageId} {
-        allow read, delete: if request.auth != null;
-        allow create: if true;
+      allow create: if true; // Tout le monde peut envoyer un message
+      allow read, update, delete: if request.auth != null; // Seul l'admin peut gérer les messages
     }
   }
 }
