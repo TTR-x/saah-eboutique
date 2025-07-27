@@ -30,8 +30,22 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { LogoSpinner } from '@/components/logo-spinner';
+import { useNavigation } from '@/hooks/use-navigation';
+import { Progress } from '@/components/ui/progress';
 
 const ADMIN_EMAIL = "sabbataka02@gmail.com";
+
+function AdminHeader() {
+  const { isLoading } = useNavigation();
+  return (
+    <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background px-4">
+       {isLoading && <Progress value={100} className="absolute top-0 left-0 right-0 h-1 animate-pulse duration-1000" />}
+      <SidebarTrigger/>
+      <h1 className="text-2xl font-bold">Espace Administration</h1>
+      <UserAvatar />
+    </header>
+  );
+}
 
 export default function AdminLayout({
   children,
@@ -144,11 +158,7 @@ export default function AdminLayout({
             </SidebarFooter>
           </Sidebar>
           <SidebarInset>
-            <header className="flex items-center justify-between p-4 border-b">
-              <SidebarTrigger/>
-              <h1 className="text-2xl font-bold">Espace Administration</h1>
-              <UserAvatar />
-            </header>
+            <AdminHeader />
             <main className="p-6">
               {children}
             </main>
