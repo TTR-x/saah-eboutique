@@ -60,11 +60,10 @@ export default function AdminDashboardPage() {
   return (
     <div>
       <h2 className="text-3xl font-bold mb-6">Tableau de bord</h2>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <StatCard title="Produits" value={products.length} icon={<ShoppingBag className="h-4 w-4 text-muted-foreground" />} isLoading={isLoading} />
         <StatCard title="Messages" value={messages.length} icon={<MessageSquare className="h-4 w-4 text-muted-foreground" />} isLoading={isLoading} />
         <StatCard title="Demandes Import" value={orders.length} icon={<Package className="h-4 w-4 text-muted-foreground" />} isLoading={isLoading} />
-        <StatCard title="Clients" value="0" icon={<Users className="h-4 w-4 text-muted-foreground" />} isLoading={isLoading} />
       </div>
       
       <div className="mt-8 grid gap-8 md:grid-cols-2">
