@@ -53,14 +53,6 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
   const [newReviewRating, setNewReviewRating] = useState(0);
   const [newReviewComment, setNewReviewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-  const [canShare, setCanShare] = useState(false);
-
-  useEffect(() => {
-    // navigator.share is available on the client-side
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      setCanShare(true);
-    }
-  }, []);
   
   const { toast } = useToast();
   const { addItem } = useCart();
@@ -82,20 +74,29 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
   };
 
   const handleShare = async () => {
-    if (navigator.share) {
+    const shareData = {
+        title: product.name,
+        text: product.description,
+        url: window.location.href,
+    };
+    
+    if (navigator.share && navigator.canShare(shareData)) {
       try {
-        await navigator.share({
-          title: product.name,
-          text: product.description,
-          url: window.location.href,
-        });
+        await navigator.share(shareData);
         toast({ title: 'Partagé !', description: 'Le produit a été partagé avec succès.' });
       } catch (error) {
         console.error('Error sharing:', error);
-        toast({ title: 'Erreur', description: 'Le partage a échoué.', variant: 'destructive' });
+        // L'erreur est normale si l'utilisateur annule le partage, donc pas de toast ici.
       }
     } else {
-      toast({ title: 'Non supporté', description: 'Le partage web n\'est pas supporté sur ce navigateur.', variant: 'destructive' });
+      // Fallback pour les navigateurs de bureau : copier dans le presse-papiers
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({ title: 'Copié !', description: 'Le lien du produit a été copié dans le presse-papiers.' });
+      } catch (err) {
+        console.error('Failed to copy: ', err);
+        toast({ title: 'Erreur', description: 'Impossible de copier le lien.', variant: 'destructive' });
+      }
     }
   };
 
@@ -220,12 +221,10 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
                     <Button size="lg" variant="outline" className="w-full" onClick={handleAddToCart} disabled={product.stock === 0}>
                         Ajouter au panier
                     </Button>
-                     {canShare && (
-                        <Button size="lg" variant="outline" className="w-full" onClick={handleShare}>
-                            <Share2 className="mr-2 h-5 w-5" />
-                            Partager
-                        </Button>
-                    )}
+                    <Button size="lg" variant="outline" className="w-full" onClick={handleShare}>
+                        <Share2 className="mr-2 h-5 w-5" />
+                        Partager
+                    </Button>
                 </div>
             </div>
 
