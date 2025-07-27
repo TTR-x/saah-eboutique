@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, UserCredential } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -25,7 +25,8 @@ export default function LoginPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
 
-  const handleRedirect = (userCredential: UserCredential) => {
+  const handleSuccess = (userCredential: UserCredential) => {
+    toast({ title: "Connexion réussie!" });
     if (userCredential.user?.email === ADMIN_EMAIL) {
       router.replace('/admin');
     } else {
@@ -38,8 +39,7 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      toast({ title: "Connexion réussie!" });
-      handleRedirect(userCredential);
+      handleSuccess(userCredential);
     } catch (error: any) {
       toast({
         title: "Erreur de connexion",
@@ -55,36 +55,35 @@ export default function LoginPage() {
     const provider = new GoogleAuthProvider();
     try {
       const userCredential = await signInWithPopup(auth, provider);
-      toast({ title: "Connexion avec Google réussie!" });
-      handleRedirect(userCredential);
+      handleSuccess(userCredential);
     } catch (error: any) {
       toast({
         title: "Erreur de connexion Google",
         description: error.message,
         variant: "destructive",
       });
-       setIsGoogleLoading(false);
+      setIsGoogleLoading(false);
     }
   };
+  
+  // This effect handles the case where a user is already logged in
+  // and tries to access the login page.
+  useEffect(() => {
+    if (!authLoading && user) {
+        if (user.email === ADMIN_EMAIL) {
+            router.replace('/admin');
+        } else {
+            router.replace('/');
+        }
+    }
+  }, [user, authLoading, router]);
 
-  if (authLoading) {
+
+  if (authLoading || user) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
         <LogoSpinner className="h-16 w-16" />
       </div>
-    );
-  }
-
-  if (user) {
-     if (user.email === ADMIN_EMAIL) {
-        router.replace('/admin');
-     } else {
-        router.replace('/');
-     }
-     return (
-        <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
-            <LogoSpinner className="h-16 w-16" />
-        </div>
     );
   }
 

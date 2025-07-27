@@ -43,14 +43,18 @@ export default function AdminLayout({
   const router = useRouter();
 
   useEffect(() => {
+    // Don't do anything while loading
     if (loading) {
       return; 
     }
+    // If loading is finished, check for user and admin status
     if (!user || user.email !== ADMIN_EMAIL) {
       router.replace('/');
     }
   }, [user, loading, router]);
 
+  // While loading, or if user is not the admin, show a spinner.
+  // The useEffect above will handle the redirection.
   if (loading || !user || user.email !== ADMIN_EMAIL) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
@@ -59,6 +63,7 @@ export default function AdminLayout({
     );
   }
 
+  // If loading is complete and user is admin, render the layout
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-background">
