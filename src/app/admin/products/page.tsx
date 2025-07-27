@@ -41,6 +41,7 @@ export default function AdminProductsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
   
   const [productForm, setProductForm] = useState<ProductFormData>({
     name: "",
@@ -107,10 +108,17 @@ export default function AdminProductsPage() {
   };
   
   const removeImage = (imageToRemove: string | File, index: number) => {
+    // If it's an existing image (string url), we mark its public_id for deletion
+    if (typeof imageToRemove === 'string' && editingProduct) {
+        const publicIdToDelete = editingProduct.imagePublicIds[editingProduct.images.indexOf(imageToRemove)];
+        if (publicIdToDelete) {
+            setImagesToDelete(prev => [...prev, publicIdToDelete]);
+        }
+    }
+    
     setProductForm(prev => ({
         ...prev,
         images: prev.images.filter((_, i) => i !== index),
-        // If it's an existing image (string url), we might need to handle its public_id for deletion
     }));
   };
 
@@ -128,6 +136,7 @@ export default function AdminProductsPage() {
       imagePublicIds: [],
     });
     setEditingProduct(null);
+    setImagesToDelete([]);
   }
 
   const handleOpenDialog = (product: Product | null = null) => {
@@ -153,8 +162,13 @@ export default function AdminProductsPage() {
 
     setIsSubmitting(true);
     try {
+        // Handle image deletions from Cloudinary
+        if (imagesToDelete.length > 0) {
+            await deleteImageAction(imagesToDelete);
+        }
+
+        // Handle new image uploads
         const newImagesToUpload = productForm.images.filter(img => typeof img !== 'string') as File[];
-        const existingImageUrls = productForm.images.filter(img => typeof img === 'string') as string[];
         let uploadedImages: { secure_url: string, public_id: string }[] = [];
 
         if (newImagesToUpload.length > 0) {
@@ -165,15 +179,13 @@ export default function AdminProductsPage() {
             uploadedImages = await addImageUploadAction(imageFormData, 'products');
         }
         
+        // Consolidate image URLs and Public IDs
+        const existingImageUrls = productForm.images.filter(img => typeof img === 'string') as string[];
         const finalImageUrls = [...existingImageUrls, ...uploadedImages.map(img => img.secure_url)];
-        const finalPublicIds = [
-            ...(editingProduct?.imagePublicIds.filter(id => 
-                editingProduct.images.some((url, index) => productForm.images.includes(url) && editingProduct.imagePublicIds[index] === id)
-            ) || []),
-            ...uploadedImages.map(img => img.public_id)
-        ];
-
-
+        
+        const existingPublicIds = editingProduct?.imagePublicIds.filter(id => !imagesToDelete.includes(id)) || [];
+        const finalPublicIds = [...existingPublicIds, ...uploadedImages.map(img => img.public_id)];
+        
         const productData = {
             name: productForm.name,
             description: productForm.description,
@@ -213,7 +225,7 @@ export default function AdminProductsPage() {
   const handleDelete = async (product: Product) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce produit ?")) {
         try {
-            if (product.imagePublicIds) {
+            if (product.imagePublicIds && product.imagePublicIds.length > 0) {
                 await deleteImageAction(product.imagePublicIds);
             }
             await deleteDoc(doc(db, "products", product.id));
