@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState, useEffect } from 'react';
 import { auth } from '@/lib/firebase';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { LogoSpinner } from '@/components/logo-spinner';
@@ -25,14 +25,17 @@ export default function LoginPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
 
+  const handleSuccess = (user: User) => {
+    if (user.email === ADMIN_EMAIL) {
+      router.push('/admin');
+    } else {
+      router.push('/');
+    }
+  }
+
   useEffect(() => {
-    // Si l'utilisateur est déjà connecté, redirige-le.
     if (!authLoading && user) {
-        if (user.email === ADMIN_EMAIL) {
-            router.replace('/admin');
-        } else {
-            router.replace('/');
-        }
+        handleSuccess(user);
     }
   }, [user, authLoading, router]);
 
@@ -43,7 +46,7 @@ export default function LoginPage() {
     try {
       const credential = await signInWithEmailAndPassword(auth, email, password);
       toast({ title: "Connexion réussie !" });
-      // La redirection est gérée par le useEffect ci-dessus
+      handleSuccess(credential.user);
     } catch (error: any) {
       toast({
         title: `Erreur de connexion`,
@@ -59,9 +62,9 @@ export default function LoginPage() {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
       toast({ title: "Connexion réussie !" });
-      // La redirection est gérée par le useEffect ci-dessus
+      handleSuccess(result.user);
     } catch (error: any) {
       toast({
         title: `Erreur de connexion Google`,
@@ -73,18 +76,12 @@ export default function LoginPage() {
     }
   };
   
-  // Affiche un loader uniquement si on vérifie encore l'état de l'utilisateur
-  if (authLoading) {
+  if (authLoading || user) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
         <LogoSpinner className="h-16 w-16" />
       </div>
     );
-  }
-  
-  // Si l'utilisateur est déjà connecté, on affiche rien pendant que le useEffect redirige
-  if (user) {
-    return null;
   }
 
   return (
@@ -134,12 +131,6 @@ export default function LoginPage() {
             Se connecter avec Google
           </Button>
         </CardContent>
-        <div className="mt-4 text-center text-sm p-6 pt-0">
-          Vous n'avez pas de compte?{' '}
-          <Link href="#" className="underline">
-            S'inscrire
-          </Link>
-        </div>
       </Card>
     </div>
   );
