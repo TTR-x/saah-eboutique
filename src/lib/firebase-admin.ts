@@ -1,7 +1,18 @@
 
 'use server'
 
-// This file is intentionally left empty. 
-// We are reverting to client-side SDK usage for writes to leverage user authentication state.
+import * as admin from 'firebase-admin';
 
-export {};
+if (!admin.apps.length) {
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+        throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set.');
+    }
+
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+    });
+}
+
+export const dbAdmin = admin.firestore();

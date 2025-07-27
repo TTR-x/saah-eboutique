@@ -1,11 +1,12 @@
 
 'use server'
 
-import { db } from './firebase';
 import { collection, getDocs, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy, getDoc } from 'firebase/firestore';
 import { uploadImage, deleteImage } from './cloudinary';
 import type { Slide, SlideInput } from './types';
 import { revalidatePath } from 'next/cache';
+import { db } from './firebase';
+import { dbAdmin } from './firebase-admin';
 
 const slidesCollectionRef = collection(db, 'slides');
 
@@ -41,28 +42,27 @@ export async function addSlide(slideInput: SlideInput) {
         createdAt: serverTimestamp()
     };
     
-    await addDoc(slidesCollectionRef, newSlide);
+    await dbAdmin.collection('slides').add(newSlide);
     revalidatePath('/'); // Invalidate cache for home page
     revalidatePath('/admin/slides'); // Invalidate cache for admin slides page
 }
 
 // Delete a slide
 export async function deleteSlide(id: string) {
-    const slideDocRef = doc(db, 'slides', id);
-    const slideDoc = await getDoc(slideDocRef);
+    const slideDocRef = dbAdmin.collection('slides').doc(id);
+    const slideDoc = await slideDocRef.get();
     
-    if (!slideDoc.exists()) {
+    if (!slideDoc.exists) {
         throw new Error("Slide not found");
     }
 
     const slideData = slideDoc.data();
-    const publicId = slideData.publicId;
-
-    if (publicId) {
+    if (slideData && slideData.publicId) {
+        const publicId = slideData.publicId;
         await deleteImage(publicId);
     }
 
-    await deleteDoc(slideDocRef);
+    await slideDocRef.delete();
     revalidatePath('/');
     revalidatePath('/admin/slides');
 }

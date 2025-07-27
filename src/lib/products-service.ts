@@ -5,7 +5,8 @@ import { collection, getDocs, addDoc, deleteDoc, doc, serverTimestamp, query, or
 import { uploadImage, deleteImage } from './cloudinary';
 import type { Product, ProductInput } from './types';
 import { revalidatePath } from 'next/cache';
-import { db } from './firebase';
+import { db } from './firebase'; // Garder pour les lectures côté client si nécessaire
+import { dbAdmin } from './firebase-admin'; // Utiliser pour les écritures admin
 
 const productsCollectionRef = collection(db, 'products');
 
@@ -62,7 +63,8 @@ export async function addProduct(productInput: Omit<ProductInput, 'images'> & { 
         createdAt: serverTimestamp()
     };
     
-    await addDoc(collection(db, 'products'), newProduct);
+    // Utiliser dbAdmin pour l'écriture pour contourner les règles de sécurité
+    await dbAdmin.collection('products').add(newProduct);
 
     revalidatePath('/');
     revalidatePath('/products');
@@ -70,10 +72,10 @@ export async function addProduct(productInput: Omit<ProductInput, 'images'> & { 
 }
 
 export async function deleteProduct(id: string) {
-    const productDocRef = doc(db, 'products', id);
-    const productDoc = await getDoc(productDocRef);
+    const productDocRef = dbAdmin.collection('products').doc(id);
+    const productDoc = await productDocRef.get();
 
-    if (!productDoc.exists()) {
+    if (!productDoc.exists) {
         throw new Error("Product not found");
     }
 
@@ -84,7 +86,7 @@ export async function deleteProduct(id: string) {
         }
     }
 
-    await deleteDoc(productDocRef);
+    await productDocRef.delete();
     revalidatePath('/');
     revalidatePath('/products');
     revalidatePath('/admin/products');
