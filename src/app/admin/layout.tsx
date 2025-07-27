@@ -1,6 +1,4 @@
 
-'use client'
-
 import {
   SidebarProvider,
   Sidebar,
@@ -27,43 +25,13 @@ import Link from 'next/link';
 import { Logo } from '@/components/layout/logo';
 import { SignOutButton } from '@/components/auth/sign-out-button';
 import { UserAvatar } from '@/components/auth/user-avatar';
-import { useAuth } from '@/hooks/use-auth';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { LogoSpinner } from '@/components/logo-spinner';
 
-const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    // Ne rien faire pendant le chargement
-    if (loading) {
-      return;
-    }
-    // Une fois le chargement terminé, vérifier le statut de l'utilisateur
-    if (!user || user.email !== ADMIN_EMAIL) {
-      router.replace('/');
-    }
-  }, [user, loading, router]);
-
-  // Afficher un spinner pendant le chargement ou si l'utilisateur n'est pas encore identifié
-  if (loading || !user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-          <LogoSpinner className="h-16 w-16" />
-      </div>
-    );
-  }
-  
-  // Si le chargement est terminé et que l'utilisateur est l'admin, afficher le layout
-  if (user.email === ADMIN_EMAIL) {
     return (
       <SidebarProvider>
         <div className="flex min-h-screen bg-background">
@@ -157,8 +125,4 @@ export default function AdminLayout({
         </div>
       </SidebarProvider>
     );
-  }
-
-  // Ce return est une sécurité, le useEffect devrait déjà avoir redirigé
-  return null;
 }
