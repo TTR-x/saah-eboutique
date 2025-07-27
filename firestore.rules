@@ -2,26 +2,8 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Règle générale : Tout le monde peut lire, seuls les admins peuvent modifier/supprimer.
     match /{document=**} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-
-    // Exception pour les messages de contact : Tout le monde peut en créer.
-    match /contact-messages/{messageId} {
-      allow create: if true;
-    }
-
-    // Exception pour les témoignages : Tout le monde peut en créer.
-    match /testimonials/{testimonialId} {
-      allow create: if true;
-    }
-
-    // Exception pour les avis sur les produits : Tout le monde peut en créer.
-    match /products/{productId}/reviews/{reviewId} {
-      allow create: if true;
+      allow read, write: if true;
     }
   }
 }
