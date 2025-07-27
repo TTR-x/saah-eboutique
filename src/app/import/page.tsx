@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { addMessage } from '@/lib/messages-service';
+import { addImportOrder } from '@/lib/import-orders-service';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { Search, Wallet, Ship, Send, PackagePlus } from 'lucide-react';
 
@@ -71,20 +71,15 @@ export default function ImportPage() {
 
     setIsSubmitting(true);
     
-    const messageContent = `
-      Nouvelle demande d'importation:
-      - Produit: ${formState.productName}
-      - Quantité: ${formState.quantity}
-      - Budget: ${formState.budget || 'Non spécifié'}
-      - Description: ${formState.description}
-    `;
-
     try {
-        await addMessage({
+        await addImportOrder({
+            productName: formState.productName,
+            quantity: formState.quantity,
+            budget: formState.budget,
+            description: formState.description,
             name: formState.name,
             email: formState.email,
             phone: formState.phone,
-            message: messageContent,
         });
         toast({
             title: "Demande envoyée !",

@@ -1,5 +1,4 @@
 
-
 export type Product = {
   id: string;
   name: string;
@@ -75,3 +74,18 @@ export type ContactMessage = {
 }
 
 export type ContactMessageInput = Omit<ContactMessage, 'id' | 'createdAt' | 'isRead'>;
+
+export type ImportOrder = {
+    id: string;
+    productName: string;
+    quantity: string;
+    budget?: string;
+    description: string;
+    name: string;
+    email: string;
+    phone?: string;
+    createdAt: any;
+    isRead: boolean;
+}
+
+export type ImportOrderInput = Omit<ImportOrder, 'id' | 'createdAt' | 'isRead'>;
