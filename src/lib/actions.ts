@@ -9,14 +9,14 @@ cloudinary.config({
   secure: true,
 });
 
-async function uploadImage(file: File, upload_preset: string) {
+async function uploadImage(file: File, folder: string) {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = new Uint8Array(arrayBuffer);
   
   const results = await new Promise((resolve, reject) => {
     cloudinary.uploader.upload_stream(
       {
-        upload_preset: upload_preset,
+        folder: folder,
         resource_type: 'image',
       },
       (error, result) => {
@@ -32,11 +32,11 @@ async function uploadImage(file: File, upload_preset: string) {
   return results as { secure_url: string; public_id: string };
 }
 
-export async function addImageUploadAction(images: FormData, upload_preset: string) {
+export async function addImageUploadAction(images: FormData, folder: string) {
     const uploadedImages: { secure_url: string; public_id: string }[] = [];
 
     for (const file of images.values()) {
-        const result = await uploadImage(file as File, upload_preset);
+        const result = await uploadImage(file as File, folder);
         uploadedImages.push(result);
     }
     

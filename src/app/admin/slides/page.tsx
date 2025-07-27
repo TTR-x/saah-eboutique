@@ -107,7 +107,7 @@ export default function AdminSlidesPage() {
       console.error(error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de l'ajout du slide.",
+        description: error instanceof Error ? error.message : "Une erreur est survenue lors de l'ajout du slide.",
         variant: "destructive",
       });
     } finally {
@@ -266,4 +266,3 @@ export default function AdminSlidesPage() {
     </div>
   );
 }
-

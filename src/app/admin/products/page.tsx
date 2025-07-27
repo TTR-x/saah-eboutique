@@ -119,6 +119,9 @@ export default function AdminProductsPage() {
     setProductForm(prev => ({
         ...prev,
         images: prev.images.filter((_, i) => i !== index),
+        imagePublicIds: typeof imageToRemove === 'string' && editingProduct
+            ? prev.imagePublicIds.filter((_, i) => editingProduct.images.indexOf(imageToRemove) !== i)
+            : prev.imagePublicIds
     }));
   };
 
@@ -183,7 +186,7 @@ export default function AdminProductsPage() {
         const existingImageUrls = productForm.images.filter(img => typeof img === 'string') as string[];
         const finalImageUrls = [...existingImageUrls, ...uploadedImages.map(img => img.secure_url)];
         
-        const existingPublicIds = editingProduct?.imagePublicIds.filter(id => !imagesToDelete.includes(id)) || [];
+        const existingPublicIds = productForm.imagePublicIds;
         const finalPublicIds = [...existingPublicIds, ...uploadedImages.map(img => img.public_id)];
         
         const productData = {
