@@ -1,12 +1,11 @@
 
 'use server'
 
-import { adminDb } from './firebase-admin';
 import { collection, getDocs, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy, getDoc } from 'firebase/firestore';
 import { uploadImage, deleteImage } from './cloudinary';
 import type { Product, ProductInput } from './types';
 import { revalidatePath } from 'next/cache';
-import { db } from './firebase'; // Keep for client-side fetches
+import { db } from './firebase';
 
 const productsCollectionRef = collection(db, 'products');
 
@@ -60,22 +59,21 @@ export async function addProduct(productInput: Omit<ProductInput, 'images'> & { 
         imagePublicIds: imagePublicIds,
         rating: 0,
         reviews: 0,
-        createdAt: admin.firestore.FieldValue.serverTimestamp()
+        createdAt: serverTimestamp()
     };
     
-    await adminDb.collection('products').add(newProduct);
+    await addDoc(collection(db, 'products'), newProduct);
 
     revalidatePath('/');
     revalidatePath('/products');
-    revalidatePath(`/products/${newProduct.name.toLowerCase().replace(/ /g, '-')}`);
     revalidatePath('/admin/products');
 }
 
 export async function deleteProduct(id: string) {
-    const productDocRef = adminDb.collection('products').doc(id);
-    const productDoc = await productDocRef.get();
+    const productDocRef = doc(db, 'products', id);
+    const productDoc = await getDoc(productDocRef);
 
-    if (!productDoc.exists) {
+    if (!productDoc.exists()) {
         throw new Error("Product not found");
     }
 
@@ -86,7 +84,7 @@ export async function deleteProduct(id: string) {
         }
     }
 
-    await productDocRef.delete();
+    await deleteDoc(productDocRef);
     revalidatePath('/');
     revalidatePath('/products');
     revalidatePath('/admin/products');

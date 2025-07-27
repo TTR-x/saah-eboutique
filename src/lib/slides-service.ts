@@ -30,7 +30,7 @@ export async function addSlide(slideInput: SlideInput) {
     }
 
     // Upload image to Cloudinary
-    const { secure_url, public_id } = await uploadImage(slideInput.image, "testimonials");
+    const { secure_url, public_id } = await uploadImage(slideInput.image, "slides");
 
     // Add slide data to Firestore
     const newSlide = {
