@@ -43,20 +43,20 @@ export default function AdminLayout({
   const router = useRouter();
 
   useEffect(() => {
-    // Do nothing while auth state is loading
+    // While the auth state is loading, do nothing.
     if (loading) {
       return;
     }
 
-    // If loading is finished and there's no user, or the user is not the admin,
-    // redirect to the home page. This is the security guard for the admin area.
+    // After loading, if there is no user or the user is not the admin,
+    // redirect them to the home page.
     if (!user || user.email !== ADMIN_EMAIL) {
       router.replace('/');
     }
   }, [user, loading, router]);
 
-  // While loading, or if the user is not the admin yet,
-  // show a loading screen to prevent admin content flashing.
+  // While loading, or if the user is not the admin yet (and is being redirected),
+  // show a loading screen to prevent admin content from flashing to unauthorized users.
   if (loading || !user || user.email !== ADMIN_EMAIL) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -65,7 +65,7 @@ export default function AdminLayout({
     );
   }
 
-  // If the user is the admin, render the admin layout.
+  // If loading is complete and the user is the admin, render the admin layout.
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-background">
