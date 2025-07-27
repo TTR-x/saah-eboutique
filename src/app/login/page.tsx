@@ -28,9 +28,9 @@ export default function LoginPage() {
   const handleSuccess = (userCredential: UserCredential) => {
     toast({ title: "Connexion réussie!" });
     if (userCredential.user?.email === ADMIN_EMAIL) {
-      router.replace('/admin');
+      router.push('/admin');
     } else {
-      router.replace('/');
+      router.push('/');
     }
   };
 
@@ -62,23 +62,28 @@ export default function LoginPage() {
         description: error.message,
         variant: "destructive",
       });
-      setIsGoogleLoading(false);
+    } finally {
+        setIsGoogleLoading(false);
     }
   };
   
-  // This effect handles the case where a user is already logged in
-  // and tries to access the login page.
   useEffect(() => {
+    // This effect handles the case where a user is ALREADY logged in
+    // and navigates to the login page.
     if (!authLoading && user) {
         if (user.email === ADMIN_EMAIL) {
+            // Already logged in as admin, should be on admin page
             router.replace('/admin');
         } else {
+            // Logged in as regular user, should be on home page
             router.replace('/');
         }
     }
   }, [user, authLoading, router]);
 
 
+  // While loading auth state, or if user is already logged in, show a spinner.
+  // The useEffect above will handle the redirection.
   if (authLoading || user) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
