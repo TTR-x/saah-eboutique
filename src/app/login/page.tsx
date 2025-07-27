@@ -8,9 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState, useEffect } from 'react';
 import { auth } from '@/lib/firebase';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, UserCredential } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -23,42 +23,29 @@ export default function LoginPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
-  
-  // Affiche un spinner tant que l'état d'authentification n'est pas connu
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  useEffect(() => {
-    if (!authLoading) {
-      setIsCheckingAuth(false);
-      // Si l'utilisateur est déjà connecté
-      if (user) {
-        // S'il est admin, rediriger vers le tableau de bord
-        if (user.email === ADMIN_EMAIL) {
-            router.push('/admin');
-        } else {
-            // Sinon (client normal), rediriger vers l'accueil
-            router.push('/');
-        }
-      }
+  const handleRedirect = (userCredential: UserCredential) => {
+    if (userCredential.user && userCredential.user.email === ADMIN_EMAIL) {
+      router.push('/admin');
+    } else {
+      router.push('/');
     }
-  }, [user, authLoading, router]);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      // Redirection gérée par le useEffect ci-dessus
       toast({ title: "Connexion réussie!" });
+      handleRedirect(userCredential);
     } catch (error: any) {
       toast({
         title: "Erreur de connexion",
-        description: error.message,
+        description: "Vérifiez votre email et votre mot de passe.",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -67,39 +54,27 @@ export default function LoginPage() {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      // Redirection gérée par le useEffect ci-dessus
+      const userCredential = await signInWithPopup(auth, provider);
       toast({ title: "Connexion avec Google réussie!" });
+      handleRedirect(userCredential);
     } catch (error: any) {
       toast({
         title: "Erreur de connexion Google",
         description: error.message,
         variant: "destructive",
       });
-    } finally {
-      setIsGoogleLoading(false);
+       setIsGoogleLoading(false);
     }
   };
 
-  // Affiche un spinner pendant la vérification initiale
-  if (isCheckingAuth) {
+  if (authLoading || user) {
     return (
-        <div className="flex items-center justify-center min-h-screen">
-            <LogoSpinner className="h-16 w-16" />
-        </div>
-    );
-  }
-  
-  // Si un utilisateur est déjà connecté après la vérification, ne rien afficher en attendant la redirection
-  if (user) {
-     return (
-        <div className="flex items-center justify-center min-h-screen">
-            <LogoSpinner className="h-16 w-16" />
-        </div>
+      <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
+        <LogoSpinner className="h-16 w-16" />
+      </div>
     );
   }
 
-  // Si pas d'utilisateur, afficher le formulaire de connexion
   return (
     <div className="flex items-center justify-center py-12 px-4">
       <Card className="w-full max-w-sm">
