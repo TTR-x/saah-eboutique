@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState, useEffect } from 'react';
 import { auth } from '@/lib/firebase';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, User } from 'firebase/auth';
+import { signInWithEmailAndPassword, User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { LogoSpinner } from '@/components/logo-spinner';
@@ -20,7 +20,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -31,7 +30,7 @@ export default function LoginPage() {
     } else {
       router.push('/');
     }
-  }
+  };
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -57,32 +56,44 @@ export default function LoginPage() {
       setIsSubmitting(false);
     }
   };
-
-  const handleGoogleLogin = async () => {
-    setIsGoogleLoading(true);
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      toast({ title: "Connexion réussie !" });
-      handleSuccess(result.user);
-    } catch (error: any) {
-      toast({
-        title: `Erreur de connexion Google`,
-        description: "Une erreur est survenue, veuillez réessayer.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGoogleLoading(false);
-    }
-  };
   
-  if (authLoading || user) {
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
         <LogoSpinner className="h-16 w-16" />
       </div>
     );
   }
+
+  // If user is already logged in, redirect them
+  if (user) {
+    // This part is tricky because it might cause the redirect loop.
+    // A simple approach is to show a message or a button to go to dashboard/home.
+    return (
+        <div className="flex items-center justify-center py-12 px-4">
+             <Card className="w-full max-w-sm text-center">
+                <CardHeader>
+                    <CardTitle className="text-2xl">Déjà connecté</CardTitle>
+                    <CardDescription>
+                        Vous êtes déjà connecté en tant que {user.email}.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {user.email === ADMIN_EMAIL ? (
+                        <Button onClick={() => router.push('/admin')}>
+                            Aller au tableau de bord
+                        </Button>
+                    ) : (
+                         <Button onClick={() => router.push('/')}>
+                            Retour à l'accueil
+                        </Button>
+                    )}
+                </CardContent>
+             </Card>
+        </div>
+    )
+  }
+
 
   return (
     <div className="flex items-center justify-center py-12 px-4">
@@ -121,15 +132,11 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isSubmitting || isGoogleLoading}>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting && <LogoSpinner className="mr-2 h-4 w-4" />}
               Se connecter
             </Button>
           </form>
-          <Button variant="outline" className="w-full mt-4" onClick={handleGoogleLogin} disabled={isSubmitting || isGoogleLoading}>
-            {isGoogleLoading && <LogoSpinner className="mr-2 h-4 w-4" />}
-            Se connecter avec Google
-          </Button>
         </CardContent>
       </Card>
     </div>
