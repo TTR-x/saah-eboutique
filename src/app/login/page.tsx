@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, UserCredential } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -26,7 +26,7 @@ export default function LoginPage() {
   const { user, loading: authLoading } = useAuth();
 
   const handleRedirect = (userCredential: UserCredential) => {
-    if (userCredential.user && userCredential.user.email === ADMIN_EMAIL) {
+    if (userCredential.user?.email === ADMIN_EMAIL) {
       router.push('/admin');
     } else {
       router.push('/');
@@ -67,11 +67,25 @@ export default function LoginPage() {
     }
   };
 
-  if (authLoading || user) {
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
         <LogoSpinner className="h-16 w-16" />
       </div>
+    );
+  }
+
+  // If a user is already logged in, redirect them.
+  if (user) {
+    if (user.email === ADMIN_EMAIL) {
+        router.replace('/admin');
+    } else {
+        router.replace('/');
+    }
+    return (
+        <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
+            <LogoSpinner className="h-16 w-16" />
+        </div>
     );
   }
 
