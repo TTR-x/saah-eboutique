@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { auth } from '@/lib/firebase';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, UserCredential } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { LogoSpinner } from '@/components/logo-spinner';
@@ -19,39 +19,39 @@ const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
 
-  const handleSuccess = (credential: UserCredential) => {
-    toast({ title: "Connexion réussie !" });
-    if (credential.user.email === ADMIN_EMAIL) {
-      router.push('/admin');
-    } else {
-      router.push('/');
+  useEffect(() => {
+    // Si l'utilisateur est déjà connecté, redirige-le.
+    if (!authLoading && user) {
+        if (user.email === ADMIN_EMAIL) {
+            router.replace('/admin');
+        } else {
+            router.replace('/');
+        }
     }
-  };
+  }, [user, authLoading, router]);
 
-  const handleError = (error: any, provider: string = "") => {
-    toast({
-      title: `Erreur de connexion ${provider}`,
-      description: "Vérifiez vos identifiants ou réessayez.",
-      variant: "destructive",
-    });
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
     try {
       const credential = await signInWithEmailAndPassword(auth, email, password);
-      handleSuccess(credential);
+      toast({ title: "Connexion réussie !" });
+      // La redirection est gérée par le useEffect ci-dessus
     } catch (error: any) {
-      handleError(error);
+      toast({
+        title: `Erreur de connexion`,
+        description: "Vérifiez vos identifiants ou réessayez.",
+        variant: "destructive",
+      });
     } finally {
-        setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -59,15 +59,21 @@ export default function LoginPage() {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      const credential = await signInWithPopup(auth, provider);
-      handleSuccess(credential);
+      await signInWithPopup(auth, provider);
+      toast({ title: "Connexion réussie !" });
+      // La redirection est gérée par le useEffect ci-dessus
     } catch (error: any) {
-      handleError(error, "Google");
+      toast({
+        title: `Erreur de connexion Google`,
+        description: "Une erreur est survenue, veuillez réessayer.",
+        variant: "destructive",
+      });
     } finally {
-        setIsGoogleLoading(false);
+      setIsGoogleLoading(false);
     }
   };
   
+  // Affiche un loader uniquement si on vérifie encore l'état de l'utilisateur
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
@@ -75,34 +81,10 @@ export default function LoginPage() {
       </div>
     );
   }
-
+  
+  // Si l'utilisateur est déjà connecté, on affiche rien pendant que le useEffect redirige
   if (user) {
-    return (
-       <div className="flex items-center justify-center py-12 px-4 text-center">
-          <Card className="w-full max-w-sm">
-               <CardHeader>
-                  <CardTitle className="text-2xl">Déjà connecté</CardTitle>
-                  <CardDescription>
-                      Vous êtes déjà connecté en tant que {user.email}.
-                  </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                  {user.email === ADMIN_EMAIL && (
-                    <Button asChild className="w-full">
-                        <Link href="/admin">
-                            Aller au Tableau de bord
-                        </Link>
-                    </Button>
-                  )}
-                  <Button asChild variant="outline" className="w-full">
-                        <Link href="/">
-                            Retour à l'accueil
-                        </Link>
-                  </Button>
-              </CardContent>
-          </Card>
-       </div>
-    );
+    return null;
   }
 
   return (
@@ -142,12 +124,12 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
-              {isLoading && <LogoSpinner className="mr-2 h-4 w-4" />}
+            <Button type="submit" className="w-full" disabled={isSubmitting || isGoogleLoading}>
+              {isSubmitting && <LogoSpinner className="mr-2 h-4 w-4" />}
               Se connecter
             </Button>
           </form>
-          <Button variant="outline" className="w-full mt-4" onClick={handleGoogleLogin} disabled={isLoading || isGoogleLoading}>
+          <Button variant="outline" className="w-full mt-4" onClick={handleGoogleLogin} disabled={isSubmitting || isGoogleLoading}>
             {isGoogleLoading && <LogoSpinner className="mr-2 h-4 w-4" />}
             Se connecter avec Google
           </Button>

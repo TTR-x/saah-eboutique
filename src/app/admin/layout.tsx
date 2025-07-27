@@ -1,4 +1,6 @@
 
+'use client'
+
 import {
   SidebarProvider,
   Sidebar,
@@ -25,13 +27,41 @@ import Link from 'next/link';
 import { Logo } from '@/components/layout/logo';
 import { SignOutButton } from '@/components/auth/sign-out-button';
 import { UserAvatar } from '@/components/auth/user-avatar';
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { LogoSpinner } from '@/components/logo-spinner';
 
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+    const { user, loading } = useAuth();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!loading) {
+            if (!user || user.email !== ADMIN_EMAIL) {
+                router.replace('/');
+            }
+        }
+    }, [user, loading, router]);
+
+    if (loading || !user) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-background">
+                <LogoSpinner className="h-12 w-12" />
+            </div>
+        );
+    }
+    
+    if (user.email !== ADMIN_EMAIL) {
+      return null;
+    }
+
     return (
       <SidebarProvider>
         <div className="flex min-h-screen bg-background">
