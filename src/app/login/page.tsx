@@ -26,13 +26,10 @@ export default function LoginPage() {
   const { user, loading: authLoading } = useAuth();
 
   const handleRedirect = (userCredential: UserCredential) => {
-    // IMPORTANT: Redirect ALL users to the home page after login.
-    // The admin layout will handle redirection to the dashboard for the admin.
-    // This prevents redirection race conditions.
     if (userCredential.user?.email === ADMIN_EMAIL) {
-      router.push('/admin');
+      router.replace('/admin');
     } else {
-      router.push('/');
+      router.replace('/');
     }
   };
 
@@ -70,7 +67,6 @@ export default function LoginPage() {
     }
   };
 
-  // While checking auth state, show a spinner.
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
@@ -79,26 +75,18 @@ export default function LoginPage() {
     );
   }
 
-  // If a non-admin user is already logged in, redirect them away from the login page.
-  if (user && user.email !== ADMIN_EMAIL) {
-    router.replace('/');
-    return (
+  if (user) {
+     if (user.email === ADMIN_EMAIL) {
+        router.replace('/admin');
+     } else {
+        router.replace('/');
+     }
+     return (
         <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
             <LogoSpinner className="h-16 w-16" />
         </div>
     );
   }
-  
-  // If the admin is already logged in, redirect to the dashboard.
-  if (user && user.email === ADMIN_EMAIL) {
-    router.replace('/admin');
-    return (
-        <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
-            <LogoSpinner className="h-16 w-16" />
-        </div>
-    );
-  }
-
 
   return (
     <div className="flex items-center justify-center py-12 px-4">
