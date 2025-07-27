@@ -17,7 +17,6 @@ import {
   LayoutGrid,
   ShoppingBag,
   Users,
-  Settings,
   LogOut,
   ImageIcon,
   Package,
@@ -28,7 +27,7 @@ import { Logo } from '@/components/layout/logo';
 import { SignOutButton } from '@/components/auth/sign-out-button';
 import { UserAvatar } from '@/components/auth/user-avatar';
 import { useAuth } from '@/hooks/use-auth';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { LogoSpinner } from '@/components/logo-spinner';
 
@@ -41,15 +40,23 @@ export default function AdminLayout({
 }) {
     const { user, loading } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
         if (!loading) {
-            if (!user || user.email !== ADMIN_EMAIL) {
+            if (!user) {
+                // Si l'utilisateur n'est pas connecté, le rediriger vers la page de connexion
+                // en mémorisant la page actuelle pour une redirection après connexion.
+                router.replace(`/login?redirect=${pathname}`);
+            } else if (user.email !== ADMIN_EMAIL) {
+                // Si l'utilisateur est connecté mais n'est pas l'admin, le renvoyer à l'accueil.
                 router.replace('/');
             }
         }
-    }, [user, loading, router]);
+    }, [user, loading, router, pathname]);
 
+    // Afficher un spinner de chargement tant que l'authentification est en cours
+    // ou si l'utilisateur n'est pas encore identifié (pour éviter un flash de contenu).
     if (loading || !user) {
         return (
             <div className="flex items-center justify-center h-screen bg-background">
@@ -58,10 +65,13 @@ export default function AdminLayout({
         );
     }
     
+    // Si l'utilisateur connecté n'est pas l'administrateur, le layout ne rend rien
+    // pendant que la redirection s'effectue.
     if (user.email !== ADMIN_EMAIL) {
       return null;
     }
 
+    // Si tout est en ordre, afficher le tableau de bord.
     return (
       <SidebarProvider>
         <div className="flex min-h-screen bg-background">
