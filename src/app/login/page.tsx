@@ -26,6 +26,9 @@ export default function LoginPage() {
   const { user, loading: authLoading } = useAuth();
 
   const handleRedirect = (userCredential: UserCredential) => {
+    // IMPORTANT: Redirect ALL users to the home page after login.
+    // The admin layout will handle redirection to the dashboard for the admin.
+    // This prevents redirection race conditions.
     if (userCredential.user?.email === ADMIN_EMAIL) {
       router.push('/admin');
     } else {
@@ -67,6 +70,7 @@ export default function LoginPage() {
     }
   };
 
+  // While checking auth state, show a spinner.
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
@@ -75,19 +79,26 @@ export default function LoginPage() {
     );
   }
 
-  // If a user is already logged in, redirect them.
-  if (user) {
-    if (user.email === ADMIN_EMAIL) {
-        router.replace('/admin');
-    } else {
-        router.replace('/');
-    }
+  // If a non-admin user is already logged in, redirect them away from the login page.
+  if (user && user.email !== ADMIN_EMAIL) {
+    router.replace('/');
     return (
         <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
             <LogoSpinner className="h-16 w-16" />
         </div>
     );
   }
+  
+  // If the admin is already logged in, redirect to the dashboard.
+  if (user && user.email === ADMIN_EMAIL) {
+    router.replace('/admin');
+    return (
+        <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
+            <LogoSpinner className="h-16 w-16" />
+        </div>
+    );
+  }
+
 
   return (
     <div className="flex items-center justify-center py-12 px-4">
@@ -126,12 +137,12 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
               {isLoading && <LogoSpinner className="mr-2 h-4 w-4" />}
               Se connecter
             </Button>
           </form>
-          <Button variant="outline" className="w-full mt-4" onClick={handleGoogleLogin} disabled={isGoogleLoading}>
+          <Button variant="outline" className="w-full mt-4" onClick={handleGoogleLogin} disabled={isLoading || isGoogleLoading}>
             {isGoogleLoading && <LogoSpinner className="mr-2 h-4 w-4" />}
             Se connecter avec Google
           </Button>
