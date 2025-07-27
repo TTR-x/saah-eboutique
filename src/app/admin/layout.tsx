@@ -43,118 +43,122 @@ export default function AdminLayout({
   const router = useRouter();
 
   useEffect(() => {
-    // Don't do anything while loading
+    // Ne rien faire pendant le chargement
     if (loading) {
-      return; 
+      return;
     }
-    // If loading is finished, check for user and admin status
+    // Une fois le chargement terminé, vérifier le statut de l'utilisateur
     if (!user || user.email !== ADMIN_EMAIL) {
       router.replace('/');
     }
   }, [user, loading, router]);
 
-  // While loading, or if user is not the admin, show a spinner.
-  // The useEffect above will handle the redirection.
-  if (loading || !user || user.email !== ADMIN_EMAIL) {
+  // Afficher un spinner pendant le chargement ou si l'utilisateur n'est pas encore identifié
+  if (loading || !user) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
           <LogoSpinner className="h-16 w-16" />
       </div>
     );
   }
-
-  // If loading is complete and user is admin, render the layout
-  return (
-    <SidebarProvider>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar>
-          <SidebarHeader>
-            <Logo />
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/admin">
-                    <LayoutGrid />
-                    Tableau de bord
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/admin/messages">
-                    <MessageSquare />
-                    Messages
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/admin/orders">
-                    <Package />
-                    Commandes
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/admin/products">
-                    <ShoppingBag />
-                    Produits
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/admin/slides">
-                    <ImageIcon />
-                    Slides
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="#">
-                    <Users />
-                    Clients
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarContent>
-          <SidebarFooter>
-             <SidebarMenu>
+  
+  // Si le chargement est terminé et que l'utilisateur est l'admin, afficher le layout
+  if (user.email === ADMIN_EMAIL) {
+    return (
+      <SidebarProvider>
+        <div className="flex min-h-screen bg-background">
+          <Sidebar>
+            <SidebarHeader>
+              <Logo />
+            </SidebarHeader>
+            <SidebarContent>
+              <SidebarMenu>
                 <SidebarMenuItem>
-                    <SignOutButton>
-                        <SidebarMenuButton>
-                            <LogOut/>
-                            Déconnexion
-                        </SidebarMenuButton>
-                    </SignOutButton>
+                  <SidebarMenuButton asChild>
+                    <Link href="/admin">
+                      <LayoutGrid />
+                      Tableau de bord
+                    </Link>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
-               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/">
-                    <LogOut />
-                    Retour au site
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-             </SidebarMenu>
-          </SidebarFooter>
-        </Sidebar>
-        <SidebarInset>
-          <header className="flex items-center justify-between p-4 border-b">
-            <SidebarTrigger/>
-            <h1 className="text-2xl font-bold">Espace Administration</h1>
-            <UserAvatar />
-          </header>
-          <main className="p-6">
-            {children}
-          </main>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
-  );
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/admin/messages">
+                      <MessageSquare />
+                      Messages
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/admin/orders">
+                      <Package />
+                      Commandes
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/admin/products">
+                      <ShoppingBag />
+                      Produits
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/admin/slides">
+                      <ImageIcon />
+                      Slides
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="#">
+                      <Users />
+                      Clients
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarContent>
+            <SidebarFooter>
+               <SidebarMenu>
+                  <SidebarMenuItem>
+                      <SignOutButton>
+                          <SidebarMenuButton>
+                              <LogOut/>
+                              Déconnexion
+                          </SidebarMenuButton>
+                      </SignOutButton>
+                  </SidebarMenuItem>
+                 <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/">
+                      <LogOut />
+                      Retour au site
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+               </SidebarMenu>
+            </SidebarFooter>
+          </Sidebar>
+          <SidebarInset>
+            <header className="flex items-center justify-between p-4 border-b">
+              <SidebarTrigger/>
+              <h1 className="text-2xl font-bold">Espace Administration</h1>
+              <UserAvatar />
+            </header>
+            <main className="p-6">
+              {children}
+            </main>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
+  // Ce return est une sécurité, le useEffect devrait déjà avoir redirigé
+  return null;
 }

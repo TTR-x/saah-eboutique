@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
 import { auth } from '@/lib/firebase';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, UserCredential } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { LogoSpinner } from '@/components/logo-spinner';
@@ -25,33 +25,23 @@ export default function LoginPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
 
-  const handleSuccess = (credential: UserCredential) => {
-    toast({ title: "Connexion réussie !" });
-    if (credential.user.email === ADMIN_EMAIL) {
-      router.push('/admin');
-    } else {
-      router.push('/');
-    }
-  };
-
-  const handleError = (error: any, provider?: string) => {
-    const title = provider ? `Erreur de connexion ${provider}` : "Erreur de connexion";
-    const description = provider ? error.message : "Vérifiez votre email et votre mot de passe.";
-    toast({
-      title,
-      description,
-      variant: "destructive",
-    });
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       const credential = await signInWithEmailAndPassword(auth, email, password);
-      handleSuccess(credential);
+      toast({ title: "Connexion réussie !" });
+      if (credential.user.email === ADMIN_EMAIL) {
+        router.push('/admin');
+      } else {
+        router.push('/');
+      }
     } catch (error: any) {
-      handleError(error);
+      toast({
+        title: "Erreur de connexion",
+        description: "Vérifiez votre email et votre mot de passe.",
+        variant: "destructive",
+      });
     } finally {
         setIsLoading(false);
     }
@@ -62,9 +52,18 @@ export default function LoginPage() {
     const provider = new GoogleAuthProvider();
     try {
       const credential = await signInWithPopup(auth, provider);
-      handleSuccess(credential);
+      toast({ title: "Connexion réussie !" });
+      if (credential.user.email === ADMIN_EMAIL) {
+        router.push('/admin');
+      } else {
+        router.push('/');
+      }
     } catch (error: any) {
-      handleError(error, "Google");
+      toast({
+        title: `Erreur de connexion Google`,
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
         setIsGoogleLoading(false);
     }
@@ -79,35 +78,32 @@ export default function LoginPage() {
   }
 
   if (user) {
-    if (user.email === ADMIN_EMAIL) {
-      return (
-         <div className="flex items-center justify-center py-12 px-4 text-center">
-            <Card className="w-full max-w-sm">
-                 <CardHeader>
-                    <CardTitle className="text-2xl">Déjà connecté</CardTitle>
-                    <CardDescription>
-                        Vous êtes connecté en tant qu'administrateur.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
+    return (
+       <div className="flex items-center justify-center py-12 px-4 text-center">
+          <Card className="w-full max-w-sm">
+               <CardHeader>
+                  <CardTitle className="text-2xl">Déjà connecté</CardTitle>
+                  <CardDescription>
+                      Vous êtes déjà connecté{user.email === ADMIN_EMAIL ? ' en tant qu\'administrateur' : ''}.
+                  </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                  {user.email === ADMIN_EMAIL && (
                     <Button asChild className="w-full">
                         <Link href="/admin">
                             Aller au Tableau de bord
                         </Link>
                     </Button>
-                </CardContent>
-            </Card>
-         </div>
-      );
-    }
-    // For non-admin users, we can just show the form again or redirect
-    // Let's show the form but disable it to avoid confusion
-    router.push('/');
-    return (
-        <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
-          <LogoSpinner className="h-16 w-16" />
-        </div>
-      );
+                  )}
+                  <Button asChild variant="outline" className="w-full">
+                        <Link href="/">
+                            Retour à l'accueil
+                        </Link>
+                  </Button>
+              </CardContent>
+          </Card>
+       </div>
+    );
   }
 
   return (
