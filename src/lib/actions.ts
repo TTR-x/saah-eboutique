@@ -1,9 +1,6 @@
 'use server'
 
 import { v2 as cloudinary } from 'cloudinary';
-import { db } from './firebase';
-import { addDoc, collection, deleteDoc, doc } from 'firebase/firestore';
-import { revalidatePath } from 'next/cache';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -35,57 +32,19 @@ async function uploadImage(file: File, upload_preset: string) {
   return results as { secure_url: string; public_id: string };
 }
 
-async function deleteImage(publicId: string) {
-    return cloudinary.uploader.destroy(publicId);
-}
-
-export async function addProductAction(productData: any, images: FormData) {
-    const imageUrls: string[] = [];
-    const imagePublicIds: string[] = [];
+export async function addImageUploadAction(images: FormData, upload_preset: string) {
+    const uploadedImages: { secure_url: string; public_id: string }[] = [];
 
     for (const file of images.values()) {
-        const { secure_url, public_id } = await uploadImage(file as File, "products");
-        imageUrls.push(secure_url);
-        imagePublicIds.push(public_id);
+        const result = await uploadImage(file as File, upload_preset);
+        uploadedImages.push(result);
     }
-
-    const finalProductData = {
-        ...productData,
-        images: imageUrls,
-        imagePublicIds: imagePublicIds,
-        createdAt: new Date(),
-    };
-
-    await addDoc(collection(db, 'products'), finalProductData);
-    revalidatePath('/admin/products');
-}
-
-export async function deleteProductAction(productId: string, imagePublicIds: string[]) {
-    if (imagePublicIds) {
-        for (const publicId of imagePublicIds) {
-            await deleteImage(publicId);
-        }
-    }
-    await deleteDoc(doc(db, "products", productId));
-    revalidatePath('/admin/products');
-}
-
-export async function addSlideAction(slideData: any, image: File) {
-    const { secure_url, public_id } = await uploadImage(image, "slides");
     
-    const finalSlideData = {
-        ...slideData,
-        imageUrl: secure_url,
-        publicId: public_id,
-        createdAt: new Date()
-    };
-
-    await addDoc(collection(db, 'slides'), finalSlideData);
-    revalidatePath('/admin/slides');
+    return uploadedImages;
 }
 
-export async function deleteSlideAction(slideId: string, publicId: string) {
-    await deleteImage(publicId);
-    await deleteDoc(doc(db, "slides", slideId));
-    revalidatePath('/admin/slides');
+export async function deleteImageAction(publicIds: string[]) {
+    for (const publicId of publicIds) {
+        await cloudinary.uploader.destroy(publicId);
+    }
 }

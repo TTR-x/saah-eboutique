@@ -26,7 +26,9 @@ import { useToast } from "@/hooks/use-toast";
 import { getSlides } from "@/lib/slides-service";
 import type { Slide } from "@/lib/types";
 import { LogoSpinner } from "@/components/logo-spinner";
-import { addSlideAction, deleteSlideAction } from "@/lib/actions";
+import { addImageUploadAction, deleteImageAction } from "@/lib/actions";
+import { db } from "@/lib/firebase";
+import { addDoc, collection, deleteDoc, doc, serverTimestamp } from "firebase/firestore";
 
 export default function AdminSlidesPage() {
   const [slides, setSlides] = useState<Slide[]>([]);
@@ -79,20 +81,28 @@ export default function AdminSlidesPage() {
 
     setIsSubmitting(true);
     try {
-      const slideData = {
-          title: newSlide.title,
-          subtitle: newSlide.subtitle,
-      };
+        const imageFormData = new FormData();
+        imageFormData.append('images', newSlide.image);
+        
+        const [uploadedImage] = await addImageUploadAction(imageFormData, 'slides');
 
-      await addSlideAction(slideData, newSlide.image);
+        const finalSlideData = {
+            title: newSlide.title,
+            subtitle: newSlide.subtitle,
+            imageUrl: uploadedImage.secure_url,
+            publicId: uploadedImage.public_id,
+            createdAt: serverTimestamp()
+        };
 
-      toast({
-        title: "Succès",
-        description: "Le slide a été ajouté avec succès.",
-      });
-      setIsDialogOpen(false);
-      resetForm();
-      fetchSlides();
+        await addDoc(collection(db, 'slides'), finalSlideData);
+
+        toast({
+            title: "Succès",
+            description: "Le slide a été ajouté avec succès.",
+        });
+        setIsDialogOpen(false);
+        resetForm();
+        fetchSlides();
     } catch (error) {
       console.error(error);
       toast({
@@ -108,7 +118,8 @@ export default function AdminSlidesPage() {
   const handleDelete = async (slide: Slide) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce slide ?")) {
         try {
-            await deleteSlideAction(slide.id, slide.publicId);
+            await deleteImageAction([slide.publicId]);
+            await deleteDoc(doc(db, "slides", slide.id));
             toast({
                 title: "Succès",
                 description: "Le slide a été supprimé.",
@@ -255,3 +266,4 @@ export default function AdminSlidesPage() {
     </div>
   );
 }
+

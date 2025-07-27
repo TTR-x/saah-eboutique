@@ -1,48 +1,42 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Par défaut, refuser l'accès
+    
+    // Default: Deny all reads and writes
     match /{document=**} {
-      allow read, write: if false;
+      allow read: if true;
+      allow write: if request.auth != null;
     }
 
-    // Autoriser la lecture publique des collections nécessaires au site
+    // Products: Public read, only authenticated write
     match /products/{productId} {
       allow read: if true;
-    }
-    match /products/{productId}/reviews/{reviewId} {
-      allow read: if true;
-    }
-    match /slides/{slideId} {
-      allow read: if true;
-    }
-     match /testimonials/{testimonialId} {
-      allow read: if true;
+      allow create, update, delete: if request.auth != null;
     }
 
-    // Autoriser la création de messages, avis et témoignages par tout le monde
-    match /contact-messages/{messageId} {
-      allow create: if true;
-    }
-     match /testimonials/{testimonialId} {
-      allow create: if true;
-    }
+    // Product reviews: Public read, any user can create
     match /products/{productId}/reviews/{reviewId} {
-      allow create: if true;
+      allow read: if true;
+      allow create: if true; // Or `if request.auth != null` if only logged in users can review
     }
     
-    // Autoriser les administrateurs (authentifiés) à tout faire sur les produits, slides et messages
-    match /products/{productId} {
-      allow write: if request.auth != null;
-    }
+    // Slides: Public read, only authenticated write
     match /slides/{slideId} {
-      allow write: if request.auth != null;
+      allow read: if true;
+      allow create, update, delete: if request.auth != null;
     }
+
+    // Testimonials: Public read, any user can create
+    match /testimonials/{testimonialId} {
+      allow read: if true;
+      allow create: if true;
+    }
+
+    // Contact Messages: Public read for admin, any user can create
     match /contact-messages/{messageId} {
-      allow read, update, delete: if request.auth != null;
+      allow read, update, delete: if request.auth != null; // Only admin should access
+      allow create: if true;
     }
   }
 }

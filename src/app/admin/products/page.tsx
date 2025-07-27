@@ -16,7 +16,9 @@ import { getProducts } from "@/lib/products-service";
 import type { Product } from "@/lib/types";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LogoSpinner } from "@/components/logo-spinner";
-import { addProductAction, deleteProductAction } from "@/lib/actions";
+import { addImageUploadAction, deleteImageAction } from "@/lib/actions";
+import { db } from "@/lib/firebase";
+import { addDoc, collection, deleteDoc, doc, serverTimestamp } from "firebase/firestore";
 
 const productCategories = ['high-tech', 'beauté', 'maison', 'artisanat', 'mode', 'divers'];
 
@@ -96,6 +98,13 @@ export default function AdminProductsPage() {
 
     setIsSubmitting(true);
     try {
+        const imageFormData = new FormData();
+        for (const image of newProduct.images) {
+            imageFormData.append('images', image);
+        }
+
+        const uploadedImages = await addImageUploadAction(imageFormData, 'products');
+
         const productData = {
             name: newProduct.name,
             description: newProduct.description,
@@ -107,14 +116,12 @@ export default function AdminProductsPage() {
             stock: newProduct.stock,
             rating: 0,
             reviews: 0,
+            images: uploadedImages.map(img => img.secure_url),
+            imagePublicIds: uploadedImages.map(img => img.public_id),
+            createdAt: serverTimestamp(),
         };
-
-        const imageFormData = new FormData();
-        for (const image of newProduct.images) {
-            imageFormData.append('images', image);
-        }
-
-        await addProductAction(productData, imageFormData);
+        
+        await addDoc(collection(db, 'products'), productData);
       
         toast({
             title: "Succès",
@@ -138,7 +145,11 @@ export default function AdminProductsPage() {
   const handleDelete = async (product: Product) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce produit ?")) {
         try {
-            await deleteProductAction(product.id, product.imagePublicIds);
+            if (product.imagePublicIds) {
+                await deleteImageAction(product.imagePublicIds);
+            }
+            await deleteDoc(doc(db, "products", product.id));
+
             toast({
                 title: "Succès",
                 description: "Le produit a été supprimé.",
