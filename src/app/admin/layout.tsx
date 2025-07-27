@@ -46,20 +46,16 @@ export default function AdminLayout({
     useEffect(() => {
         if (!loading) {
           if (!user) {
-            // Si l'utilisateur n'est pas connecté, le rediriger vers la page de connexion
-            // en mémorisant la page actuelle pour une redirection après connexion.
             router.replace(`/login?redirect=${pathname}`);
           } else if (user.email !== ADMIN_EMAIL) {
-            // Si l'utilisateur est connecté mais n'est pas l'admin, le renvoyer à l'accueil.
             router.replace('/');
           } else {
-            // L'utilisateur est l'admin, on peut afficher le contenu
             setIsAuthCheckComplete(true);
           }
         }
     }, [user, loading, router, pathname]);
 
-    if (!isAuthCheckComplete) {
+    if (loading || !isAuthCheckComplete) {
       return (
         <div className="flex items-center justify-center h-screen bg-background">
           <LogoSpinner className="h-12 w-12" />
