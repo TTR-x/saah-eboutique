@@ -2,8 +2,32 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Règle générale : tout le monde peut lire, seuls les utilisateurs authentifiés peuvent écrire
     match /{document=**} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Messages de contact : tout le monde peut créer
+    match /contact-messages/{messageId} {
+      allow create: if true;
+    }
+
+    // Témoignages : tout le monde peut créer
+    match /testimonials/{testimonialId} {
+      allow create: if true;
+    }
+
+    // Produits : seuls les utilisateurs authentifiés peuvent créer/modifier
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null;
+    }
+
+    // Avis sur les produits : tout le monde peut créer
+    match /products/{productId}/reviews/{reviewId} {
+      allow create: if true;
     }
   }
 }
