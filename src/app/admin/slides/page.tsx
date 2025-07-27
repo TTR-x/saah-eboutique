@@ -26,9 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getSlides } from "@/lib/slides-service";
 import type { Slide } from "@/lib/types";
 import { LogoSpinner } from "@/components/logo-spinner";
-import { db } from "@/lib/firebase";
-import { collection, addDoc, serverTimestamp, deleteDoc, doc } from "firebase/firestore";
-import { uploadImage, deleteImage } from "@/lib/cloudinary";
+import { addSlideAction, deleteSlideAction } from "@/lib/actions";
 
 export default function AdminSlidesPage() {
   const [slides, setSlides] = useState<Slide[]>([]);
@@ -64,6 +62,10 @@ export default function AdminSlidesPage() {
     }
   };
 
+  const resetForm = () => {
+    setNewSlide({ title: "", subtitle: "", image: null });
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newSlide.title || !newSlide.subtitle || !newSlide.image) {
@@ -77,23 +79,20 @@ export default function AdminSlidesPage() {
 
     setIsSubmitting(true);
     try {
-      const { secure_url, public_id } = await uploadImage(newSlide.image, "slides");
       const slideData = {
           title: newSlide.title,
           subtitle: newSlide.subtitle,
-          imageUrl: secure_url,
-          publicId: public_id,
-          createdAt: serverTimestamp()
       };
-      await addDoc(collection(db, 'slides'), slideData);
+
+      await addSlideAction(slideData, newSlide.image);
 
       toast({
         title: "Succès",
         description: "Le slide a été ajouté avec succès.",
       });
       setIsDialogOpen(false);
-      setNewSlide({ title: "", subtitle: "", image: null });
-      fetchSlides(); // Refresh slides list
+      resetForm();
+      fetchSlides();
     } catch (error) {
       console.error(error);
       toast({
@@ -109,8 +108,7 @@ export default function AdminSlidesPage() {
   const handleDelete = async (slide: Slide) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce slide ?")) {
         try {
-            await deleteImage(slide.publicId);
-            await deleteDoc(doc(db, "slides", slide.id));
+            await deleteSlideAction(slide.id, slide.publicId);
             toast({
                 title: "Succès",
                 description: "Le slide a été supprimé.",
@@ -242,7 +240,7 @@ export default function AdminSlidesPage() {
             </div>
             <DialogFooter>
               <DialogClose asChild>
-                <Button type="button" variant="secondary">
+                <Button type="button" variant="secondary" onClick={resetForm}>
                   Annuler
                 </Button>
               </DialogClose>
