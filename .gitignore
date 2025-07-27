@@ -1,11 +1,9 @@
-
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # Dependencies
 /node_modules
 /.pnp
 .pnp.js
-.pnp.loader.mjs
 
 # Testing
 /coverage
@@ -17,33 +15,37 @@
 # Production
 /build
 
+# Vercel
+.vercel
+
+# Static
+/public/static
+
+# Local environment variables
+.env*.local
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
 # Misc
 .DS_Store
 *.pem
 
-# Local Environment Variables
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Vercel
-.vercel
-
-# Turbopack
-.turbo
-
-# Firebase Studio
-*.log
-*.log*
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-pid.[0-9]*.json
-heapdump.[0-9]*.[0-9]*.[0-9]*.[0-9]*.heapsnapshot
-*.prof
-*.prof.json
-*.cpuprofile
+
+# Editor directories and files
+.vscode
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Turbo
+.turbo
