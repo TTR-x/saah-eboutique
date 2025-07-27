@@ -12,10 +12,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlusCircle, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
-import { addProduct, getProducts, deleteProduct } from "@/lib/products-service";
-import type { Product } from "@/lib/types";
+import { getProducts } from "@/lib/products-service";
+import type { Product, ProductInput } from "@/lib/types";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LogoSpinner } from "@/components/logo-spinner";
+import { db } from "@/lib/firebase";
+import { collection, addDoc, serverTimestamp, deleteDoc, doc } from "firebase/firestore";
+import { uploadImage, deleteImage } from "@/lib/cloudinary";
 
 const productCategories = ['high-tech', 'beauté', 'maison', 'artisanat', 'mode', 'divers'];
 
@@ -95,10 +98,26 @@ export default function AdminProductsPage() {
 
     setIsSubmitting(true);
     try {
-      await addProduct({
-        ...newProduct,
-        originalPrice: newProduct.originalPrice > 0 ? newProduct.originalPrice : undefined,
-      });
+        const imageUrls: string[] = [];
+        const imagePublicIds: string[] = [];
+
+        for (const image of newProduct.images) {
+            const { secure_url, public_id } = await uploadImage(image, "products");
+            imageUrls.push(secure_url);
+            imagePublicIds.push(public_id);
+        }
+
+        const productData = {
+            ...newProduct,
+            images: imageUrls,
+            imagePublicIds: imagePublicIds,
+            rating: 0,
+            reviews: 0,
+            createdAt: serverTimestamp(),
+            originalPrice: newProduct.originalPrice > 0 ? newProduct.originalPrice : undefined,
+        };
+
+      await addDoc(collection(db, 'products'), productData);
       toast({
         title: "Succès",
         description: "Le produit a été ajouté avec succès.",
@@ -110,7 +129,7 @@ export default function AdminProductsPage() {
       console.error(error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de l'ajout du produit.",
+        description: "Une erreur est survenue lors de l'ajout du produit. Vérifiez vos permissions.",
         variant: "destructive",
       });
     } finally {
@@ -118,10 +137,15 @@ export default function AdminProductsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (product: Product) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce produit ?")) {
         try {
-            await deleteProduct(id);
+            if (product.imagePublicIds) {
+                for (const publicId of product.imagePublicIds) {
+                    await deleteImage(publicId);
+                }
+            }
+            await deleteDoc(doc(db, "products", product.id));
             toast({
                 title: "Succès",
                 description: "Le produit a été supprimé.",
@@ -185,7 +209,7 @@ export default function AdminProductsPage() {
                         <Pencil className="mr-2 h-4 w-4" />
                         Modifier
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDelete(product.id)} className="text-destructive hover:text-destructive focus:text-destructive">
+                      <DropdownMenuItem onClick={() => handleDelete(product)} className="text-destructive hover:text-destructive focus:text-destructive">
                         <Trash2 className="mr-2 h-4 w-4" />
                         Supprimer
                       </DropdownMenuItem>

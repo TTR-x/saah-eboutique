@@ -1,12 +1,9 @@
 
 'use server'
 
-import { collection, getDocs, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy, getDoc } from 'firebase/firestore';
-import { uploadImage, deleteImage } from './cloudinary';
-import type { Product, ProductInput } from './types';
-import { revalidatePath } from 'next/cache';
-import { db } from './firebase'; // Garder pour les lectures côté client si nécessaire
-import { dbAdmin } from './firebase-admin'; // Utiliser pour les écritures admin
+import { collection, getDocs, getDoc, doc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import type { Product } from './types';
+import { db } from './firebase';
 
 const productsCollectionRef = collection(db, 'products');
 
@@ -37,57 +34,4 @@ export async function getProduct(id: string): Promise<Product | null> {
     } else {
         return null;
     }
-}
-
-
-export async function addProduct(productInput: Omit<ProductInput, 'images'> & { images: File[] }) {
-    if (!productInput.images || productInput.images.length === 0) {
-        throw new Error("At least one image is required");
-    }
-
-    const imageUrls: string[] = [];
-    const imagePublicIds: string[] = [];
-
-    for (const image of productInput.images) {
-        const { secure_url, public_id } = await uploadImage(image, "products");
-        imageUrls.push(secure_url);
-        imagePublicIds.push(public_id);
-    }
-
-    const newProduct = {
-        ...productInput,
-        images: imageUrls,
-        imagePublicIds: imagePublicIds,
-        rating: 0,
-        reviews: 0,
-        createdAt: serverTimestamp()
-    };
-    
-    // Utiliser dbAdmin pour l'écriture pour contourner les règles de sécurité
-    await dbAdmin.collection('products').add(newProduct);
-
-    revalidatePath('/');
-    revalidatePath('/products');
-    revalidatePath('/admin/products');
-}
-
-export async function deleteProduct(id: string) {
-    const productDocRef = dbAdmin.collection('products').doc(id);
-    const productDoc = await productDocRef.get();
-
-    if (!productDoc.exists) {
-        throw new Error("Product not found");
-    }
-
-    const productData = productDoc.data() as Product;
-    if (productData.imagePublicIds) {
-        for (const publicId of productData.imagePublicIds) {
-            await deleteImage(publicId);
-        }
-    }
-
-    await productDocRef.delete();
-    revalidatePath('/');
-    revalidatePath('/products');
-    revalidatePath('/admin/products');
 }

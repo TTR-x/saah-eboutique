@@ -23,9 +23,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { addSlide, getSlides, deleteSlide } from "@/lib/slides-service";
+import { getSlides } from "@/lib/slides-service";
 import type { Slide } from "@/lib/types";
 import { LogoSpinner } from "@/components/logo-spinner";
+import { db } from "@/lib/firebase";
+import { collection, addDoc, serverTimestamp, deleteDoc, doc } from "firebase/firestore";
+import { uploadImage, deleteImage } from "@/lib/cloudinary";
 
 export default function AdminSlidesPage() {
   const [slides, setSlides] = useState<Slide[]>([]);
@@ -74,11 +77,16 @@ export default function AdminSlidesPage() {
 
     setIsSubmitting(true);
     try {
-      await addSlide({
-        title: newSlide.title,
-        subtitle: newSlide.subtitle,
-        image: newSlide.image,
-      });
+      const { secure_url, public_id } = await uploadImage(newSlide.image, "slides");
+      const slideData = {
+          title: newSlide.title,
+          subtitle: newSlide.subtitle,
+          imageUrl: secure_url,
+          publicId: public_id,
+          createdAt: serverTimestamp()
+      };
+      await addDoc(collection(db, 'slides'), slideData);
+
       toast({
         title: "Succès",
         description: "Le slide a été ajouté avec succès.",
@@ -98,10 +106,11 @@ export default function AdminSlidesPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (slide: Slide) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce slide ?")) {
         try {
-            await deleteSlide(id);
+            await deleteImage(slide.publicId);
+            await deleteDoc(doc(db, "slides", slide.id));
             toast({
                 title: "Succès",
                 description: "Le slide a été supprimé.",
@@ -165,7 +174,7 @@ export default function AdminSlidesPage() {
                         <Pencil className="mr-2 h-4 w-4" />
                         Modifier
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDelete(slide.id)} className="text-destructive hover:text-destructive focus:text-destructive">
+                      <DropdownMenuItem onClick={() => handleDelete(slide)} className="text-destructive hover:text-destructive focus:text-destructive">
                         <Trash2 className="mr-2 h-4 w-4" />
                         Supprimer
                       </DropdownMenuItem>
