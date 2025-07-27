@@ -232,7 +232,7 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
             <div className="mt-8 border-t pt-6 space-y-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-3">
                 <Truck className="h-5 w-5"/>
-                <span>Livraison rapide 2-5 jours</span>
+                <span>Livraison rapide</span>
               </div>
               <div className="flex items-center gap-3">
                 <ShieldCheck className="h-5 w-5"/>
