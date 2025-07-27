@@ -3,31 +3,40 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Règle générale : tout le monde peut lire, seuls les utilisateurs authentifiés peuvent écrire
+    // Default: anyone can read, only authenticated users can write.
     match /{document=**} {
       allow read: if true;
       allow write: if request.auth != null;
     }
 
-    // Messages de contact : tout le monde peut créer
+    // Contact messages: anyone can create.
     match /contact-messages/{messageId} {
       allow create: if true;
     }
 
-    // Témoignages : tout le monde peut créer
+    // Testimonials: anyone can create.
     match /testimonials/{testimonialId} {
       allow create: if true;
     }
-
-    // Produits : seuls les utilisateurs authentifiés peuvent créer/modifier
-    match /products/{productId} {
-      allow read: if true;
-      allow create, update, delete: if request.auth != null;
+    
+    // Slides: only authenticated users can manage.
+    match /slides/{slideId} {
+        allow read: if true;
+        allow create, update, delete: if request.auth != null;
     }
 
-    // Avis sur les produits : tout le monde peut créer
+    // Products: Temporarily allow public write for testing.
+    // ⚠️ This is for debugging only.
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if true; // Temporary rule for testing
+    }
+
+    // Product reviews: anyone can create.
     match /products/{productId}/reviews/{reviewId} {
       allow create: if true;
+      // Authenticated users can manage their own reviews (optional future enhancement)
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
   }
 }
