@@ -115,7 +115,7 @@ export default function ImportPage() {
       <div className="text-center mb-16">
         <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">Importez facilement depuis la Chine</h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto">
-          Besoin d'un produit spécifique en grande quantité ? Nous sommes votre partenaire de confiance pour trouver, négocier et importer vos marchandises en toute sérénité.
+          Besoin d'un produit spécifique en grande quantité ou en détail ? Nous sommes votre partenaire de confiance pour trouver, négocier et importer vos marchandises en toute sérénité.
         </p>
       </div>
 
