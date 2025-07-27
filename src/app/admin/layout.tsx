@@ -12,6 +12,7 @@ import {
   SidebarFooter,
   SidebarTrigger,
   SidebarInset,
+  SidebarMenuBadge,
 } from '@/components/ui/sidebar';
 import {
   LayoutGrid,
@@ -32,6 +33,9 @@ import { useEffect, useState } from 'react';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { useNavigation } from '@/hooks/use-navigation';
 import { Progress } from '@/components/ui/progress';
+import { getUnreadMessagesCount } from '@/lib/messages-service';
+import { getUnreadImportOrdersCount } from '@/lib/import-orders-service';
+
 
 const ADMIN_EMAIL = "sabbataka02@gmail.com";
 
@@ -56,6 +60,8 @@ export default function AdminLayout({
     const router = useRouter();
     const pathname = usePathname();
     const [isAuthCheckComplete, setIsAuthCheckComplete] = useState(false);
+    const [unreadMessages, setUnreadMessages] = useState(0);
+    const [unreadOrders, setUnreadOrders] = useState(0);
 
     useEffect(() => {
         if (!loading) {
@@ -68,6 +74,24 @@ export default function AdminLayout({
           }
         }
     }, [user, loading, router, pathname]);
+    
+    useEffect(() => {
+        if(isAuthCheckComplete) {
+            const fetchUnreadCounts = async () => {
+                const [messagesCount, ordersCount] = await Promise.all([
+                    getUnreadMessagesCount(),
+                    getUnreadImportOrdersCount()
+                ]);
+                setUnreadMessages(messagesCount);
+                setUnreadOrders(ordersCount);
+            };
+            fetchUnreadCounts();
+            
+            // Re-fetch counts every 30 seconds
+            const interval = setInterval(fetchUnreadCounts, 30000);
+            return () => clearInterval(interval);
+        }
+    }, [isAuthCheckComplete]);
 
     if (loading || !isAuthCheckComplete) {
       return (
@@ -99,6 +123,7 @@ export default function AdminLayout({
                     <Link href="/admin/messages">
                       <MessageSquare />
                       Messages
+                      {unreadMessages > 0 && <SidebarMenuBadge>{unreadMessages}</SidebarMenuBadge>}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -107,6 +132,7 @@ export default function AdminLayout({
                     <Link href="/admin/orders">
                       <Package />
                       Commandes
+                      {unreadOrders > 0 && <SidebarMenuBadge>{unreadOrders}</SidebarMenuBadge>}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

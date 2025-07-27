@@ -2,7 +2,7 @@
 'use server'
 
 import { db } from './firebase';
-import { collection, getDocs, addDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, addDoc, serverTimestamp, query, orderBy, where,getCountFromServer } from 'firebase/firestore';
 import type { ContactMessage, ContactMessageInput } from './types';
 import { revalidatePath } from 'next/cache';
 
@@ -17,6 +17,7 @@ export async function addMessage(messageInput: ContactMessageInput) {
     
     await addDoc(messagesCollectionRef, newMessage);
     revalidatePath('/admin/messages');
+    revalidatePath('/admin');
 }
 
 export async function getMessages(): Promise<ContactMessage[]> {
@@ -30,4 +31,10 @@ export async function getMessages(): Promise<ContactMessage[]> {
             createdAt: data.createdAt?.toDate()
         } as ContactMessage;
     });
+}
+
+export async function getUnreadMessagesCount(): Promise<number> {
+    const q = query(messagesCollectionRef, where('isRead', '==', false));
+    const snapshot = await getCountFromServer(q);
+    return snapshot.data().count;
 }
