@@ -26,11 +26,11 @@ type ProductFormData = {
   name: string;
   description: string;
   longDescription: string;
-  price: number;
-  originalPrice: number;
+  price: number | '';
+  originalPrice: number | '';
   category: Product['category'];
   brand: string;
-  stock: number;
+  stock: number | '';
   images: (File | string)[];
   imagePublicIds: string[];
 };
@@ -47,11 +47,11 @@ export default function AdminProductsPage() {
     name: "",
     description: "",
     longDescription: "",
-    price: 0,
-    originalPrice: 0,
+    price: '',
+    originalPrice: '',
     category: "divers",
     brand: "",
-    stock: 0,
+    stock: '',
     images: [],
     imagePublicIds: [],
   });
@@ -75,7 +75,7 @@ export default function AdminProductsPage() {
             description: editingProduct.description,
             longDescription: editingProduct.longDescription || "",
             price: editingProduct.price,
-            originalPrice: editingProduct.originalPrice || 0,
+            originalPrice: editingProduct.originalPrice || '',
             category: editingProduct.category,
             brand: editingProduct.brand,
             stock: editingProduct.stock,
@@ -94,7 +94,7 @@ export default function AdminProductsPage() {
   
   const handleNumberInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setProductForm((prev) => ({ ...prev, [name]: Number(value) }));
+    setProductForm((prev) => ({ ...prev, [name]: value === '' ? '' : Number(value) }));
   };
   
   const handleCategoryChange = (value: Product['category']) => {
@@ -130,11 +130,11 @@ export default function AdminProductsPage() {
       name: "",
       description: "",
       longDescription: "",
-      price: 0,
-      originalPrice: 0,
+      price: '',
+      originalPrice: '',
       category: "divers",
       brand: "",
-      stock: 0,
+      stock: '',
       images: [],
       imagePublicIds: [],
     });
@@ -154,10 +154,10 @@ export default function AdminProductsPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!productForm.name || !productForm.brand || productForm.price <= 0 || productForm.images.length === 0) {
+    if (!productForm.name || !productForm.brand || productForm.price === '' || productForm.price <= 0 || productForm.stock === '' || productForm.images.length === 0) {
       toast({
         title: "Erreur",
-        description: "Veuillez remplir tous les champs obligatoires (Nom, Marque, Prix, Images).",
+        description: "Veuillez remplir tous les champs obligatoires (Nom, Marque, Prix, Stock, Images).",
         variant: "destructive",
       });
       return;
@@ -193,11 +193,11 @@ export default function AdminProductsPage() {
             name: productForm.name,
             description: productForm.description,
             longDescription: productForm.longDescription,
-            price: productForm.price,
-            originalPrice: productForm.originalPrice > 0 ? productForm.originalPrice : null,
+            price: Number(productForm.price),
+            originalPrice: productForm.originalPrice && Number(productForm.originalPrice) > 0 ? Number(productForm.originalPrice) : null,
             category: productForm.category,
             brand: productForm.brand,
-            stock: productForm.stock,
+            stock: Number(productForm.stock),
             images: finalImageUrls,
             imagePublicIds: finalPublicIds,
         };
@@ -294,8 +294,8 @@ export default function AdminProductsPage() {
               <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="description" className="text-right">Description courte</Label><Textarea id="description" name="description" value={productForm.description} onChange={handleInputChange} className="col-span-3" required /></div>
               <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="longDescription" className="text-right">Description longue</Label><Textarea id="longDescription" name="longDescription" value={productForm.longDescription} onChange={handleInputChange} className="col-span-3" rows={5} /></div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2"><Label htmlFor="price">Prix (FCFA)</Label><Input id="price" name="price" type="number" value={productForm.price} onChange={handleNumberInputChange} required /></div>
-                <div className="grid gap-2"><Label htmlFor="originalPrice">Prix d'origine (FCFA)</Label><Input id="originalPrice" name="originalPrice" type="number" value={productForm.originalPrice} onChange={handleNumberInputChange} /></div>
+                <div className="grid gap-2"><Label htmlFor="price">Prix (FCFA)</Label><Input id="price" name="price" type="number" value={productForm.price} onChange={handleNumberInputChange} placeholder="Ex: 15000" required /></div>
+                <div className="grid gap-2"><Label htmlFor="originalPrice">Prix d'origine (FCFA)</Label><Input id="originalPrice" name="originalPrice" type="number" value={productForm.originalPrice} onChange={handleNumberInputChange} placeholder="Ex: 20000" /></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2"><Label htmlFor="category">Catégorie</Label>
@@ -305,7 +305,7 @@ export default function AdminProductsPage() {
                   </div>
                   <div className="grid gap-2"><Label htmlFor="brand">Marque</Label><Input id="brand" name="brand" value={productForm.brand} onChange={handleInputChange} required /></div>
               </div>
-              <div className="grid gap-2"><Label htmlFor="stock">Stock</Label><Input id="stock" name="stock" type="number" value={productForm.stock} onChange={handleNumberInputChange} required /></div>
+              <div className="grid gap-2"><Label htmlFor="stock">Stock</Label><Input id="stock" name="stock" type="number" value={productForm.stock} onChange={handleNumberInputChange} placeholder="Ex: 100" required /></div>
               <div className="grid gap-2"><Label htmlFor="images">Images</Label>
                 <Input id="images" name="images" type="file" onChange={handleFileChange} className="col-span-3" accept="image/*" multiple />
                 <div className="col-span-4 flex flex-wrap gap-2 mt-2">
