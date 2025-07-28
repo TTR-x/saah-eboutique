@@ -22,6 +22,7 @@ import {
   ImageIcon,
   Package,
   MessageSquare,
+  Shield,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Logo } from '@/components/layout/logo';
@@ -149,6 +150,14 @@ export default function AdminLayout({
                     <Link href="/admin/slides">
                       <ImageIcon />
                       Slides
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/admin/security">
+                      <Shield />
+                      Sécurité
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
