@@ -13,8 +13,8 @@ import { NavigationProvider } from '@/hooks/use-navigation';
 const siteConfig = {
   name: 'SAAH Business',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'https://saahbusiness.com',
-  description: 'SAAH Business est une plateforme e-commerce innovante pour tous vos besoins. Découvrez nos sélections en high-tech, mode, maison, et artisanat. Qualité et service client garantis. Le nom est SAAH, à ne pas confondre avec Sarah.',
-  keywords: ['saah', 'saahbusiness', 'saah business', 'e-commerce saah', 'shopping en ligne saah', 'high-tech', 'mode', 'maison', 'artisanat'],
+  description: 'SAAH Business : Votre boutique en ligne de confiance pour le high-tech, la mode, la maison et l’artisanat. Découvrez des produits de qualité, un service client exceptionnel et des offres exclusives. Achetez maintenant sur SAAH Business.',
+  keywords: ['saah', 'saahbusiness', 'saah business', 'e-commerce saah', 'shopping en ligne saah', 'acheter en ligne', 'high-tech', 'mode', 'maison', 'artisanat', 'produits importés chine'],
   author: 'SAAH Business',
 };
 
@@ -22,18 +22,21 @@ const siteConfig = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: siteConfig.name,
+    default: `${siteConfig.name} - Boutique en Ligne High-Tech, Mode & Maison`,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
   keywords: siteConfig.keywords,
   authors: [{ name: siteConfig.author, url: siteConfig.url }],
   creator: siteConfig.author,
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+  },
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
     url: siteConfig.url,
-    title: siteConfig.name,
+    title: `${siteConfig.name} - Boutique en Ligne`,
     description: siteConfig.description,
     siteName: siteConfig.name,
     images: [
@@ -41,13 +44,13 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: siteConfig.name,
+        alt: `Logo de ${siteConfig.name}`,
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: siteConfig.name,
+    title: `${siteConfig.name} - Boutique en Ligne`,
     description: siteConfig.description,
     images: [`${siteConfig.url}/og-image.png`],
     creator: '@saahbusiness',
@@ -81,8 +84,10 @@ export default function RootLayout({
     ],
     contactPoint: {
       '@type': 'ContactPoint',
-      telephone: '+225-XX-XXXX-XXXX',
+      telephone: '+228-90-10-13-92',
       contactType: 'customer service',
+      areaServed: "TG",
+      availableLanguage: ["French"]
     }
   };
 

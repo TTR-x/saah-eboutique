@@ -19,7 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${siteUrl}${route}`,
     lastModified: new Date().toISOString(),
     changeFrequency: 'monthly',
-    priority: route === '' ? 1 : 0.7,
+    priority: route === '' ? 1.0 : (route === '/products' ? 0.9 : 0.7),
   }));
 
   return [...routes, ...productEntries];

@@ -1,11 +1,8 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
-#
-# Allow all crawling from all user-agents
-User-agent: *
-Allow: /
+# robots.txt for SAAH Business
+# Allow all crawlers to access the site.
 
-# Allow crawling of all content for Gemini
-User-agent: Google-Extended
+User-agent: *
+Disallow: /admin/
 Allow: /
 
 Sitemap: https://saahbusiness.com/sitemap.xml
