@@ -68,7 +68,13 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
 
   const handleBuyNow = () => {
     const phoneNumber = "22890101392";
-    const message = `Bonjour, je suis intéressé(e) par le produit "${product.name}".`;
+    const message = `Bonjour, je suis intéressé(e) par ce produit :
+
+*Produit:* ${product.name}
+*Prix:* ${product.price.toLocaleString('fr-FR')} FCFA
+*Description:* ${product.description}
+
+Merci de me donner plus d'informations.`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
