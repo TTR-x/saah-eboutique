@@ -67,16 +67,7 @@ export function ProductDetails({ product, initialReviews }: ProductDetailsProps)
   };
 
   const handleBuyNow = () => {
-    const phoneNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
-    if (!phoneNumber) {
-        console.error("WhatsApp number is not configured in environment variables.");
-        toast({
-            title: "Erreur de configuration",
-            description: "Le numéro de contact n'est pas disponible pour le moment.",
-            variant: "destructive"
-        });
-        return;
-    }
+    const phoneNumber = "22890101392";
     const message = `Bonjour, je suis intéressé(e) par le produit "${product.name}".`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
