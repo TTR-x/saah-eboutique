@@ -29,8 +29,6 @@ type ProductFormData = {
   price: number | '';
   originalPrice: number | '';
   category: Product['category'];
-  brand: string;
-  stock: number | '';
   images: (File | string)[];
   imagePublicIds: string[];
 };
@@ -50,8 +48,6 @@ export default function AdminProductsPage() {
     price: '',
     originalPrice: '',
     category: "divers",
-    brand: "",
-    stock: '',
     images: [],
     imagePublicIds: [],
   });
@@ -77,8 +73,6 @@ export default function AdminProductsPage() {
             price: editingProduct.price,
             originalPrice: editingProduct.originalPrice || '',
             category: editingProduct.category,
-            brand: editingProduct.brand,
-            stock: editingProduct.stock,
             images: editingProduct.images,
             imagePublicIds: editingProduct.imagePublicIds || [],
         });
@@ -133,8 +127,6 @@ export default function AdminProductsPage() {
       price: '',
       originalPrice: '',
       category: "divers",
-      brand: "",
-      stock: '',
       images: [],
       imagePublicIds: [],
     });
@@ -154,10 +146,10 @@ export default function AdminProductsPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!productForm.name || !productForm.brand || productForm.price === '' || productForm.price <= 0 || productForm.stock === '' || productForm.images.length === 0) {
+    if (!productForm.name || productForm.price === '' || productForm.price <= 0 || productForm.images.length === 0) {
       toast({
         title: "Erreur",
-        description: "Veuillez remplir tous les champs obligatoires (Nom, Marque, Prix, Stock, Images).",
+        description: "Veuillez remplir tous les champs obligatoires (Nom, Prix, Images).",
         variant: "destructive",
       });
       return;
@@ -196,10 +188,11 @@ export default function AdminProductsPage() {
             price: Number(productForm.price),
             originalPrice: productForm.originalPrice && Number(productForm.originalPrice) > 0 ? Number(productForm.originalPrice) : null,
             category: productForm.category,
-            brand: productForm.brand,
-            stock: Number(productForm.stock),
             images: finalImageUrls,
             imagePublicIds: finalPublicIds,
+            // Setting default values for brand and stock
+            brand: 'SAAH Business',
+            stock: 99,
         };
 
         if (editingProduct) {
@@ -263,7 +256,7 @@ export default function AdminProductsPage() {
                     <Image src={product.images[0]} alt={product.name} width={80} height={80} className="rounded-md object-cover" />
                     <div>
                       <h3 className="font-semibold">{product.name}</h3>
-                      <p className="text-sm text-muted-foreground">{product.price.toLocaleString('fr-FR')} FCFA - Stock: {product.stock}</p>
+                      <p className="text-sm text-muted-foreground">{product.price.toLocaleString('fr-FR')} FCFA</p>
                     </div>
                   </div>
                   <DropdownMenu>
@@ -303,9 +296,7 @@ export default function AdminProductsPage() {
                         <SelectContent>{productCategories.map(cat => (<SelectItem key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</SelectItem>))}</SelectContent>
                     </Select>
                   </div>
-                  <div className="grid gap-2"><Label htmlFor="brand">Marque</Label><Input id="brand" name="brand" value={productForm.brand} onChange={handleInputChange} required /></div>
               </div>
-              <div className="grid gap-2"><Label htmlFor="stock">Stock</Label><Input id="stock" name="stock" type="number" value={productForm.stock} onChange={handleNumberInputChange} placeholder="Ex: 100" required /></div>
               <div className="grid gap-2"><Label htmlFor="images">Images</Label>
                 <Input id="images" name="images" type="file" onChange={handleFileChange} className="col-span-3" accept="image/*" multiple />
                 <div className="col-span-4 flex flex-wrap gap-2 mt-2">
