@@ -194,7 +194,7 @@ Merci de me donner plus d'informations.`;
               </div>
 
               <p className="mt-6 text-3xl font-bold text-foreground">{product.price.toLocaleString('fr-FR')} FCFA</p>
-              {product.originalPrice && (
+              {product.originalPrice && product.originalPrice > product.price && (
                 <p className="text-md text-muted-foreground line-through">Prix d'origine: {product.originalPrice.toLocaleString('fr-FR')} FCFA</p>
               )}
 

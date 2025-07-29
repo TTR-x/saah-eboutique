@@ -59,7 +59,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <p className="text-xl font-bold text-foreground">
             {product.price.toLocaleString('fr-FR')} FCFA
           </p>
-          {product.originalPrice && (
+          {product.originalPrice && product.originalPrice > product.price && (
             <p className="text-sm text-muted-foreground line-through">
               {product.originalPrice.toLocaleString('fr-FR')} FCFA
             </p>
