@@ -1,40 +1,29 @@
 
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getReviewsForProduct, addReview } from '@/lib/reviews-service';
 import type { Product, Review } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, CheckCircle, ShieldCheck, Truck, Send, Home, Share2 } from 'lucide-react';
+import { Star, CheckCircle, ShieldCheck, Truck, Home, Share2 } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/hooks/use-cart';
-import { LogoSpinner } from '@/components/logo-spinner';
 import { useNavigation } from '@/hooks/use-navigation';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 
-function ReviewStars({ rating, onRatingChange, readOnly = false }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean }) {
-  const [hoverRating, setHoverRating] = useState(0);
-
+function ReviewStars({ rating, readOnly = false }: { rating: number, readOnly?: boolean }) {
   return (
     <div className="flex items-center">
       {[...Array(5)].map((_, i) => {
         const starValue = i + 1;
-        const isFilled = starValue <= (hoverRating || rating);
+        const isFilled = starValue <= rating;
         return (
           <Star
             key={i}
             className={`h-5 w-5 ${isFilled ? 'text-primary fill-primary' : 'text-gray-300'} ${!readOnly ? 'cursor-pointer' : ''}`}
-            onClick={() => !readOnly && onRatingChange?.(starValue)}
-            onMouseEnter={() => !readOnly && setHoverRating(starValue)}
-            onMouseLeave={() => !readOnly && setHoverRating(0)}
           />
         )
       })}
@@ -48,11 +37,7 @@ interface ProductDetailsProps {
 }
 
 export function ProductDetails({ product, initialReviews }: ProductDetailsProps) {
-  const [reviews, setReviews] = useState<Review[]>(initialReviews);
-  const [newReviewName, setNewReviewName] = useState('');
-  const [newReviewRating, setNewReviewRating] = useState(0);
-  const [newReviewComment, setNewReviewComment] = useState('');
-  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [reviews] = useState<Review[]>(initialReviews);
   
   const { toast } = useToast();
   const { addItem } = useCart();
@@ -106,52 +91,6 @@ Merci de me donner plus d'informations.`;
     }
   };
 
-
-  const handleReviewSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newReviewName.trim() || newReviewRating === 0 || !newReviewComment.trim()) {
-      toast({ title: "Erreur", description: "Veuillez renseigner votre nom, une note et un commentaire.", variant: 'destructive' });
-      return;
-    }
-
-    setIsSubmittingReview(true);
-    
-    const optimisticReview: Review = {
-        id: `optimistic-${Date.now()}`,
-        userName: newReviewName,
-        rating: newReviewRating,
-        comment: newReviewComment,
-        createdAt: new Date(),
-        productName: product.name,
-    };
-
-    // Optimistic UI update
-    setReviews(prevReviews => [optimisticReview, ...prevReviews]);
-    setNewReviewName('');
-    setNewReviewRating(0);
-    setNewReviewComment('');
-
-    try {
-      await addReview(product.id, {
-        rating: newReviewRating,
-        comment: newReviewComment,
-        userName: newReviewName,
-        productName: product.name,
-      });
-      toast({ title: "Avis envoyé !", description: "Merci pour votre contribution." });
-      // The server will revalidate, but we can also trigger a manual refetch
-      const updatedReviews = await getReviewsForProduct(product.id);
-      setReviews(updatedReviews);
-    } catch (error) {
-      console.error(error);
-      toast({ title: "Erreur", description: "Impossible de soumettre l'avis.", variant: 'destructive' });
-      // Revert optimistic update on error
-      setReviews(prevReviews => prevReviews.filter(r => r.id !== optimisticReview.id));
-    } finally {
-      setIsSubmittingReview(false);
-    }
-  }
-
   return (
       <div className="container mx-auto px-4 md:px-6 py-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
@@ -187,7 +126,7 @@ Merci de me donner plus d'informations.`;
 
           <div className="flex flex-col">
             <div className="flex-grow">
-              <p className="text-sm font-medium text-primary uppercase tracking-wider">{product.brand}</p>
+              {product.brand && <p className="text-sm font-medium text-primary uppercase tracking-wider">{product.brand}</p>}
               <h1 className="text-3xl md:text-4xl font-extrabold mt-1">{product.name}</h1>
               
               <div className="flex items-center gap-4 mt-4">
@@ -252,67 +191,6 @@ Merci de me donner plus d'informations.`;
         
         <Separator className="my-12" />
 
-        <div className="grid md:grid-cols-3 gap-12">
-          <div className="md:col-span-2">
-            <h2 className="text-2xl font-bold mb-6">Avis des clients ({reviews.length})</h2>
-            <div className="space-y-6">
-              {reviews.length > 0 ? (
-                  reviews.map(review => (
-                      <div key={review.id} className="flex gap-4">
-                          <Avatar>
-                              <AvatarFallback>{review.userName.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1">
-                              <div className="flex items-center justify-between">
-                                  <p className="font-semibold">{review.userName}</p>
-                                  <span className="text-xs text-muted-foreground">{new Date(review.createdAt).toLocaleDateString('fr-FR')}</span>
-                              </div>
-                              <ReviewStars rating={review.rating} readOnly />
-                              <p className="mt-2 text-muted-foreground">{review.comment}</p>
-                          </div>
-                      </div>
-                  ))
-              ) : (
-                  <p className="text-muted-foreground">Aucun avis pour ce produit pour le moment. Soyez le premier !</p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <h2 className="text-2xl font-bold mb-6">Laisser un avis</h2>
-              <form onSubmit={handleReviewSubmit} className="space-y-4">
-                  <div>
-                      <Label htmlFor="name">Nom</Label>
-                      <Input 
-                        id="name" 
-                        value={newReviewName} 
-                        onChange={(e) => setNewReviewName(e.target.value)} 
-                        placeholder="Votre nom" 
-                        required
-                      />
-                  </div>
-                  <div>
-                      <Label>Votre note</Label>
-                      <ReviewStars rating={newReviewRating} onRatingChange={setNewReviewRating} />
-                  </div>
-                  <div>
-                      <Label htmlFor="comment">Votre commentaire</Label>
-                      <Textarea 
-                        id="comment"
-                        value={newReviewComment}
-                        onChange={(e) => setNewReviewComment(e.target.value)}
-                        placeholder="Partagez votre expérience avec ce produit..."
-                        rows={4}
-                        required
-                      />
-                  </div>
-                  <Button type="submit" disabled={isSubmittingReview}>
-                      {isSubmittingReview && <LogoSpinner className="mr-2 h-4 w-4" />}
-                      Envoyer l'avis <Send className="ml-2 h-4 w-4" />
-                  </Button>
-              </form>
-          </div>
-        </div>
       </div>
   );
 }
