@@ -1,7 +1,6 @@
 
 import { notFound } from 'next/navigation';
 import { getProduct, getProducts } from '@/lib/products-service';
-import { getReviewsForProduct } from '@/lib/reviews-service';
 import type { Product } from '@/lib/types';
 import { ProductDetails } from '@/components/product-details';
 
@@ -16,18 +15,15 @@ export async function generateStaticParams() {
   }));
 }
 
-async function getProductData(id: string): Promise<{ product: Product, reviews: any[] } | null> {
+async function getProductData(id: string): Promise<{ product: Product } | null> {
     try {
-        const [product, reviews] = await Promise.all([
-            getProduct(id),
-            getReviewsForProduct(id)
-        ]);
+        const product = await getProduct(id);
 
         if (!product) {
             return null;
         }
 
-        return { product, reviews };
+        return { product };
     } catch (error) {
         console.error("Error fetching product data:", error);
         return null;
@@ -42,7 +38,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
     notFound();
   }
   
-  const { product, reviews } = data;
+  const { product } = data;
 
   const productLdJson = {
     "@context": "https://schema.org",
@@ -72,17 +68,6 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
       "ratingValue": product.rating.toFixed(1),
       "reviewCount": product.reviews
     } : undefined,
-    "review": reviews.length > 0 ? reviews.map(review => ({
-        "@type": "Review",
-        "author": {"@type": "Person", "name": review.userName},
-        "datePublished": new Date(review.createdAt).toISOString(),
-        "reviewBody": review.comment,
-        "reviewRating": {
-          "@type": "Rating",
-          "ratingValue": review.rating,
-          "bestRating": "5"
-        }
-    })) : undefined
   };
   
   const breadcrumbSchema = {
@@ -119,7 +104,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
-        <ProductDetails product={product} initialReviews={reviews} />
+        <ProductDetails product={product} />
     </>
   );
 }

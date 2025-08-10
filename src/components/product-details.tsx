@@ -4,59 +4,25 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Product, Review, ReviewInput } from '@/lib/types';
+import type { Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, CheckCircle, ShieldCheck, Truck, Home, Share2 } from 'lucide-react';
+import { Star, CheckCircle, ShieldCheck, Truck, Home, Share2, MessageSquare } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/hooks/use-cart';
 import { useNavigation } from '@/hooks/use-navigation';
-import { addReview } from '@/lib/reviews-service';
 import { cn } from "@/lib/utils";
-
-function ReviewStars({ rating, onRatingChange, readOnly = false, isSubmitting = false, className }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean, isSubmitting?: boolean, className?: string }) {
-  const [hoverRating, setHoverRating] = useState(0);
-
-  return (
-    <div className={cn("flex items-center", className)}>
-      {[...Array(5)].map((_, i) => {
-        const starValue = i + 1;
-        const isFilled = starValue <= (hoverRating || rating);
-        const isDisabled = readOnly || isSubmitting;
-        return (
-          <Star
-            key={i}
-            className={cn(
-              'h-5 w-5',
-              isFilled ? 'text-primary fill-primary' : 'text-gray-300',
-              !isDisabled ? 'cursor-pointer' : 'cursor-default',
-              isSubmitting && 'animate-pulse'
-            )}
-            onClick={() => !isDisabled && onRatingChange?.(starValue)}
-            onMouseEnter={() => !isDisabled && setHoverRating(starValue)}
-            onMouseLeave={() => !isDisabled && setHoverRating(0)}
-          />
-        )
-      })}
-    </div>
-  )
-}
 
 interface ProductDetailsProps {
     product: Product;
-    initialReviews: Review[];
 }
 
-export function ProductDetails({ product, initialReviews }: ProductDetailsProps) {
+export function ProductDetails({ product }: ProductDetailsProps) {
   const { toast } = useToast();
   const { addItem } = useCart();
   const { handleLinkClick } = useNavigation();
-  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-  const [optimisticRating, setOptimisticRating] = useState(product.rating);
-  const [optimisticReviewsCount, setOptimisticReviewsCount] = useState(product.reviews);
-
 
   const handleAddToCart = () => {
     addItem(product);
@@ -104,34 +70,6 @@ Merci de me donner plus d'informations.`;
     }
   };
 
-  const handleRatingSubmit = async (rating: number) => {
-    if (isSubmittingReview) return;
-
-    setIsSubmittingReview(true);
-    toast({
-      title: 'Envoi de votre avis...',
-      description: `Vous avez donné ${rating} étoile(s).`,
-    });
-
-    const reviewInput = {
-      rating: rating,
-    };
-
-    try {
-       await addReview(product.id, reviewInput);
-       // This will be revalidated from the server, but we can be optimistic
-       setOptimisticRating((prevRating) => (prevRating * optimisticReviewsCount + rating) / (optimisticReviewsCount + 1));
-       setOptimisticReviewsCount((prevCount) => prevCount + 1);
-       toast({ title: 'Avis enregistré !', description: 'Merci pour votre retour. Votre note a bien été prise en compte.' });
-    } catch (error) {
-        console.error("Review submission error:", error);
-        toast({ title: 'Erreur', description: 'Impossible d\'ajouter l\'avis pour le moment.', variant: 'destructive'});
-    } finally {
-        setIsSubmittingReview(false);
-    }
-  };
-
-
   return (
       <div className="container mx-auto px-4 md:px-6 py-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
@@ -171,11 +109,6 @@ Merci de me donner plus d'informations.`;
               {product.brand && <p className="text-sm font-medium text-primary uppercase tracking-wider">{product.brand}</p>}
               <h1 className="text-3xl md:text-4xl font-extrabold mt-1">{product.name}</h1>
               
-              <div className="flex items-center gap-4 mt-4">
-                <ReviewStars rating={optimisticRating} readOnly />
-                <p className="text-sm text-muted-foreground">({optimisticReviewsCount} avis)</p>
-              </div>
-
               <p className="mt-6 text-3xl font-bold text-foreground">{product.price.toLocaleString('fr-FR')} FCFA</p>
               {product.originalPrice && product.originalPrice > product.price && (
                 <p className="text-md text-muted-foreground line-through">Prix d'origine: {product.originalPrice.toLocaleString('fr-FR')} FCFA</p>
@@ -233,10 +166,15 @@ Merci de me donner plus d'informations.`;
         
         <Separator className="my-12" />
 
-        <div>
-            <h2 className="text-2xl font-bold mb-4">Donnez votre avis</h2>
-            <p className="text-muted-foreground mb-4">Cliquez sur les étoiles pour noter ce produit. Votre avis est précieux !</p>
-            <ReviewStars rating={0} onRatingChange={handleRatingSubmit} isSubmitting={isSubmittingReview} />
+        <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4">Avis des clients</h2>
+            <p className="text-muted-foreground mb-6">Découvrez ce que nos clients pensent de nous et laissez votre propre avis.</p>
+            <Button asChild size="lg">
+                <Link href="/#testimonials" onClick={handleLinkClick}>
+                    <MessageSquare className="mr-2 h-5 w-5"/>
+                    Voir les avis et témoigner
+                </Link>
+            </Button>
         </div>
       </div>
   );

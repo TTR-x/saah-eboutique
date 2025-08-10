@@ -45,14 +45,6 @@ export function ProductCard({ product }: ProductCardProps) {
                 {product.name}
             </Link>
         </CardTitle>
-        <div className="flex items-center">
-          <div className="flex items-center">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className={`w-4 h-4 ${i < Math.round(product.rating) ? 'text-primary fill-primary' : 'text-gray-300'}`}/>
-            ))}
-          </div>
-          <span className="text-xs text-muted-foreground ml-2">({product.reviews} avis)</span>
-        </div>
       </CardContent>
       <CardFooter className="p-4 pt-0 flex justify-between items-center">
         <div>
