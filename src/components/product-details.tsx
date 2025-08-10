@@ -4,26 +4,36 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Product, Review } from '@/lib/types';
+import type { Product, Review, ReviewInput } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, CheckCircle, ShieldCheck, Truck, Home, Share2 } from 'lucide-react';
+import { Star, CheckCircle, ShieldCheck, Truck, Home, Share2, PlusCircle, Send } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/hooks/use-cart';
 import { useNavigation } from '@/hooks/use-navigation';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { LogoSpinner } from '../logo-spinner';
+import { addReview } from '@/lib/reviews-service';
 
-function ReviewStars({ rating, readOnly = false }: { rating: number, readOnly?: boolean }) {
+function ReviewStars({ rating, onRatingChange, readOnly = false, className }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean, className?: string }) {
+  const [hoverRating, setHoverRating] = useState(0);
+
   return (
-    <div className="flex items-center">
+    <div className={cn("flex items-center", className)}>
       {[...Array(5)].map((_, i) => {
         const starValue = i + 1;
-        const isFilled = starValue <= rating;
+        const isFilled = starValue <= (hoverRating || rating);
         return (
           <Star
             key={i}
             className={`h-5 w-5 ${isFilled ? 'text-primary fill-primary' : 'text-gray-300'} ${!readOnly ? 'cursor-pointer' : ''}`}
+            onClick={() => !readOnly && onRatingChange?.(starValue)}
+            onMouseEnter={() => !readOnly && setHoverRating(starValue)}
+            onMouseLeave={() => !readOnly && setHoverRating(0)}
           />
         )
       })}
@@ -37,7 +47,10 @@ interface ProductDetailsProps {
 }
 
 export function ProductDetails({ product, initialReviews }: ProductDetailsProps) {
-  const [reviews] = useState<Review[]>(initialReviews);
+  const [reviews, setReviews] = useState<Review[]>(initialReviews);
+  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  const [newReview, setNewReview] = useState({ name: '', rating: 0 });
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   
   const { toast } = useToast();
   const { addItem } = useCart();
@@ -77,10 +90,8 @@ Merci de me donner plus d'informations.`;
         toast({ title: 'Partagé !', description: 'Le produit a été partagé avec succès.' });
       } catch (error) {
         console.error('Error sharing:', error);
-        // L'erreur est normale si l'utilisateur annule le partage, donc pas de toast ici.
       }
     } else {
-      // Fallback pour les navigateurs de bureau : copier dans le presse-papiers
       try {
         await navigator.clipboard.writeText(window.location.href);
         toast({ title: 'Copié !', description: 'Le lien du produit a été copié dans le presse-papiers.' });
@@ -90,6 +101,36 @@ Merci de me donner plus d'informations.`;
       }
     }
   };
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newReview.name || newReview.rating === 0) {
+      toast({ title: 'Erreur', description: 'Veuillez renseigner votre nom et une note.', variant: 'destructive'});
+      return;
+    }
+    setIsSubmittingReview(true);
+    
+    const reviewInput: ReviewInput = {
+      userName: newReview.name,
+      rating: newReview.rating,
+      comment: '', // Pas de commentaire
+      productName: product.name,
+    };
+
+    try {
+       await addReview(product.id, reviewInput);
+       toast({ title: 'Avis ajouté !', description: 'Merci pour votre retour.' });
+       setIsReviewDialogOpen(false);
+       setNewReview({ name: '', rating: 0 });
+       // We might want to optimistically update the product rating here or refetch it
+    } catch (error) {
+        console.error("Review submission error:", error);
+        toast({ title: 'Erreur', description: 'Impossible d\'ajouter l\'avis pour le moment.', variant: 'destructive'});
+    } finally {
+        setIsSubmittingReview(false);
+    }
+  };
+
 
   return (
       <div className="container mx-auto px-4 md:px-6 py-8">
@@ -132,6 +173,41 @@ Merci de me donner plus d'informations.`;
               <div className="flex items-center gap-4 mt-4">
                 <ReviewStars rating={product.rating} readOnly />
                 <p className="text-sm text-muted-foreground">({product.reviews} avis)</p>
+                 <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Donner mon avis
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Évaluer ce produit</DialogTitle>
+                             <DialogDescription>
+                                Partagez votre opinion sur le produit {product.name}.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleReviewSubmit} className="space-y-4 pt-4">
+                            <div>
+                                <Label htmlFor="review-name" className="text-right">Votre nom</Label>
+                                <Input id="review-name" value={newReview.name} onChange={(e) => setNewReview({...newReview, name: e.target.value})} placeholder="Ex: Jean Dupont" required />
+                            </div>
+                            <div>
+                              <Label>Votre note</Label>
+                              <ReviewStars rating={newReview.rating} onRatingChange={(r) => setNewReview({...newReview, rating: r})} />
+                            </div>
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button type="button" variant="secondary">Annuler</Button>
+                                </DialogClose>
+                                <Button type="submit" disabled={isSubmittingReview}>
+                                    {isSubmittingReview && <LogoSpinner className="mr-2 h-4 w-4" />}
+                                    Envoyer <Send className="ml-2 h-4 w-4" />
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
               </div>
 
               <p className="mt-6 text-3xl font-bold text-foreground">{product.price.toLocaleString('fr-FR')} FCFA</p>
