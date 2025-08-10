@@ -9,20 +9,40 @@ import type { ImportOrder } from "@/lib/types";
 import { getImportOrders } from "@/lib/import-orders-service";
 import { LogoSpinner } from "@/components/logo-spinner";
 import { Badge } from "@/components/ui/badge";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<ImportOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchOrders = async () => {
+    setIsLoading(true);
+    const fetchedOrders = await getImportOrders();
+    setOrders(fetchedOrders);
+    setIsLoading(false);
+  };
+
   useEffect(() => {
-    const fetchOrders = async () => {
-      setIsLoading(true);
-      const fetchedOrders = await getImportOrders();
-      setOrders(fetchedOrders);
-      setIsLoading(false);
-    };
     fetchOrders();
   }, []);
+
+  const handleAccordionToggle = async (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (order && !order.isRead) {
+      try {
+        const orderRef = doc(db, 'import-orders', orderId);
+        await updateDoc(orderRef, { isRead: true });
+
+        // Optimistically update the UI
+        setOrders(prevOrders => 
+          prevOrders.map(o => o.id === orderId ? {...o, isRead: true} : o)
+        );
+      } catch (error) {
+        console.error("Failed to mark order as read:", error);
+      }
+    }
+  }
 
   return (
     <div>
@@ -39,7 +59,7 @@ export default function AdminOrdersPage() {
               <LogoSpinner className="h-8 w-8" />
             </div>
           ) : orders.length > 0 ? (
-            <Accordion type="single" collapsible className="w-full">
+            <Accordion type="single" collapsible className="w-full" onValueChange={handleAccordionToggle}>
               {orders.map((order) => (
                 <AccordionItem key={order.id} value={order.id}>
                   <AccordionTrigger>

@@ -5,24 +5,44 @@ import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Inbox } from "lucide-react";
-import { getMessages } from "@/lib/messages-service";
+import { getMessages, addMessage } from "@/lib/messages-service";
 import type { ContactMessage } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { LogoSpinner } from "@/components/logo-spinner";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function AdminMessagesPage() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchMessages = async () => {
+    setIsLoading(true);
+    const fetchedMessages = await getMessages();
+    setMessages(fetchedMessages);
+    setIsLoading(false);
+  };
+
   useEffect(() => {
-    const fetchMessages = async () => {
-      setIsLoading(true);
-      const fetchedMessages = await getMessages();
-      setMessages(fetchedMessages);
-      setIsLoading(false);
-    };
     fetchMessages();
   }, []);
+
+  const handleAccordionToggle = async (messageId: string) => {
+    const message = messages.find(m => m.id === messageId);
+    if (message && !message.isRead) {
+      try {
+        const messageRef = doc(db, 'contact-messages', messageId);
+        await updateDoc(messageRef, { isRead: true });
+        
+        // Optimistically update the UI
+        setMessages(prevMessages => 
+          prevMessages.map(m => m.id === messageId ? {...m, isRead: true} : m)
+        );
+      } catch (error) {
+        console.error("Failed to mark message as read:", error);
+      }
+    }
+  }
 
   return (
     <div>
@@ -39,7 +59,7 @@ export default function AdminMessagesPage() {
               <LogoSpinner className="h-8 w-8" />
             </div>
           ) : messages.length > 0 ? (
-            <Accordion type="single" collapsible className="w-full">
+            <Accordion type="single" collapsible className="w-full" onValueChange={handleAccordionToggle}>
               {messages.map((msg) => (
                 <AccordionItem key={msg.id} value={msg.id}>
                   <AccordionTrigger>
