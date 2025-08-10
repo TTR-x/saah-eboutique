@@ -7,6 +7,7 @@ export function Logo() {
       <div>
         <span className="text-primary transition-all duration-300 ease-in-out group-hover:tracking-widest">SAAH</span>
         <span className="text-foreground">&nbsp;Business</span>
+        <span className="text-foreground">&nbsp;228</span>
       </div>
     </div>
   );
