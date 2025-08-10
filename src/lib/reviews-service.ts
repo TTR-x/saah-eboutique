@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from './firebase';
-import { collection, getDocs, addDoc, doc, serverTimestamp, query, orderBy, runTransaction, increment, getDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, serverTimestamp, query, orderBy, runTransaction } from 'firebase/firestore';
 import type { Review, ReviewInput } from './types';
 import { revalidatePath } from 'next/cache';
 

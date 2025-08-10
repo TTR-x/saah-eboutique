@@ -7,16 +7,12 @@ import Link from 'next/link';
 import type { Product, ReviewInput } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, CheckCircle, ShieldCheck, Truck, Home, Share2, PlusCircle, Send } from 'lucide-react';
+import { Star, CheckCircle, ShieldCheck, Truck, Home, Share2 } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/hooks/use-cart';
 import { useNavigation } from '@/hooks/use-navigation';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { LogoSpinner } from '@/components/logo-spinner';
 import { addReview } from '@/lib/reviews-service';
 import { cn } from "@/lib/utils";
 
@@ -48,10 +44,6 @@ interface ProductDetailsProps {
 }
 
 export function ProductDetails({ product }: ProductDetailsProps) {
-  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
-  const [newReview, setNewReview] = useState({ name: '', rating: 0 });
-  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-  
   const { toast } = useToast();
   const { addItem } = useCart();
   const { handleLinkClick } = useNavigation();
@@ -102,32 +94,26 @@ Merci de me donner plus d'informations.`;
     }
   };
 
-  const handleReviewSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newReview.name || newReview.rating === 0) {
-      toast({ title: 'Erreur', description: 'Veuillez renseigner votre nom et une note.', variant: 'destructive'});
-      return;
-    }
-    setIsSubmittingReview(true);
-    
+  const handleRatingSubmit = async (rating: number) => {
+    toast({
+      title: 'Envoi de votre avis...',
+      description: `Vous avez donné ${rating} étoile(s).`,
+    });
+
     const reviewInput: ReviewInput = {
-      userName: newReview.name,
-      rating: newReview.rating,
+      userName: 'Anonyme',
+      rating: rating,
       comment: '', // Pas de commentaire
       productName: product.name,
     };
 
     try {
        await addReview(product.id, reviewInput);
-       toast({ title: 'Avis ajouté !', description: 'Merci pour votre retour.' });
-       setIsReviewDialogOpen(false);
-       setNewReview({ name: '', rating: 0 });
+       toast({ title: 'Avis enregistré !', description: 'Merci pour votre retour. Votre note a bien été prise en compte.' });
        // We might want to optimistically update the product rating here or refetch it
     } catch (error) {
         console.error("Review submission error:", error);
         toast({ title: 'Erreur', description: 'Impossible d\'ajouter l\'avis pour le moment.', variant: 'destructive'});
-    } finally {
-        setIsSubmittingReview(false);
     }
   };
 
@@ -154,6 +140,7 @@ Merci de me donner plus d'informations.`;
                         data-ai-hint={`${product.category} product`}
                         fill
                         className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         priority={index === 0}
                       />
                     </div>
@@ -173,41 +160,6 @@ Merci de me donner plus d'informations.`;
               <div className="flex items-center gap-4 mt-4">
                 <ReviewStars rating={product.rating} readOnly />
                 <p className="text-sm text-muted-foreground">({product.reviews} avis)</p>
-                 <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                            <PlusCircle className="mr-2 h-4 w-4" />
-                            Donner mon avis
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader>
-                            <DialogTitle>Évaluer ce produit</DialogTitle>
-                             <DialogDescription>
-                                Partagez votre opinion sur le produit {product.name}.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <form onSubmit={handleReviewSubmit} className="space-y-4 pt-4">
-                            <div>
-                                <Label htmlFor="review-name" className="text-right">Votre nom</Label>
-                                <Input id="review-name" value={newReview.name} onChange={(e) => setNewReview({...newReview, name: e.target.value})} placeholder="Ex: Jean Dupont" required />
-                            </div>
-                            <div>
-                              <Label>Votre note</Label>
-                              <ReviewStars rating={newReview.rating} onRatingChange={(r) => setNewReview({...newReview, rating: r})} />
-                            </div>
-                            <DialogFooter>
-                                <DialogClose asChild>
-                                    <Button type="button" variant="secondary">Annuler</Button>
-                                </DialogClose>
-                                <Button type="submit" disabled={isSubmittingReview}>
-                                    {isSubmittingReview && <LogoSpinner className="mr-2 h-4 w-4" />}
-                                    Envoyer <Send className="ml-2 h-4 w-4" />
-                                </Button>
-                            </DialogFooter>
-                        </form>
-                    </DialogContent>
-                </Dialog>
               </div>
 
               <p className="mt-6 text-3xl font-bold text-foreground">{product.price.toLocaleString('fr-FR')} FCFA</p>
@@ -267,8 +219,12 @@ Merci de me donner plus d'informations.`;
         
         <Separator className="my-12" />
 
+        <div>
+            <h2 className="text-2xl font-bold mb-4">Donnez votre avis</h2>
+            <p className="text-muted-foreground mb-4">Cliquez sur les étoiles pour noter ce produit. Votre avis est précieux !</p>
+            <ReviewStars rating={0} onRatingChange={handleRatingSubmit} />
+        </div>
+
       </div>
   );
 }
-
-    
