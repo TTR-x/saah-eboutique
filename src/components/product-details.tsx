@@ -16,7 +16,7 @@ import { useNavigation } from '@/hooks/use-navigation';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { LogoSpinner } from '../logo-spinner';
+import { LogoSpinner } from '@/components/logo-spinner';
 import { addReview } from '@/lib/reviews-service';
 
 function ReviewStars({ rating, onRatingChange, readOnly = false, className }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean, className?: string }) {
@@ -43,11 +43,9 @@ function ReviewStars({ rating, onRatingChange, readOnly = false, className }: { 
 
 interface ProductDetailsProps {
     product: Product;
-    initialReviews: Review[];
 }
 
-export function ProductDetails({ product, initialReviews }: ProductDetailsProps) {
-  const [reviews, setReviews] = useState<Review[]>(initialReviews);
+export function ProductDetails({ product }: ProductDetailsProps) {
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   const [newReview, setNewReview] = useState({ name: '', rating: 0 });
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
