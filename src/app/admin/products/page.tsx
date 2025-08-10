@@ -168,9 +168,9 @@ export default function AdminProductsPage() {
 
         if (newImagesToUpload.length > 0) {
             const imageFormData = new FormData();
-            for (const image of newImagesToUpload) {
-                imageFormData.append('images', image);
-            }
+            newImagesToUpload.forEach((image, index) => {
+                imageFormData.append(`images-${index}`, image);
+            });
             uploadedImages = await addImageUploadAction(imageFormData, 'products');
         }
         
@@ -190,17 +190,19 @@ export default function AdminProductsPage() {
             category: productForm.category,
             images: finalImageUrls,
             imagePublicIds: finalPublicIds,
-            // Setting default values for brand and stock
-            brand: 'SAAH Business',
-            stock: 99,
+            createdAt: serverTimestamp(),
+            rating: 0,
+            reviews: 0,
         };
 
         if (editingProduct) {
             const productRef = doc(db, "products", editingProduct.id);
-            await updateDoc(productRef, productData);
+            // We shouldn't update createdAt or reset ratings on edit.
+            const { createdAt, rating, reviews, ...updateData } = productData;
+            await updateDoc(productRef, updateData);
             toast({ title: "Succès", description: "Le produit a été mis à jour." });
         } else {
-            await addDoc(collection(db, 'products'), { ...productData, createdAt: serverTimestamp(), rating: 0, reviews: 0, });
+            await addDoc(collection(db, 'products'), productData);
             toast({ title: "Succès", description: "Le produit a été ajouté." });
         }
       
