@@ -59,6 +59,7 @@ export type Review = {
   rating: number;
   comment: string;
   createdAt: any;
+  productName: string;
 }
 
 export type ReviewInput = Omit<Review, 'id' | 'createdAt' | 'userId' | 'userAvatar'>;

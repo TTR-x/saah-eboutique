@@ -122,6 +122,7 @@ Merci de me donner plus d'informations.`;
         rating: newReviewRating,
         comment: newReviewComment,
         createdAt: new Date(),
+        productName: product.name,
     };
 
     // Optimistic UI update
@@ -135,6 +136,7 @@ Merci de me donner plus d'informations.`;
         rating: newReviewRating,
         comment: newReviewComment,
         userName: newReviewName,
+        productName: product.name,
       });
       toast({ title: "Avis envoyé !", description: "Merci pour votre contribution." });
       // The server will revalidate, but we can also trigger a manual refetch
