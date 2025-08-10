@@ -1,3 +1,4 @@
+
 'use server'
 
 import { v2 as cloudinary } from 'cloudinary';
@@ -9,34 +10,19 @@ cloudinary.config({
   secure: true,
 });
 
-async function uploadImage(file: File, folder: string) {
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = new Uint8Array(arrayBuffer);
-  
-  const results = await new Promise((resolve, reject) => {
-    cloudinary.uploader.upload_stream(
-      {
-        folder: folder,
-        resource_type: 'image',
-      },
-      (error, result) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-        resolve(result);
-      }
-    ).end(buffer);
+async function uploadImageFromDataUri(dataUri: string, folder: string) {
+  const results = await cloudinary.uploader.upload(dataUri, {
+    folder: folder,
+    resource_type: 'image',
   });
-
   return results as { secure_url: string; public_id: string };
 }
 
-export async function addImageUploadAction(images: FormData, folder: string) {
+export async function addImageUploadAction(dataUris: string[], folder: string) {
     const uploadedImages: { secure_url: string; public_id: string }[] = [];
-
-    for (const file of images.values()) {
-        const result = await uploadImage(file as File, folder);
+    
+    for (const uri of dataUris) {
+        const result = await uploadImageFromDataUri(uri, folder);
         uploadedImages.push(result);
     }
     
@@ -48,3 +34,5 @@ export async function deleteImageAction(publicIds: string[]) {
         await cloudinary.uploader.destroy(publicId);
     }
 }
+
+    

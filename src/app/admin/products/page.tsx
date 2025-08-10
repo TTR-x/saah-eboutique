@@ -144,9 +144,16 @@ export default function AdminProductsPage() {
     setIsDialogOpen(false);
   }
 
+  const fileToDataUri = (file: File) => new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!productForm.name || productForm.price === '' || productForm.price <= 0 || productForm.images.length === 0) {
+    if (!productForm.name || productForm.price === '' || Number(productForm.price) <= 0 || productForm.images.length === 0) {
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs obligatoires (Nom, Prix, Images).",
@@ -162,16 +169,13 @@ export default function AdminProductsPage() {
             await deleteImageAction(imagesToDelete);
         }
 
-        // Handle new image uploads
+        // Handle new image uploads by converting them to Data URIs
         const newImagesToUpload = productForm.images.filter(img => typeof img !== 'string') as File[];
         let uploadedImages: { secure_url: string, public_id: string }[] = [];
 
         if (newImagesToUpload.length > 0) {
-            const imageFormData = new FormData();
-            newImagesToUpload.forEach((image, index) => {
-                imageFormData.append(`images-${index}`, image);
-            });
-            uploadedImages = await addImageUploadAction(imageFormData, 'products');
+            const dataUris = await Promise.all(newImagesToUpload.map(fileToDataUri));
+            uploadedImages = await addImageUploadAction(dataUris, 'products');
         }
         
         // Consolidate image URLs and Public IDs
@@ -330,3 +334,5 @@ export default function AdminProductsPage() {
     </div>
   );
 }
+
+    
