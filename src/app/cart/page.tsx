@@ -13,6 +13,18 @@ export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, total } = useCart();
   const { handleLinkClick } = useNavigation();
 
+  const handleCheckout = () => {
+    const phoneNumber = "22890101392"; // Votre numéro WhatsApp
+    const cartDetails = items.map(item => 
+      `- ${item.name} (x${item.quantity}) : ${(item.price * item.quantity).toLocaleString('fr-FR')} FCFA`
+    ).join('\n');
+
+    const message = `Bonjour, je souhaite passer commande avec les articles suivants de mon panier :\n\n${cartDetails}\n\n*Total : ${total.toLocaleString('fr-FR')} FCFA*\n\nMerci de m'indiquer les prochaines étapes.`;
+
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
   if (items.length === 0) {
     return (
       <div className="container mx-auto px-4 md:px-6 py-12 md:py-20 text-center">
@@ -89,7 +101,9 @@ export default function CartPage() {
               <span>Total</span>
               <span>{total.toLocaleString('fr-FR')} FCFA</span>
             </div>
-            <Button size="lg" className="w-full mt-6">Passer à la caisse</Button>
+            <Button size="lg" className="w-full mt-6" onClick={handleCheckout}>
+              Passer à la caisse
+            </Button>
           </div>
         </div>
       </div>
