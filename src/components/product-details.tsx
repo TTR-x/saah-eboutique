@@ -7,13 +7,40 @@ import Link from 'next/link';
 import type { Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, CheckCircle, ShieldCheck, Truck, Home, Share2, MessageSquare } from 'lucide-react';
+import { Star, CheckCircle, ShieldCheck, Truck, Home, Share2, MessageSquare, Send } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/hooks/use-cart';
 import { useNavigation } from '@/hooks/use-navigation';
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { LogoSpinner } from '@/components/logo-spinner';
+import { addReview } from '@/lib/reviews-service';
+
+function ReviewStars({ rating, onRatingChange, readOnly = false, className }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean, className?: string }) {
+  const [hoverRating, setHoverRating] = useState(0);
+
+  return (
+    <div className={cn("flex items-center", className)}>
+      {[...Array(5)].map((_, i) => {
+        const starValue = i + 1;
+        const isFilled = starValue <= (hoverRating || rating);
+        return (
+          <Star
+            key={i}
+            className={`h-5 w-5 ${isFilled ? 'text-primary fill-primary' : 'text-gray-300'} ${!readOnly ? 'cursor-pointer' : ''}`}
+            onClick={() => !readOnly && onRatingChange?.(starValue)}
+            onMouseEnter={() => !readOnly && setHoverRating(starValue)}
+            onMouseLeave={() => !readOnly && setHoverRating(0)}
+          />
+        )
+      })}
+    </div>
+  )
+}
 
 interface ProductDetailsProps {
     product: Product;
@@ -23,6 +50,38 @@ export function ProductDetails({ product }: ProductDetailsProps) {
   const { toast } = useToast();
   const { addItem } = useCart();
   const { handleLinkClick } = useNavigation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleRatingSubmit = async (rating: number) => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+        await addReview({
+            productName: product.name,
+            productId: product.id,
+            rating: rating,
+            comment: '', // Comment is not used for now
+            userName: 'Anonymous' // User is anonymous
+        });
+        toast({
+            title: "Avis enregistré !",
+            description: `Merci d'avoir noté ce produit avec ${rating} étoile(s).`,
+        });
+    } catch (error) {
+        let errorMessage = "Une erreur est survenue lors de l'envoi de votre avis.";
+        if (error instanceof Error && (error.message.includes('Failed to fetch') || error.message.includes('offline') || error.message.includes('network'))) {
+            errorMessage = "La connexion au serveur a échoué. Veuillez vérifier votre connexion internet.";
+        }
+        toast({
+            title: "Échec de l'envoi",
+            description: errorMessage,
+            variant: "destructive",
+        });
+    } finally {
+        setIsSubmitting(false);
+    }
+  };
 
   const handleAddToCart = () => {
     addItem(product);
@@ -38,7 +97,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
 *Produit:* ${product.name}
 *Prix:* ${product.price.toLocaleString('fr-FR')} FCFA
-*Description:* ${product.description}
+*Lien:* ${window.location.href}
 
 Merci de me donner plus d'informations.`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
@@ -57,7 +116,7 @@ Merci de me donner plus d'informations.`;
         await navigator.share(shareData);
         toast({ title: 'Partagé !', description: 'Le produit a été partagé avec succès.' });
       } catch (error) {
-        console.error('Error sharing:', error);
+        // Silently fail is ok, user probably just cancelled the share
       }
     } else {
       try {
@@ -109,7 +168,12 @@ Merci de me donner plus d'informations.`;
               {product.brand && <p className="text-sm font-medium text-primary uppercase tracking-wider">{product.brand}</p>}
               <h1 className="text-3xl md:text-4xl font-extrabold mt-1">{product.name}</h1>
               
-              <p className="mt-6 text-3xl font-bold text-foreground">{product.price.toLocaleString('fr-FR')} FCFA</p>
+              <div className="mt-4 flex items-center gap-2">
+                 <ReviewStars rating={product.rating} readOnly/>
+                <span className="text-sm text-muted-foreground">({product.reviews} avis)</span>
+              </div>
+              
+              <p className="mt-4 text-3xl font-bold text-foreground">{product.price.toLocaleString('fr-FR')} FCFA</p>
               {product.originalPrice && product.originalPrice > product.price && (
                 <p className="text-md text-muted-foreground line-through">Prix d'origine: {product.originalPrice.toLocaleString('fr-FR')} FCFA</p>
               )}

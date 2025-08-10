@@ -15,8 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useState, useEffect }
-from 'react';
+import { useState, useEffect } from 'react';
 import { addMessage } from '@/lib/messages-service';
 import { usePathname, useRouter } from 'next/navigation';
 import { LogoSpinner } from '@/components/logo-spinner';
@@ -49,7 +48,7 @@ export default function SupportPage() {
     e.preventDefault();
     if (!contactForm.name || !contactForm.email || !contactForm.message) {
       toast({
-        title: "Erreur",
+        title: "Champs requis",
         description: "Veuillez remplir tous les champs obligatoires (Nom, Email, Message).",
         variant: "destructive",
       });
@@ -65,9 +64,13 @@ export default function SupportPage() {
       });
       setContactForm({ name: '', email: '', phone: '', message: '' });
     } catch (error) {
+       let errorMessage = "Une erreur est survenue lors de l'envoi du message.";
+       if (error instanceof Error && (error.message.includes('Failed to fetch') || error.message.includes('offline'))) {
+            errorMessage = "La connexion au serveur a échoué. Veuillez vérifier votre connexion internet.";
+       }
        toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de l'envoi du message.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

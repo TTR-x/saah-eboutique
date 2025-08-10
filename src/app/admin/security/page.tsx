@@ -52,15 +52,19 @@ export default function AdminSecurityPage() {
             setConfirmPassword('');
 
         } catch (error: any) {
-            let errorMessage = "Une erreur est survenue.";
+            console.error("Password change error:", error);
+            let errorMessage = "Une erreur est survenue lors du changement de mot de passe.";
+            
             if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
                 errorMessage = "Le mot de passe actuel est incorrect.";
             } else if (error.code === 'auth/weak-password') {
                 errorMessage = "Le nouveau mot de passe est trop faible.";
+            } else if (error.code === 'auth/network-request-failed') {
+                 errorMessage = "La requête a échoué. Veuillez vérifier votre connexion internet.";
             }
-            console.error("Password change error:", error);
+
             toast({
-                title: "Erreur",
+                title: "Échec de la mise à jour",
                 description: errorMessage,
                 variant: "destructive",
             });
@@ -92,6 +96,7 @@ export default function AdminSecurityPage() {
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
                                 required 
+                                autoComplete="current-password"
                             />
                         </div>
                         <div className="space-y-2">
@@ -102,6 +107,7 @@ export default function AdminSecurityPage() {
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
                                 required 
+                                autoComplete="new-password"
                             />
                         </div>
                         <div className="space-y-2">
@@ -112,6 +118,7 @@ export default function AdminSecurityPage() {
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                 required 
+                                autoComplete="new-password"
                             />
                         </div>
                         <Button type="submit" disabled={isSubmitting}>

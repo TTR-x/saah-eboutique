@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { PlusCircle, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Pencil, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import {
   DropdownMenu,
@@ -36,6 +36,14 @@ type SlideFormData = {
   currentImageUrl?: string;
 };
 
+const fileToDataUri = (file: File) => new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+});
+
+
 export default function AdminSlidesPage() {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,9 +61,18 @@ export default function AdminSlidesPage() {
 
   const fetchSlides = async () => {
     setIsLoading(true);
-    const fetchedSlides = await getSlides();
-    setSlides(fetchedSlides);
-    setIsLoading(false);
+    try {
+        const fetchedSlides = await getSlides();
+        setSlides(fetchedSlides);
+    } catch (error) {
+        let errorMessage = "Impossible de charger les slides.";
+        if (error instanceof Error && error.message.includes('offline')) {
+            errorMessage = "Vérifiez votre connexion internet.";
+        }
+        toast({ title: "Erreur", description: errorMessage, variant: "destructive" });
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -105,7 +122,7 @@ export default function AdminSlidesPage() {
     e.preventDefault();
     if (!slideForm.title || !slideForm.subtitle) {
       toast({
-        title: "Erreur",
+        title: "Erreur de validation",
         description: "Le titre et le sous-titre sont obligatoires.",
         variant: "destructive",
       });
@@ -114,7 +131,7 @@ export default function AdminSlidesPage() {
     
     if (!editingSlide && !slideForm.imageFile) {
         toast({
-            title: "Erreur",
+            title: "Erreur de validation",
             description: "Une image est obligatoire pour un nouveau slide.",
             variant: "destructive",
         });
@@ -126,17 +143,13 @@ export default function AdminSlidesPage() {
         let imageUrl = editingSlide?.imageUrl;
         let publicId = editingSlide?.publicId;
 
-        // Si une nouvelle image est fournie
         if (slideForm.imageFile) {
-            // 1. Supprimer l'ancienne image de Cloudinary si elle existe
             if (editingSlide && editingSlide.publicId) {
                 await deleteImageAction([editingSlide.publicId]);
             }
             
-            // 2. Uploader la nouvelle image
-            const imageFormData = new FormData();
-            imageFormData.append('images', slideForm.imageFile);
-            const [uploadedImage] = await addImageUploadAction(imageFormData, 'slides');
+            const dataUri = await fileToDataUri(slideForm.imageFile);
+            const [uploadedImage] = await addImageUploadAction([dataUri], 'slides');
             
             imageUrl = uploadedImage.secure_url;
             publicId = uploadedImage.public_id;
@@ -164,10 +177,18 @@ export default function AdminSlidesPage() {
         handleCloseDialog();
         fetchSlides();
     } catch (error) {
-      console.error(error);
+      console.error("Slide submission error:", error);
+      let errorMessage = "Une erreur est survenue lors de l'enregistrement.";
+      if (error instanceof Error) {
+        if (error.message.includes('Failed to fetch') || error.message.includes('offline')) {
+            errorMessage = "La connexion au serveur a échoué. Veuillez vérifier votre connexion internet.";
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+      }
       toast({
         title: "Erreur",
-        description: error instanceof Error ? error.message : "Une erreur est survenue.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -178,7 +199,9 @@ export default function AdminSlidesPage() {
   const handleDelete = async (slide: Slide) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce slide ?")) {
         try {
-            await deleteImageAction([slide.publicId]);
+            if (slide.publicId) {
+                await deleteImageAction([slide.publicId]);
+            }
             await deleteDoc(doc(db, "slides", slide.id));
             toast({
                 title: "Succès",
@@ -186,10 +209,14 @@ export default function AdminSlidesPage() {
             });
             fetchSlides();
         } catch (error) {
-            console.error(error);
+            console.error("Delete slide error:", error);
+            let errorMessage = "Une erreur est survenue lors de la suppression.";
+            if (error instanceof Error && (error.message.includes('Failed to fetch') || error.message.includes('offline'))) {
+                errorMessage = "Échec de la suppression. Vérifiez votre connexion internet.";
+            }
             toast({
                 title: "Erreur",
-                description: "Une erreur est survenue lors de la suppression.",
+                description: errorMessage,
                 variant: "destructive",
             });
         }
@@ -261,7 +288,7 @@ export default function AdminSlidesPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={(isOpen) => !isSubmitting && setIsDialogOpen(isOpen)}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>{editingSlide ? 'Modifier le slide' : 'Ajouter un nouveau slide'}</DialogTitle>
@@ -322,7 +349,7 @@ export default function AdminSlidesPage() {
               )}
             </div>
             <DialogFooter>
-                <Button type="button" variant="secondary" onClick={handleCloseDialog}>Annuler</Button>
+                <Button type="button" variant="secondary" onClick={handleCloseDialog} disabled={isSubmitting}>Annuler</Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <LogoSpinner className="mr-2 h-4 w-4" />}
                 {editingSlide ? 'Enregistrer' : 'Ajouter'}

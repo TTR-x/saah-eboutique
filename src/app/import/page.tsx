@@ -95,9 +95,13 @@ export default function ImportPage() {
             phone: '',
         });
     } catch (error) {
+        let errorMessage = "Une erreur est survenue lors de l'envoi de votre demande.";
+        if (error instanceof Error && (error.message.includes('Failed to fetch') || error.message.includes('offline'))) {
+            errorMessage = "La connexion au serveur a échoué. Veuillez vérifier votre connexion internet.";
+        }
         toast({
             title: "Erreur",
-            description: "Une erreur est survenue lors de l'envoi de votre demande.",
+            description: errorMessage,
             variant: "destructive",
         });
     } finally {

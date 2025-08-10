@@ -17,9 +17,13 @@ export function SignOutButton({ children }: { children: React.ReactNode }) {
       router.push('/');
       router.refresh();
     } catch (error: any) {
+      let errorMessage = "Une erreur est survenue lors de la déconnexion.";
+      if (error.code === 'auth/network-request-failed') {
+          errorMessage = "Veuillez vérifier votre connexion internet.";
+      }
       toast({
         title: 'Erreur de déconnexion',
-        description: error.message,
+        description: errorMessage,
         variant: 'destructive',
       });
     }

@@ -55,9 +55,18 @@ export default function AdminProductsPage() {
 
   const fetchProducts = async () => {
     setIsLoading(true);
-    const fetchedProducts = await getProducts();
-    setProducts(fetchedProducts);
-    setIsLoading(false);
+    try {
+      const fetchedProducts = await getProducts();
+      setProducts(fetchedProducts);
+    } catch (error) {
+       let errorMessage = "Impossible de charger les produits.";
+       if (error instanceof Error && error.message.includes('offline')) {
+           errorMessage = "Vérifiez votre connexion internet.";
+       }
+       toast({ title: "Erreur", description: errorMessage, variant: "destructive" });
+    } finally {
+       setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -155,7 +164,7 @@ export default function AdminProductsPage() {
     e.preventDefault();
     if (!productForm.name || productForm.price === '' || Number(productForm.price) <= 0 || productForm.images.length === 0) {
       toast({
-        title: "Erreur",
+        title: "Erreur de validation",
         description: "Veuillez remplir tous les champs obligatoires (Nom, Prix, Images).",
         variant: "destructive",
       });
@@ -213,10 +222,18 @@ export default function AdminProductsPage() {
         handleCloseDialog();
         fetchProducts();
     } catch (error) {
-      console.error(error);
+      console.error("Product submission error:", error);
+      let errorMessage = "Une erreur est survenue lors de l'enregistrement du produit.";
+      if (error instanceof Error) {
+        if (error.message.includes('Failed to fetch') || error.message.includes('offline')) {
+            errorMessage = "La connexion au serveur a échoué. Veuillez vérifier votre connexion internet.";
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+      }
       toast({
-        title: "Erreur",
-        description: error instanceof Error ? error.message : "Une erreur est survenue.",
+        title: "Erreur d'enregistrement",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -235,8 +252,11 @@ export default function AdminProductsPage() {
             toast({ title: "Succès", description: "Le produit a été supprimé." });
             fetchProducts();
         } catch (error) {
-            console.error(error);
-            toast({ title: "Erreur", description: "Une erreur est survenue lors de la suppression.", variant: "destructive" });
+            let errorMessage = "Une erreur est survenue lors de la suppression.";
+            if (error instanceof Error && (error.message.includes('Failed to fetch') || error.message.includes('offline'))) {
+                errorMessage = "Échec de la suppression. Vérifiez votre connexion internet.";
+            }
+            toast({ title: "Erreur", description: errorMessage, variant: "destructive" });
         }
     }
   };
@@ -284,7 +304,7 @@ export default function AdminProductsPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={(isOpen) => !isSubmitting && setIsDialogOpen(isOpen)}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader><DialogTitle>{editingProduct ? 'Modifier le produit' : 'Ajouter un nouveau produit'}</DialogTitle></DialogHeader>
           <form onSubmit={handleSubmit} className="max-h-[80vh] overflow-y-auto p-1">
@@ -323,7 +343,7 @@ export default function AdminProductsPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="secondary" onClick={handleCloseDialog}>Annuler</Button>
+              <Button type="button" variant="secondary" onClick={handleCloseDialog} disabled={isSubmitting}>Annuler</Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <LogoSpinner className="mr-2 h-4 w-4" />}{editingProduct ? 'Enregistrer' : 'Ajouter'}
               </Button>
@@ -334,5 +354,3 @@ export default function AdminProductsPage() {
     </div>
   );
 }
-
-    

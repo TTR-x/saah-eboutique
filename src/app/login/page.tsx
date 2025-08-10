@@ -44,16 +44,19 @@ export default function LoginPage() {
 
     } catch (error: any) {
       console.error("Login Error:", error);
-      let description = "Vérifiez vos identifiants ou réessayez.";
+      let description = "Une erreur de connexion est survenue. Veuillez réessayer.";
       if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
         description = "L'adresse e-mail ou le mot de passe est incorrect.";
+      } else if (error.code === 'auth/network-request-failed') {
+        description = "La requête a échoué. Veuillez vérifier votre connexion internet.";
       }
       toast({
         title: "Erreur de connexion",
         description: description,
         variant: "destructive",
       });
-      setIsSubmitting(false); // Arrêter le chargement en cas d'erreur
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
