@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Product, Review, ReviewInput } from '@/lib/types';
+import type { Product, ReviewInput } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, CheckCircle, ShieldCheck, Truck, Home, Share2, PlusCircle, Send } from 'lucide-react';
@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { addReview } from '@/lib/reviews-service';
+import { cn } from "@/lib/utils";
 
 function ReviewStars({ rating, onRatingChange, readOnly = false, className }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean, className?: string }) {
   const [hoverRating, setHoverRating] = useState(0);
@@ -43,6 +44,7 @@ function ReviewStars({ rating, onRatingChange, readOnly = false, className }: { 
 
 interface ProductDetailsProps {
     product: Product;
+    initialReviews: any[];
 }
 
 export function ProductDetails({ product }: ProductDetailsProps) {
@@ -229,17 +231,17 @@ Merci de me donner plus d'informations.`;
               <div className="mt-6 flex items-center gap-2">
                 <CheckCircle className="h-5 w-5 text-green-500" />
                 <p className="text-md font-medium text-muted-foreground">
-                  {product.stock > 0 ? `${product.stock} en stock` : 'Indisponible'}
+                  En stock
                 </p>
               </div>
             </div>
             
             <div className="mt-8 grid grid-cols-1 gap-2">
-                <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleBuyNow} disabled={product.stock === 0}>
+                <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleBuyNow}>
                     Acheter maintenant
                 </Button>
                 <div className="grid grid-cols-2 gap-2">
-                    <Button size="lg" variant="outline" className="w-full" onClick={handleAddToCart} disabled={product.stock === 0}>
+                    <Button size="lg" variant="outline" className="w-full" onClick={handleAddToCart}>
                         Ajouter au panier
                     </Button>
                     <Button size="lg" variant="outline" className="w-full" onClick={handleShare}>
@@ -268,3 +270,5 @@ Merci de me donner plus d'informations.`;
       </div>
   );
 }
+
+    
