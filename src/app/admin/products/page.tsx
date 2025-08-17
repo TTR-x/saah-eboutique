@@ -16,7 +16,7 @@ import { getProducts } from "@/lib/products-service";
 import type { Product } from "@/lib/types";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LogoSpinner } from "@/components/logo-spinner";
-import { getCloudinarySignature, deleteImageAction } from "@/lib/actions";
+import { deleteImageAction } from "@/lib/actions";
 import { db } from "@/lib/firebase";
 import { addDoc, collection, deleteDoc, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 
@@ -32,6 +32,8 @@ type ProductFormData = {
   description: string;
   price: number | '';
   category: Product['category'];
+  brand?: string;
+  tags?: string[];
   existingImages: string[];
   existingPublicIds: string[];
   newImages: ImagePreview[];
@@ -51,6 +53,8 @@ export default function AdminProductsPage() {
     description: "",
     price: '',
     category: "divers",
+    brand: "",
+    tags: [],
     existingImages: [],
     existingPublicIds: [],
     newImages: [],
@@ -84,6 +88,8 @@ export default function AdminProductsPage() {
             description: editingProduct.description,
             price: editingProduct.price,
             category: editingProduct.category,
+            brand: editingProduct.brand || "",
+            tags: editingProduct.tags || [],
             existingImages: editingProduct.images,
             existingPublicIds: editingProduct.imagePublicIds || [],
             newImages: [],
@@ -146,6 +152,8 @@ export default function AdminProductsPage() {
       description: "",
       price: '',
       category: "divers",
+      brand: "",
+      tags: [],
       existingImages: [],
       existingPublicIds: [],
       newImages: [],
@@ -165,15 +173,11 @@ export default function AdminProductsPage() {
     setIsDialogOpen(false);
   }
 
-  const uploadImageWithSignature = async (file: File) => {
-    const { timestamp, signature } = await getCloudinarySignature();
+  const uploadImageUnsigned = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("api_key", process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY!);
-    formData.append("signature", signature);
-    formData.append("timestamp", timestamp.toString());
-    formData.append("folder", 'products');
-
+    formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
+    
     const endpoint = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`;
     
     const response = await fetch(endpoint, {
@@ -182,8 +186,9 @@ export default function AdminProductsPage() {
     });
     
     if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Échec du téléchargement sur Cloudinary: ${errorData.error.message}`);
+      const errorData = await response.json();
+      console.error('Cloudinary upload error:', errorData);
+      throw new Error(`Échec du téléchargement sur Cloudinary: ${errorData.error.message}`);
     }
 
     return response.json();
@@ -191,6 +196,11 @@ export default function AdminProductsPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || !process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET) {
+      toast({ title: "Erreur de configuration", description: "Les variables d'environnement Cloudinary ne sont pas définies.", variant: "destructive" });
+      return;
+    }
+
     const totalImages = productForm.existingImages.length + productForm.newImages.length;
     if (!productForm.name || productForm.price === '' || Number(productForm.price) <= 0 || totalImages === 0) {
       toast({
@@ -214,7 +224,7 @@ export default function AdminProductsPage() {
         for (let i = 0; i < productForm.newImages.length; i++) {
             const imagePreview = productForm.newImages[i];
             setSubmissionStatus(`Téléchargement image ${i + 1}/${productForm.newImages.length}...`);
-            const uploadResult = await uploadImageWithSignature(imagePreview.file);
+            const uploadResult = await uploadImageUnsigned(imagePreview.file);
             uploadedImages.push({
                 secure_url: uploadResult.secure_url,
                 public_id: uploadResult.public_id,
@@ -232,16 +242,17 @@ export default function AdminProductsPage() {
             category: productForm.category,
             images: finalImageUrls,
             imagePublicIds: finalPublicIds,
+            brand: productForm.brand || '',
+            tags: productForm.tags || [],
             createdAt: serverTimestamp(),
-            rating: 0,
-            reviews: 0,
-            stock: 100, // Default stock
+            rating: editingProduct?.rating || 0,
+            reviews: editingProduct?.reviews || 0,
+            stock: editingProduct?.stock || 100,
         };
 
         if (editingProduct) {
             const productRef = doc(db, "products", editingProduct.id);
-            // We shouldn't update createdAt or reset ratings/stock on edit.
-            const { createdAt, rating, reviews, stock, ...updateData } = productData;
+            const { createdAt, ...updateData } = productData;
             await updateDoc(productRef, updateData);
             toast({ title: "Succès", description: "Le produit a été mis à jour." });
         } else {
@@ -350,8 +361,12 @@ export default function AdminProductsPage() {
                     </Select>
                 </div>
               </div>
+               <div className="grid grid-cols-2 gap-4">
+                 <div className="grid gap-2"><Label htmlFor="brand">Marque (facultatif)</Label><Input id="brand" name="brand" value={productForm.brand} onChange={handleInputChange} placeholder="Ex: Samsung" /></div>
+                 <div className="grid gap-2"><Label htmlFor="tags">Tags (facultatif)</Label><Input id="tags" name="tags" value={productForm.tags?.join(', ') || ''} onChange={(e) => setProductForm(prev => ({...prev, tags: e.target.value.split(',').map(t => t.trim())}))} placeholder="Ex: Nouveautés, Offres flash" /></div>
+               </div>
               <div className="grid gap-2"><Label htmlFor="images">Images</Label>
-                <Input id="images" name="images" type="file" onChange={handleFileChange} className="col-span-3" accept="image/*" multiple />
+                <Input id="images" name="images" type="file" onChange={handleFileChange} className="col-span-4" accept="image/*" multiple />
                 <div className="col-span-4 flex flex-wrap gap-2 mt-2">
                   {productForm.existingImages.map((image, index) => (
                     <div key={`existing-${index}`} className="relative">
@@ -393,5 +408,3 @@ export default function AdminProductsPage() {
     </div>
   );
 }
-
-    

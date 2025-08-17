@@ -10,8 +10,8 @@ cloudinary.config({
   secure: true,
 });
 
-
-// This function is for direct signed uploads from the client
+// This is kept for backward compatibility or other signed-upload needs
+// but is no longer used for the product form.
 export async function getCloudinarySignature() {
   const timestamp = Math.round(new Date().getTime() / 1000);
   const signature = cloudinary.utils.api_sign_request(
@@ -30,5 +30,3 @@ export async function deleteImageAction(publicIds: string[]) {
         await cloudinary.uploader.destroy(publicId);
     }
 }
-
-    

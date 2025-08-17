@@ -7,11 +7,11 @@ export type Product = {
   imagePublicIds: string[];
   price: number;
   category: 'high-tech' | 'beauté' | 'maison' | 'artisanat' | 'mode' | 'divers';
-  brand?: string; // Brand is optional now
+  brand?: string;
   stock: number;
   rating: number;
   reviews: number;
-  tags?: ('Nouveautés' | 'Offres flash' | 'Produits tendance')[];
+  tags?: string[];
   attributes?: { [key: string]: string };
   createdAt: any;
 };
@@ -88,5 +88,3 @@ export type ImportOrder = {
 }
 
 export type ImportOrderInput = Omit<ImportOrder, 'id' | 'createdAt' | 'isRead'>;
-
-    
