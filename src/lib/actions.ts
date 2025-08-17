@@ -10,23 +10,18 @@ cloudinary.config({
   secure: true,
 });
 
-async function uploadImageFromDataUri(dataUri: string, folder: string) {
-  const results = await cloudinary.uploader.upload(dataUri, {
-    folder: folder,
-    resource_type: 'image',
-  });
-  return results as { secure_url: string; public_id: string };
-}
-
-export async function addImageUploadAction(dataUris: string[], folder: string) {
-    const uploadedImages: { secure_url: string; public_id: string }[] = [];
-    
-    for (const uri of dataUris) {
-        const result = await uploadImageFromDataUri(uri, folder);
-        uploadedImages.push(result);
-    }
-    
-    return uploadedImages;
+export async function addImageUploadAction(dataUri: string, folder: string) {
+  try {
+    const result = await cloudinary.uploader.upload(dataUri, {
+      folder: folder,
+      resource_type: 'image',
+    });
+    return result as { secure_url: string; public_id: string };
+  } catch (error: any) {
+    console.error('Cloudinary Upload Error:', error);
+    // Rethrow a more specific error to be caught in the form handler
+    throw new Error(`Échec du téléchargement de l'image sur Cloudinary: ${error.message}`);
+  }
 }
 
 export async function deleteImageAction(publicIds: string[]) {
@@ -34,5 +29,3 @@ export async function deleteImageAction(publicIds: string[]) {
         await cloudinary.uploader.destroy(publicId);
     }
 }
-
-    

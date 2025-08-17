@@ -38,6 +38,7 @@ export default function AdminProductsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState('');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
   
@@ -141,6 +142,7 @@ export default function AdminProductsPage() {
     });
     setEditingProduct(null);
     setImagesToDelete([]);
+    setSubmissionStatus('');
   }
 
   const handleOpenDialog = (product: Product | null = null) => {
@@ -172,22 +174,27 @@ export default function AdminProductsPage() {
     }
 
     setIsSubmitting(true);
+    setSubmissionStatus('Démarrage...');
     try {
         // Handle image deletions from Cloudinary
         if (imagesToDelete.length > 0) {
+            setSubmissionStatus("Suppression d'anciennes images...");
             await deleteImageAction(imagesToDelete);
         }
 
-        // Handle new image uploads by converting them to Data URIs
-        const newImagesToUpload = productForm.images.filter(img => typeof img !== 'string') as File[];
-        let uploadedImages: { secure_url: string, public_id: string }[] = [];
+        const newImageFiles = productForm.images.filter(img => typeof img !== 'string') as File[];
+        const uploadedImages: { secure_url: string, public_id: string }[] = [];
 
-        if (newImagesToUpload.length > 0) {
-            const dataUris = await Promise.all(newImagesToUpload.map(fileToDataUri));
-            uploadedImages = await addImageUploadAction(dataUris, 'products');
+        for (let i = 0; i < newImageFiles.length; i++) {
+            const file = newImageFiles[i];
+            setSubmissionStatus(`Téléchargement de l'image ${i + 1} sur ${newImageFiles.length}...`);
+            const dataUri = await fileToDataUri(file);
+            const uploadedImage = await addImageUploadAction(dataUri, 'products');
+            uploadedImages.push(uploadedImage);
         }
         
         // Consolidate image URLs and Public IDs
+        setSubmissionStatus("Finalisation...");
         const existingImageUrls = productForm.images.filter(img => typeof img === 'string') as string[];
         const finalImageUrls = [...existingImageUrls, ...uploadedImages.map(img => img.secure_url)];
         
@@ -238,6 +245,7 @@ export default function AdminProductsPage() {
       });
     } finally {
       setIsSubmitting(false);
+      setSubmissionStatus('');
     }
   };
 
@@ -345,7 +353,8 @@ export default function AdminProductsPage() {
             <DialogFooter>
               <Button type="button" variant="secondary" onClick={handleCloseDialog} disabled={isSubmitting}>Annuler</Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <LogoSpinner className="mr-2 h-4 w-4" />}{editingProduct ? 'Enregistrer' : 'Ajouter'}
+                {isSubmitting && <LogoSpinner className="mr-2 h-4 w-4" />}
+                {isSubmitting ? submissionStatus : (editingProduct ? 'Enregistrer' : 'Ajouter')}
               </Button>
             </DialogFooter>
           </form>
