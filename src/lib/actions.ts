@@ -10,22 +10,25 @@ cloudinary.config({
   secure: true,
 });
 
-export async function addImageUploadAction(dataUri: string, folder: string) {
-  try {
-    const result = await cloudinary.uploader.upload(dataUri, {
-      folder: folder,
-      resource_type: 'image',
-    });
-    return result as { secure_url: string; public_id: string };
-  } catch (error: any) {
-    console.error('Cloudinary Upload Error:', error);
-    // Rethrow a more specific error to be caught in the form handler
-    throw new Error(`Échec du téléchargement de l'image sur Cloudinary: ${error.message}`);
-  }
+
+// This function is for direct signed uploads from the client
+export async function getCloudinarySignature() {
+  const timestamp = Math.round(new Date().getTime() / 1000);
+  const signature = cloudinary.utils.api_sign_request(
+    {
+      timestamp: timestamp,
+      folder: 'products'
+    },
+    process.env.CLOUDINARY_API_SECRET!
+  );
+  return { timestamp, signature };
 }
+
 
 export async function deleteImageAction(publicIds: string[]) {
     for (const publicId of publicIds) {
         await cloudinary.uploader.destroy(publicId);
     }
 }
+
+    

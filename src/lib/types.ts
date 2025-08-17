@@ -3,13 +3,11 @@ export type Product = {
   id: string;
   name: string;
   description: string;
-  longDescription: string;
   images: string[];
   imagePublicIds: string[];
   price: number;
-  originalPrice?: number;
   category: 'high-tech' | 'beauté' | 'maison' | 'artisanat' | 'mode' | 'divers';
-  brand: string;
+  brand?: string; // Brand is optional now
   stock: number;
   rating: number;
   reviews: number;
@@ -90,3 +88,5 @@ export type ImportOrder = {
 }
 
 export type ImportOrderInput = Omit<ImportOrder, 'id' | 'createdAt' | 'isRead'>;
+
+    

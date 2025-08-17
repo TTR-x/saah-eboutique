@@ -45,10 +45,10 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
     "@type": "Product",
     "name": product.name,
     "image": product.images,
-    "description": product.longDescription || product.description,
+    "description": product.description,
     "brand": {
       "@type": "Brand",
-      "name": product.brand
+      "name": product.brand || 'SAAH Business'
     },
     "sku": product.id,
     "offers": {
@@ -108,3 +108,5 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
     </>
   );
 }
+
+    

@@ -65,7 +65,7 @@ Merci de me donner plus d'informations.`;
       } catch (err) {
         console.error('Failed to copy: ', err);
         let errorMessage = "Impossible de copier le lien.";
-        if (err instanceof Error && (err.message.includes('Failed to fetch') || err.message.includes('offline'))) {
+        if (err instanceof Error && (err.message.includes('Failed to fetch') || err.message.includes('offline') || err.message.includes('network'))) {
             errorMessage = "Veuillez vérifier votre connexion internet.";
         }
         toast({ title: 'Erreur', description: errorMessage, variant: 'destructive' });
@@ -113,11 +113,8 @@ Merci de me donner plus d'informations.`;
               <h1 className="text-3xl md:text-4xl font-extrabold mt-1">{product.name}</h1>
               
               <p className="mt-4 text-3xl font-bold text-foreground">{product.price.toLocaleString('fr-FR')} FCFA</p>
-              {product.originalPrice && product.originalPrice > product.price && (
-                <p className="text-md text-muted-foreground line-through">Prix d'origine: {product.originalPrice.toLocaleString('fr-FR')} FCFA</p>
-              )}
 
-              <p className="mt-6 text-muted-foreground">{product.longDescription || product.description}</p>
+              <p className="mt-6 text-muted-foreground">{product.description}</p>
 
               {product.attributes && (
                 <div className="mt-6">
@@ -182,3 +179,5 @@ Merci de me donner plus d'informations.`;
       </div>
   );
 }
+
+    
