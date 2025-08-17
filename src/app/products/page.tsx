@@ -21,7 +21,7 @@ export default function ProductsPage() {
   const searchParams = useSearchParams();
   
   const allCategories = useMemo(() => ['tous', ...new Set(products.map(p => p.category))], [products]);
-  const allBrands = useMemo(() => ['tous', ...new Set(products.map(p => p.brand))], [products]);
+  const allBrands = useMemo(() => ['tous', ...new Set(products.filter(p => p.brand).map(p => p.brand))], [products]);
   const maxPrice = useMemo(() => Math.max(...products.map(p => p.price), 0), [products]);
 
   const [filters, setFilters] = useState({
@@ -132,8 +132,8 @@ export default function ProductsPage() {
                   <RadioGroup value={filters.brand} onValueChange={handleBrandChange} className="mt-2 space-y-1">
                     {allBrands.map(brand => (
                       <div key={brand} className="flex items-center space-x-2">
-                        <RadioGroupItem value={brand} id={`brand-${brand}`} />
-                        <Label htmlFor={`brand-${brand}`} className="font-normal">{brand}</Label>
+                          <RadioGroupItem value={brand} id={`brand-${brand}`} />
+                          <Label htmlFor={`brand-${brand}`} className="font-normal">{brand}</Label>
                       </div>
                     ))}
                   </RadioGroup>
