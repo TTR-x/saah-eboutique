@@ -25,7 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getSlides } from "@/lib/slides-service";
 import type { Slide } from "@/lib/types";
 import { LogoSpinner } from "@/components/logo-spinner";
-import { addImageUploadAction, deleteImageAction } from "@/lib/actions";
+import { deleteImageAction } from "@/lib/actions";
 import { db } from "@/lib/firebase";
 import { addDoc, collection, deleteDoc, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 
@@ -34,14 +34,8 @@ type SlideFormData = {
   subtitle: string;
   imageFile: File | null;
   currentImageUrl?: string;
+  currentPublicId?: string;
 };
-
-const fileToDataUri = (file: File) => new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-});
 
 
 export default function AdminSlidesPage() {
@@ -86,6 +80,7 @@ export default function AdminSlidesPage() {
         subtitle: editingSlide.subtitle,
         imageFile: null,
         currentImageUrl: editingSlide.imageUrl,
+        currentPublicId: editingSlide.publicId,
       });
     } else {
       resetForm();
@@ -118,6 +113,25 @@ export default function AdminSlidesPage() {
     setIsDialogOpen(false);
   };
 
+  const uploadImageUnsigned = async (file: File) => {
+    if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || !process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET) {
+      throw new Error("Les variables d'environnement Cloudinary ne sont pas définies.");
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
+    
+    const endpoint = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`;
+    
+    const response = await fetch(endpoint, { method: "POST", body: formData });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Échec du téléchargement sur Cloudinary: ${errorData.error.message}`);
+    }
+    return response.json();
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!slideForm.title || !slideForm.subtitle) {
@@ -140,19 +154,19 @@ export default function AdminSlidesPage() {
 
     setIsSubmitting(true);
     try {
-        let imageUrl = editingSlide?.imageUrl;
-        let publicId = editingSlide?.publicId;
+        let imageUrl = slideForm.currentImageUrl;
+        let publicId = slideForm.currentPublicId;
 
         if (slideForm.imageFile) {
+            // If editing and a new image is provided, delete the old one first
             if (editingSlide && editingSlide.publicId) {
                 await deleteImageAction([editingSlide.publicId]);
             }
             
-            const dataUri = await fileToDataUri(slideForm.imageFile);
-            const [uploadedImage] = await addImageUploadAction([dataUri], 'slides');
+            const uploadResult = await uploadImageUnsigned(slideForm.imageFile);
             
-            imageUrl = uploadedImage.secure_url;
-            publicId = uploadedImage.public_id;
+            imageUrl = uploadResult.secure_url;
+            publicId = uploadResult.public_id;
         }
 
         const finalSlideData = {
