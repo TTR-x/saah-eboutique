@@ -15,13 +15,14 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/use-auth';
 import { SignOutButton } from '../auth/sign-out-button';
 import { UserAvatar } from '../auth/user-avatar';
 import { useCart } from '@/hooks/use-cart';
 import { useNavigation } from '@/hooks/use-navigation';
+import { useState } from 'react';
 
 const baseNavLinks = [
   { name: 'Accueil', href: '/' },
@@ -41,11 +42,19 @@ export function Header() {
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const isAdmin = user?.email === ADMIN_EMAIL;
   const pathname = usePathname();
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Cache le header sur les pages de l'espace admin
   if (pathname.startsWith('/admin')) {
     return null;
   }
+  
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (!searchQuery.trim()) return;
+      router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -97,10 +106,16 @@ export function Header() {
         
         <div className="flex flex-1 items-center justify-end space-x-2 md:justify-end">
           <div className="w-full flex-1 md:w-auto md:flex-none">
-            <form>
+            <form onSubmit={handleSearchSubmit}>
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input type="search" placeholder="Rechercher..." className="pl-8 sm:w-40 md:w-64" />
+                <Input 
+                  type="search" 
+                  placeholder="Rechercher..." 
+                  className="pl-8 sm:w-40 md:w-64" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
             </form>
           </div>

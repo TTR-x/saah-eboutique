@@ -12,6 +12,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
 import { useSearchParams } from 'next/navigation';
 import { LogoSpinner } from '@/components/logo-spinner';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 
 
 export default function ProductsPage() {
@@ -19,9 +21,12 @@ export default function ProductsPage() {
   const [isLoading, setIsLoading] = useState(true);
   
   const searchParams = useSearchParams();
+  const initialSearchQuery = searchParams.get('q') || '';
+  
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   
   const allCategories = useMemo(() => ['tous', ...new Set(products.map(p => p.category))], [products]);
-  const allBrands = useMemo(() => ['tous', ...new Set(products.filter(p => p.brand).map(p => p.brand))], [products]);
+  const allBrands = useMemo(() => ['tous', ...new Set(products.filter(p => p.brand).map(p => p.brand as string))], [products]);
   const maxPrice = useMemo(() => Math.max(...products.map(p => p.price), 0), [products]);
 
   const [filters, setFilters] = useState({
@@ -50,7 +55,11 @@ export default function ProductsPage() {
      if (maxPrice > 0) {
         setFilters(prev => ({ ...prev, priceRange: [0, maxPrice] }));
      }
-  }, [maxPrice])
+  }, [maxPrice]);
+  
+  useEffect(() => {
+    setSearchQuery(searchParams.get('q') || '');
+  }, [searchParams]);
 
   const handlePriceChange = (value: number[]) => {
     setFilters(prev => ({ ...prev, priceRange: value }));
@@ -75,16 +84,22 @@ export default function ProductsPage() {
       priceRange: [0, maxPrice > 0 ? maxPrice : 100000],
       sort: 'rating-desc',
     });
+    setSearchQuery('');
   };
 
   const filteredAndSortedProducts = useMemo(() => {
     if (isLoading) return [];
     
     let filtered = products.filter(product => {
+      const searchMatch = !searchQuery || 
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.brand && product.brand.toLowerCase().includes(searchQuery.toLowerCase()));
       const categoryMatch = filters.category === 'tous' || product.category === filters.category;
       const brandMatch = filters.brand === 'tous' || product.brand === filters.brand;
       const priceMatch = product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1];
-      return categoryMatch && brandMatch && priceMatch;
+      return searchMatch && categoryMatch && brandMatch && priceMatch;
     });
 
     return filtered.sort((a, b) => {
@@ -97,7 +112,7 @@ export default function ProductsPage() {
         default: return 0;
       }
     });
-  }, [filters, products, isLoading]);
+  }, [filters, products, isLoading, searchQuery]);
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12">
@@ -113,6 +128,21 @@ export default function ProductsPage() {
                <LogoSpinner className="h-6 w-6" />
             ) : (
               <div className="space-y-6">
+                <div>
+                  <Label htmlFor="search-input" className="text-base">Recherche</Label>
+                  <div className="relative mt-2">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="search-input"
+                      type="search"
+                      placeholder="Rechercher par mot-clé..."
+                      className="pl-8"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <Label htmlFor="category-select" className="text-base">Catégorie</Label>
                   <Select value={filters.category} onValueChange={handleCategoryChange}>
@@ -130,9 +160,9 @@ export default function ProductsPage() {
                 <div>
                   <Label className="text-base">Marque</Label>
                   <RadioGroup value={filters.brand} onValueChange={handleBrandChange} className="mt-2 space-y-1">
-                    {allBrands.map(brand => (
+                     {allBrands.map(brand => (
                       <div key={brand} className="flex items-center space-x-2">
-                          <RadioGroupItem value={brand} id={`brand-${brand}`} />
+                          <RadioGroupItem value={brand!} id={`brand-${brand}`} />
                           <Label htmlFor={`brand-${brand}`} className="font-normal">{brand}</Label>
                       </div>
                     ))}
@@ -188,7 +218,7 @@ export default function ProductsPage() {
                         <ProductCard key={product.id} product={product} />
                     ))
                 ) : (
-                    <p className="text-muted-foreground col-span-full text-center">Aucun produit ne correspond à vos critères de recherche.</p>
+                    <p className="text-muted-foreground col-span-full text-center py-10">Aucun produit ne correspond à vos critères de recherche.</p>
                 )}
             </div>
            )}
