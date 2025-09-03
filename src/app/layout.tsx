@@ -31,6 +31,7 @@ export const metadata: Metadata = {
   creator: siteConfig.author,
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    google: <meta name="google-site-verification" content="umD5CFzVjUKaJOB7332Ff9goK21qwd-BnGiIf7czGZE" />,
   },
   openGraph: {
     type: 'website',
