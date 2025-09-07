@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/carousel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Star, PlusCircle, Send } from 'lucide-react';
+import { ArrowRight, Star, PlusCircle, Send, ShoppingBag, Ship } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Autoplay from 'embla-carousel-autoplay';
@@ -178,6 +178,56 @@ export default function Home() {
           ) : (
             <>
               <ProductSection title="Nouveautés" products={newArrivals} href="/products?sort=newest" />
+              
+              <section className="bg-muted -mx-4 -my-4 px-4 py-12 md:py-20 rounded-lg">
+                <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
+                  <div className="order-2 md:order-1">
+                    <h2 className="text-3xl font-bold mb-4">Plus qu'une Boutique, un Partenaire</h2>
+                    <p className="text-muted-foreground mb-6">
+                      Chez SAAH Business, nous allons au-delà de la simple vente. Nous sommes votre allié pour trouver les meilleurs produits, que ce soit dans notre catalogue ou directement depuis la Chine grâce à notre service d'importation sur mesure.
+                    </p>
+                    <div className="space-y-4 mb-8">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 bg-primary/10 text-primary rounded-full p-3">
+                          <ShoppingBag className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">Boutique en Ligne Variée</h3>
+                          <p className="text-sm text-muted-foreground">Parcourez nos sélections de produits high-tech, mode, et maison, choisis pour leur qualité et leur innovation.</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 bg-primary/10 text-primary rounded-full p-3">
+                          <Ship className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">Service d'Import sur Mesure</h3>
+                          <p className="text-sm text-muted-foreground">Besoin d'un produit spécifique en quantité ? Confiez-nous votre projet et nous nous occupons de tout, de la recherche à la livraison.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <Button asChild size="lg">
+                        <Link href="/products" onClick={handleLinkClick}>Explorer nos produits</Link>
+                      </Button>
+                      <Button asChild size="lg" variant="outline">
+                        <Link href="/import" onClick={handleLinkClick}>Demander un devis d'import</Link>
+                      </Button>
+                    </div>
+                  </div>
+                   <div className="order-1 md:order-2">
+                     <Image 
+                       src="https://picsum.photos/600/500"
+                       alt="Un conteneur de transport et une boite de colis ouverts"
+                       data-ai-hint="shipping container logistics"
+                       width={600}
+                       height={500}
+                       className="rounded-lg shadow-xl aspect-auto"
+                     />
+                   </div>
+                </div>
+              </section>
+
               <ProductSection title="Offres Flash" products={flashSales} href="/products?tag=Offres+flash" />
               <ProductSection title="Produits Tendance" products={trendingProducts} href="/products?sort=trending" />
             </>
