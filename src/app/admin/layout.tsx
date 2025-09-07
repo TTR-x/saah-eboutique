@@ -103,7 +103,7 @@ export default function AdminLayout({
     }
 
     return (
-      <SidebarProvider>
+      <SidebarProvider defaultOpen={false}>
         <div className="flex min-h-screen bg-background">
           <Sidebar>
             <SidebarHeader>
