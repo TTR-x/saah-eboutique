@@ -153,10 +153,10 @@ export default function Home() {
                         className="object-cover"
                         priority={index === 0}
                       />
-                      <div className="absolute inset-0 bg-black/50 flex items-end justify-start">
+                      <div className="absolute inset-0 flex items-end justify-start">
                         <div className="text-left text-white p-4 pb-8 md:p-12 md:pb-16 lg:p-24 lg:pb-24 max-w-2xl">
-                          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">{slide.title}</h1>
-                          <p className="mt-4 text-lg md:text-xl">{slide.subtitle}</p>
+                          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.7)'}}>{slide.title}</h1>
+                          <p className="mt-4 text-lg md:text-xl" style={{textShadow: '1px 1px 3px rgba(0,0,0,0.7)'}}>{slide.subtitle}</p>
                           <Button asChild size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground">
                             <Link href={"/products"} onClick={handleLinkClick}>{slide.buttonText || "Explorer"}</Link>
                           </Button>
