@@ -28,7 +28,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Logo } from '@/components/layout/logo';
+import { LogoIcon } from '@/components/layout/logo-icon';
 
 
 function ReviewStars({ rating, onRatingChange, readOnly = false }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean }) {
@@ -217,9 +217,7 @@ export default function Home() {
                     </div>
                   </div>
                    <div className="order-1 md:order-2 flex items-center justify-center p-8">
-                      <div className="scale-[2.5] transform">
-                        <Logo />
-                      </div>
+                      <LogoIcon className="h-48 w-48 text-foreground/20 logo-pulse" />
                    </div>
                 </div>
               </section>
@@ -322,9 +320,3 @@ const ProductSection = ({ title, products: productList, href }: { title: string;
     </section>
   )
 }
-
-    
-
-    
-
-    
