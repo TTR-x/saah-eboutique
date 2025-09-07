@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   authors: [{ name: siteConfig.author, url: siteConfig.url }],
   creator: siteConfig.author,
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    google: "umD5CFzVjUKaJOB7332Ff9goK21qwd-BnGiIf7czGZE",
   },
   openGraph: {
     type: 'website',
