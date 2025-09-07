@@ -13,8 +13,7 @@ export function WhatsAppButton() {
         <Button
             asChild
             size="icon"
-            className="fixed bottom-6 right-6 h-16 w-16 rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-110 animate-pulse"
-            style={{ animationDuration: '2s' }}
+            className="fixed bottom-6 right-6 h-16 w-16 rounded-full bg-green-500 text-white shadow-lg transition-transform hover:scale-110 hover:bg-green-600 whatsapp-pulse"
         >
             <Link href={callUrl} aria-label="Appeler maintenant">
                 <Phone className="h-8 w-8" />
