@@ -217,7 +217,7 @@ export default function Home() {
                     </div>
                   </div>
                    <div className="order-1 md:order-2 flex items-center justify-center p-8">
-                      <LogoIcon className="h-48 w-48 text-foreground/20 logo-pulse" />
+                      <LogoIcon className="h-96 w-96 text-foreground/20 logo-pulse" />
                    </div>
                 </div>
               </section>
