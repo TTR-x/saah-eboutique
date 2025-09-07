@@ -10,6 +10,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { CartProvider } from '@/hooks/use-cart';
 import { NavigationProvider } from '@/hooks/use-navigation';
 import { WhatsAppButton } from '@/components/whatsapp-button';
+import { GoogleAnalytics } from '@/components/google-analytics';
 
 const siteConfig = {
   name: 'SAAH Business',
@@ -137,6 +138,7 @@ export default function RootLayout({
           fontInter.variable
         )}
       >
+        {process.env.NEXT_PUBLIC_GOOGLE_ADS_ID && <GoogleAnalytics />}
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

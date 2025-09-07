@@ -24,6 +24,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  env: {
+    NEXT_PUBLIC_GOOGLE_ADS_ID: 'AW-17413390680',
+    NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID: 'AW-17413390680/Yi9PCLOSnJQbENiCre9A',
+  }
 };
 
 export default nextConfig;
