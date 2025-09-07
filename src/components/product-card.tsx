@@ -17,9 +17,9 @@ export function ProductCard({ product }: ProductCardProps) {
   const { handleLinkClick } = useNavigation();
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+    <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group">
       <CardHeader className="p-0 relative">
-        <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block aspect-[5/4] w-full overflow-hidden">
+        <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block aspect-[4/5] w-full overflow-hidden">
           <Image
             src={product.images[0]}
             alt={product.name}
