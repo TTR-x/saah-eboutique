@@ -218,8 +218,8 @@ export default function Home() {
                    <div className="order-1 md:order-2">
                      <Image 
                        src="https://picsum.photos/600/500"
-                       alt="Un conteneur de transport et une boite de colis ouverts"
-                       data-ai-hint="shipping container logistics"
+                       alt="Un homme d'affaires travaillant"
+                       data-ai-hint="business man"
                        width={600}
                        height={500}
                        className="rounded-lg shadow-xl aspect-auto"
@@ -326,3 +326,5 @@ const ProductSection = ({ title, products: productList, href }: { title: string;
     </section>
   )
 }
+
+    
