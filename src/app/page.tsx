@@ -28,6 +28,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { Logo } from '@/components/layout/logo';
 
 
 function ReviewStars({ rating, onRatingChange, readOnly = false }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean }) {
@@ -215,15 +216,10 @@ export default function Home() {
                       </Button>
                     </div>
                   </div>
-                   <div className="order-1 md:order-2">
-                     <Image 
-                       src="https://images.unsplash.com/photo-1645736593731-4eef033ac37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8YnVzaW5lc3MlMjBtYW4lMjBibGFja3xlbnwwfHx8fDE3NTcyNjM1NDV8MA&ixlib=rb-4.1.0&q=80&w=1080"
-                       alt="Un homme d'affaires travaillant"
-                       data-ai-hint="business man"
-                       width={600}
-                       height={500}
-                       className="rounded-lg shadow-xl aspect-auto"
-                     />
+                   <div className="order-1 md:order-2 flex items-center justify-center p-8">
+                      <div className="scale-[2.5] transform">
+                        <Logo />
+                      </div>
                    </div>
                 </div>
               </section>
@@ -326,6 +322,8 @@ const ProductSection = ({ title, products: productList, href }: { title: string;
     </section>
   )
 }
+
+    
 
     
 
