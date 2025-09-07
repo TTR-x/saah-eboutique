@@ -12,6 +12,7 @@ export function LogoIcon({ className }: { className?: string }) {
       preserveAspectRatio="xMidYMid"
       version="1.2"
       className={cn(className)}
+      fill="currentColor"
     >
       <defs>
         <clipPath id="e746ce0f17">
@@ -48,7 +49,7 @@ export function LogoIcon({ className }: { className?: string }) {
           cy="0"
           fy="0"
         >
-          <stop stopColor="#ff0100" stopOpacity="1" offset="0" />
+          <stop stopColor="hsl(var(--primary))" stopOpacity="1" offset="0" />
           <stop stopColor="#ffffff" stopOpacity="1" offset="1" />
         </radialGradient>
         <clipPath id="344c896398">
@@ -85,7 +86,7 @@ export function LogoIcon({ className }: { className?: string }) {
           cy="0"
           fy="0"
         >
-          <stop stopColor="#ff0100" stopOpacity="1" offset="0" />
+          <stop stopColor="hsl(var(--primary))" stopOpacity="1" offset="0" />
           <stop stopColor="#ffffff" stopOpacity="1" offset="1" />
         </radialGradient>
         <clipPath id="748aae41c3">
@@ -437,4 +438,3 @@ export function LogoIcon({ className }: { className?: string }) {
   );
 }
 
-    
