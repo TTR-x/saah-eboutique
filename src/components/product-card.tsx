@@ -19,14 +19,14 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
       <CardHeader className="p-0 relative">
-        <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block">
+        <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block aspect-[5/4] w-full overflow-hidden">
           <Image
             src={product.images[0]}
             alt={product.name}
             data-ai-hint={`${product.category} product`}
             width={400}
-            height={400}
-            className="w-full h-56 object-cover"
+            height={500}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </Link>
         <div className="absolute top-2 right-2 flex flex-col gap-2 items-end">
