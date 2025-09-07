@@ -38,7 +38,9 @@ export function Header() {
   const { setTheme } = useTheme();
   const { user, loading } = useAuth();
   const { items } = useCart();
-  const { isLoading, handleLinkClick } = useNavigation();
+  const { isLoading, handleLinkClick: originalHandleLinkClick } = useNavigation();
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const isAdmin = user?.email === ADMIN_EMAIL;
   const pathname = usePathname();
@@ -54,6 +56,11 @@ export function Header() {
       e.preventDefault();
       if (!searchQuery.trim()) return;
       router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
+  };
+
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    originalHandleLinkClick(e);
+    setIsSheetOpen(false);
   };
 
   return (
@@ -78,7 +85,7 @@ export function Header() {
           </nav>
         </div>
 
-        <Sheet>
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
                 <Menu className="h-6 w-6" />

@@ -63,6 +63,7 @@ export default function AdminLayout({
     const [isAuthCheckComplete, setIsAuthCheckComplete] = useState(false);
     const [unreadMessages, setUnreadMessages] = useState(0);
     const [unreadOrders, setUnreadOrders] = useState(0);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
         if (!loading) {
@@ -101,15 +102,22 @@ export default function AdminLayout({
         </div>
       );
     }
+    
+    const handleMenuClick = () => {
+      // For mobile, the sidebar is a sheet, so we manage its state here
+      if (window.innerWidth < 768) {
+        setIsSidebarOpen(false);
+      }
+    };
 
     return (
-      <SidebarProvider defaultOpen={false}>
+      <SidebarProvider defaultOpen={false} open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
         <div className="flex min-h-screen bg-background">
           <Sidebar>
             <SidebarHeader>
               <Logo />
             </SidebarHeader>
-            <SidebarContent>
+            <SidebarContent onClick={handleMenuClick}>
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
