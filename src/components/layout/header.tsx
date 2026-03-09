@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Menu, Search, ShoppingCart, User, LogOut, LogIn } from 'lucide-react';
 import { Logo } from './logo';
 import {
@@ -70,9 +70,11 @@ export function Header() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-[280px] p-0">
-                <div className="p-6 border-b">
-                  <Logo />
-                </div>
+                <SheetHeader className="p-6 border-b text-left">
+                  <SheetTitle>
+                    <Logo />
+                  </SheetTitle>
+                </SheetHeader>
                 <nav className="flex flex-col p-2">
                   {baseNavLinks.map(link => (
                     <Link
