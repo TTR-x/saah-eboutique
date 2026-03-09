@@ -1,5 +1,4 @@
-
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -13,24 +12,31 @@ import { WhatsAppButton } from '@/components/whatsapp-button';
 import { GoogleAnalytics } from '@/components/google-analytics';
 
 const siteConfig = {
-  name: 'SAAH Business',
+  name: 'SAAH Tontine',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'https://saahbusiness.com',
-  description: 'SAAH Business : Votre boutique en ligne de confiance pour le high-tech, la mode, la maison et l’artisanat. Découvrez des produits de qualité, un service client exceptionnel et des offres exclusives. Achetez maintenant sur SAAH Business.',
-  keywords: ['saah', 'saahbusiness', 'saah business', 'e-commerce saah', 'shopping en ligne saah', 'acheter en ligne', 'high-tech', 'mode', 'maison', 'artisanat', 'produits importés chine'],
+  description: 'SAAH Tontine : La solution moderne pour votre épargne collective. Sécurité, transparence et flexibilité pour vos projets futurs.',
+  keywords: ['tontine', 'épargne collective', 'saah tontine', 'finance solidaire', 'épargne groupe', 'tontine en ligne'],
   author: 'SAAH Business',
 };
 
+export const viewport: Viewport = {
+  themeColor: '#ffca28',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} - Boutique en Ligne High-Tech, Mode & Maison`,
+    default: `${siteConfig.name} - Épargne Collaborative & Tontine`,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
   keywords: siteConfig.keywords,
   authors: [{ name: siteConfig.author, url: siteConfig.url }],
   creator: siteConfig.author,
+  manifest: '/manifest.json',
   verification: {
     google: "umD5CFzVjUKaJOB7332Ff9goK21qwd-BnGiIf7czGZE",
   },
@@ -38,7 +44,7 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'fr_FR',
     url: siteConfig.url,
-    title: `${siteConfig.name} - Boutique en Ligne`,
+    title: `${siteConfig.name} - Votre Épargne en Groupe`,
     description: siteConfig.description,
     siteName: siteConfig.name,
     images: [
@@ -52,13 +58,14 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${siteConfig.name} - Boutique en Ligne`,
+    title: `${siteConfig.name} - Épargne Collaborative`,
     description: siteConfig.description,
     images: [`${siteConfig.url}/og-image.png`],
     creator: '@saahbusiness',
   },
   icons: {
     icon: '/favicon.ico',
+    apple: '/apple-icon.png',
   }
 };
 
@@ -75,7 +82,7 @@ export default function RootLayout({
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'SAAH Business',
+    name: 'SAAH Tontine',
     url: siteConfig.url,
     logo: `${siteConfig.url}/logo.png`,
     description: siteConfig.description,
@@ -93,27 +100,6 @@ export default function RootLayout({
     }
   };
 
-  const websiteSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    url: siteConfig.url,
-    name: siteConfig.name,
-    description: siteConfig.description,
-    publisher: {
-      '@type': 'Organization',
-      name: siteConfig.name,
-      logo: {
-        '@type': 'ImageObject',
-        url: `${siteConfig.url}/logo.png`,
-      },
-    },
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: `${siteConfig.url}/products?q={search_term_string}`,
-      'query-input': 'required name=search_term_string',
-    },
-  };
-
   return (
     <html lang="fr" className="scroll-smooth" suppressHydrationWarning>
       <head>
@@ -126,10 +112,6 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-        />
-         <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
       </head>
       <body

@@ -1,0 +1,22 @@
+{
+  "name": "SAAH Tontine",
+  "short_name": "SAAH",
+  "description": "Votre plateforme de confiance pour l'épargne collaborative et la tontine moderne.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffca28",
+  "icons": [
+    {
+      "src": "https://picsum.photos/seed/saah/192/192",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://picsum.photos/seed/saah/512/512",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

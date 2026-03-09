@@ -6,8 +6,7 @@ export function Logo() {
       <LogoIcon className="h-8 w-8 mr-2" />
       <div>
         <span className="text-primary transition-all duration-300 ease-in-out group-hover:tracking-widest">SAAH</span>
-        <span className="text-foreground">&nbsp;Business</span>
-        <span className="text-foreground">&nbsp;228</span>
+        <span className="text-foreground">&nbsp;Tontine</span>
       </div>
     </div>
   );
