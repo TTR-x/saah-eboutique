@@ -96,10 +96,10 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-[#f0f2f5]">
       <main className="flex-1 pb-12">
-        {/* Hero Section Simpliste */}
+        {/* Hero Section Simpliste - Style Facebook */}
         <section className="bg-white border-b py-12 md:py-20 mb-8">
           <div className="container mx-auto px-4 text-center space-y-6">
-            <LogoIcon className="h-24 w-24 mx-auto mb-4 text-primary logo-pulse" />
+            <LogoIcon className="h-24 w-24 mx-auto mb-4 text-primary logo-pulse hover:scale-110 transition-transform cursor-pointer" />
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#1c1e21]">
               SAAH Business
             </h1>
@@ -121,7 +121,7 @@ export default function Home() {
           
           {/* Features Grid - Style Facebook */}
           <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="border-none shadow-sm rounded-xl">
+            <Card className="border-none shadow-sm rounded-xl hover:shadow-md transition-shadow">
               <CardContent className="p-6 flex items-start gap-4">
                 <div className="bg-[#e7f3ff] p-3 rounded-full">
                   <ShieldCheck className="h-6 w-6 text-[#1877f2]" />
@@ -132,7 +132,7 @@ export default function Home() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="border-none shadow-sm rounded-xl">
+            <Card className="border-none shadow-sm rounded-xl hover:shadow-md transition-shadow">
               <CardContent className="p-6 flex items-start gap-4">
                 <div className="bg-[#e7f3ff] p-3 rounded-full">
                   <Users className="h-6 w-6 text-[#1877f2]" />
@@ -143,7 +143,7 @@ export default function Home() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="border-none shadow-sm rounded-xl">
+            <Card className="border-none shadow-sm rounded-xl hover:shadow-md transition-shadow">
               <CardContent className="p-6 flex items-start gap-4">
                 <div className="bg-[#e7f3ff] p-3 rounded-full">
                   <TrendingUp className="h-6 w-6 text-[#1877f2]" />
@@ -232,6 +232,23 @@ export default function Home() {
                 </DialogContent>
               </Dialog>
             </div>
+          </section>
+
+          {/* New PWA/Brand section with Large LogoIcon */}
+          <section className="py-20 flex flex-col items-center justify-center text-center space-y-8 bg-white rounded-3xl shadow-sm border border-[#dddfe2]">
+             <div className="relative">
+                <div className="absolute inset-0 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
+                <LogoIcon className="h-64 w-64 md:h-96 md:w-96 text-primary relative z-10 hover:scale-105 transition-transform duration-500 cursor-pointer drop-shadow-xl" />
+             </div>
+             <div className="max-w-xl px-4">
+                <h2 className="text-3xl font-black text-[#1c1e21]">SAAH Business dans votre poche</h2>
+                <p className="text-[#65676b] mt-4 text-lg">
+                  Installez notre application pour suivre vos cotisations et gérer vos plans de tontine en un clic, directement depuis votre écran d'accueil.
+                </p>
+                <Button size="lg" className="mt-8 rounded-full px-10 font-bold bg-[#1877f2] hover:bg-[#166fe5]">
+                  Installer l'application
+                </Button>
+             </div>
           </section>
         </div>
       </main>
