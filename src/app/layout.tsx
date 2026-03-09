@@ -12,15 +12,15 @@ import { WhatsAppButton } from '@/components/whatsapp-button';
 import { GoogleAnalytics } from '@/components/google-analytics';
 
 const siteConfig = {
-  name: 'SAAH Tontine',
+  name: 'SAAH Business',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'https://saahbusiness.com',
-  description: 'SAAH Tontine : La solution moderne pour votre épargne collective. Sécurité, transparence et flexibilité pour vos projets futurs.',
-  keywords: ['tontine', 'épargne collective', 'saah tontine', 'finance solidaire', 'épargne groupe', 'tontine en ligne'],
+  description: 'SAAH Business : Épargne collaborative et tontine moderne. Sécurité, transparence et flexibilité pour vos projets financiers.',
+  keywords: ['tontine', 'épargne collective', 'saah business', 'finance solidaire', 'épargne groupe', 'tontine en ligne'],
   author: 'SAAH Business',
 };
 
 export const viewport: Viewport = {
-  themeColor: '#ffca28',
+  themeColor: '#ffffff',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -29,7 +29,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} - Épargne Collaborative & Tontine`,
+    default: `${siteConfig.name} - Épargne Collaborative`,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
@@ -82,7 +82,7 @@ export default function RootLayout({
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'SAAH Tontine',
+    name: 'SAAH Business',
     url: siteConfig.url,
     logo: `${siteConfig.url}/logo.png`,
     description: siteConfig.description,
@@ -116,15 +116,15 @@ export default function RootLayout({
       </head>
       <body
         className={cn(
-          'min-h-screen bg-background font-body antialiased',
+          'min-h-screen bg-[#f0f2f5] font-body antialiased',
           fontInter.variable
         )}
       >
         {process.env.NEXT_PUBLIC_GOOGLE_ADS_ID && <GoogleAnalytics />}
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
+          enableSystem={false}
           disableTransitionOnChange
         >
           <NavigationProvider>
