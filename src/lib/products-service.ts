@@ -1,7 +1,4 @@
-
-'use server'
-
-import { collection, getDocs, getDoc, doc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, query, orderBy } from 'firebase/firestore';
 import type { Product } from './types';
 import { db } from './firebase';
 
@@ -16,7 +13,7 @@ export async function getProducts(): Promise<Product[]> {
             id: doc.id,
             ...data,
             createdAt: data.createdAt?.toDate()
-        } as Product
+        } as Product;
     });
 }
 

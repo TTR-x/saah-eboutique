@@ -1,10 +1,6 @@
-
-'use server'
-
 import { db } from './firebase';
 import { collection, getDocs, addDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import type { Testimonial, TestimonialInput } from './types';
-import { revalidatePath } from 'next/cache';
 
 const testimonialsCollectionRef = collection(db, 'testimonials');
 
@@ -15,7 +11,6 @@ export async function addTestimonial(testimonialInput: TestimonialInput) {
     };
     
     await addDoc(testimonialsCollectionRef, newTestimonial);
-    revalidatePath('/');
 }
 
 export async function getTestimonials(): Promise<Testimonial[]> {

@@ -1,10 +1,6 @@
-
-'use server'
-
 import { db } from './firebase';
 import { collection, getDocs, addDoc, serverTimestamp, query, orderBy, getCountFromServer, where } from 'firebase/firestore';
 import type { ImportOrder, ImportOrderInput } from './types';
-import { revalidatePath } from 'next/cache';
 
 const importOrdersCollectionRef = collection(db, 'import-orders');
 
@@ -16,8 +12,6 @@ export async function addImportOrder(orderInput: ImportOrderInput) {
     };
     
     await addDoc(importOrdersCollectionRef, newOrder);
-    revalidatePath('/admin/orders');
-    revalidatePath('/admin');
 }
 
 export async function getImportOrders(): Promise<ImportOrder[]> {
@@ -34,7 +28,12 @@ export async function getImportOrders(): Promise<ImportOrder[]> {
 }
 
 export async function getUnreadImportOrdersCount(): Promise<number> {
-    const q = query(importOrdersCollectionRef, where('isRead', '==', false));
-    const snapshot = await getCountFromServer(q);
-    return snapshot.data().count;
+    try {
+        const q = query(importOrdersCollectionRef, where('isRead', '==', false));
+        const snapshot = await getCountFromServer(q);
+        return snapshot.data().count;
+    } catch (e) {
+        console.error("Error fetching orders count:", e);
+        return 0;
+    }
 }

@@ -2269,3 +2269,18 @@ INFO: Detected non-HTTP/2 connection.
 [debug] [2026-03-10T12:06:17.285Z] Mar 10, 2026 12:06:17 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected HTTP/2 connection.
  {"metadata":{"emulator":{"name":"firestore"},"message":"Mar 10, 2026 12:06:17 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected HTTP/2 connection.\n"}}
+[debug] [2026-03-10T12:06:22.223Z] <<< [apiv2][status] PUT http://127.0.0.1:8080/emulator/v1/projects/demo-app:securityRules 200
+[debug] [2026-03-10T12:06:22.223Z] <<< [apiv2][body] PUT http://127.0.0.1:8080/emulator/v1/projects/demo-app:securityRules {}
+[info] ✔  firestore: Rules updated. 
+[info] i  firestore: Change detected, updating rules... 
+[debug] [2026-03-10T13:18:10.778Z] >>> [apiv2][query] PUT http://127.0.0.1:8080/emulator/v1/projects/demo-app:securityRules [none]
+[debug] [2026-03-10T13:18:10.786Z] >>> [apiv2][body] PUT http://127.0.0.1:8080/emulator/v1/projects/demo-app:securityRules {"ignore_errors":true,"rules":{"files":[{"name":"security.rules","content":"rules_version = '2';\n\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    \n    // Fonction pour vérifier si l'utilisateur est l'admin officiel\n    function isAdmin() {\n      return request.auth != null && request.auth.token.email == \"saahbusiness2026@gmail.com\";\n    }\n\n    // --- Produits ---\n    match /products/{productId} {\n      allow read: if true; // Tout le monde peut voir les plans\n      allow write: if isAdmin(); // Seul l'admin peut modifier\n    }\n\n    // --- Slides (Carousel) ---\n    match /slides/{slideId} {\n      allow read: if true;\n      allow write: if isAdmin();\n    }\n\n    // --- Témoignages ---\n    match /testimonials/{testimonialId} {\n      allow read: if true;\n      allow create: if true; // N'importe qui peut laisser un avis\n      allow update, delete: if isAdmin();\n    }\n\n    // --- Messages de Contact ---\n    match /contact-messages/{messageId} {\n      allow create: if true; // Public pour le formulaire\n      allow read, update, delete: if isAdmin(); // Seul l'admin peut gérer\n    }\n\n    // --- Demandes d'Importation ---\n    match /import-orders/{orderId} {\n      allow create: if true; // Public pour le formulaire\n      allow read, update, delete: if isAdmin(); // Seul l'admin peut gérer\n    }\n\n    // --- Règle par défaut ---\n    match /{document=**} {\n      allow read, write: if isAdmin();\n    }\n  }\n}"}]}}
+[debug] [2026-03-10T13:18:10.915Z] Mar 10, 2026 1:18:10 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Mar 10, 2026 1:18:10 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-03-10T13:18:11.119Z] Mar 10, 2026 1:18:11 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Mar 10, 2026 1:18:11 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected HTTP/2 connection.\n"}}
+[debug] [2026-03-10T13:18:11.573Z] <<< [apiv2][status] PUT http://127.0.0.1:8080/emulator/v1/projects/demo-app:securityRules 200
+[debug] [2026-03-10T13:18:11.586Z] <<< [apiv2][body] PUT http://127.0.0.1:8080/emulator/v1/projects/demo-app:securityRules {}
+[info] ✔  firestore: Rules updated. 
