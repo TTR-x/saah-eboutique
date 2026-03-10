@@ -51,7 +51,7 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-1">
-                  <span className="font-bold text-sm text-[#1c1e21] hover:underline cursor-pointer">SAAH Business</span>
+                  <span className="font-bold text-sm text-[#1c1e21] hover:underline cursor-pointer">{product.name}</span>
                   <Badge className="bg-[#1877f2] text-white border-none text-[8px] h-4 px-1">OFFICIEL</Badge>
               </div>
               <span className="text-[12px] text-[#65676b]">{timeAgo}</span>
@@ -65,9 +65,9 @@ export function ProductCard({ product }: ProductCardProps) {
         <CardContent className="p-0">
           {/* Post Text */}
           <div className="px-4 pb-3">
-              <CardTitle className="text-[15px] font-normal text-[#1c1e21] leading-normal line-clamp-2">
-                  {product.name} - {product.description}
-              </CardTitle>
+              <p className="text-[15px] font-normal text-[#1c1e21] leading-normal line-clamp-2">
+                  {product.description}
+              </p>
           </div>
 
           {/* Post Image */}
