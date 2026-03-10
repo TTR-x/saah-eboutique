@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Star, PlusCircle, Send, ShieldCheck, Users, TrendingUp } from 'lucide-react';
+import { Star, PlusCircle, Send, ShieldCheck, Users, TrendingUp, Home, Ship, Info, ArrowRight, MessageCircle } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useEffect, useState } from 'react';
@@ -41,7 +41,7 @@ function ReviewStars({ rating, onRatingChange, readOnly = false }: { rating: num
   )
 }
 
-export default function Home() {
+export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -94,113 +94,149 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f0f2f5]">
-      <main className="flex-1 pb-12">
-        {/* Hero Section Simpliste - Style Facebook */}
-        <section className="bg-white border-b py-12 md:py-20 mb-8">
-          <div className="container mx-auto px-4 text-center space-y-6">
-            <LogoIcon className="h-24 w-24 mx-auto mb-4 text-primary logo-pulse hover:scale-110 transition-transform cursor-pointer" />
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#1c1e21]">
-              SAAH Business
-            </h1>
-            <p className="text-xl text-[#65676b] max-w-2xl mx-auto font-medium">
-              L'épargne collective réinventée pour vous. Sécurité, transparence et croissance.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
-              <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-full px-8 shadow-sm transition-transform active:scale-95">
-                <Link href="/products" onClick={handleLinkClick}>Explorer les plans</Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="rounded-full px-8 font-bold border-[#dddfe2] text-[#4b4f56] hover:bg-[#f2f3f5]">
-                <Link href="/support" onClick={handleLinkClick}>Comment ça marche ?</Link>
-              </Button>
-            </div>
-          </div>
-        </section>
+    <div className="min-h-screen bg-[#f0f2f5] py-4">
+      <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-6">
         
-        <div className="container mx-auto px-4 md:px-6 space-y-12">
-          
-          {/* Features Grid - Style Facebook */}
-          <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="border-none shadow-sm rounded-xl hover:shadow-md transition-shadow">
-              <CardContent className="p-6 flex items-start gap-4">
-                <div className="bg-[#e7f3ff] p-3 rounded-full">
-                  <ShieldCheck className="h-6 w-6 text-[#1877f2]" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-[#1c1e21]">Garanti & Sécurisé</h3>
-                  <p className="text-sm text-[#65676b] mt-1">Transparence totale sur chaque cycle de cotisation.</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-none shadow-sm rounded-xl hover:shadow-md transition-shadow">
-              <CardContent className="p-6 flex items-start gap-4">
-                <div className="bg-[#e7f3ff] p-3 rounded-full">
-                  <Users className="h-6 w-6 text-[#1877f2]" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-[#1c1e21]">Réseau de Confiance</h3>
-                  <p className="text-sm text-[#65676b] mt-1">Rejoignez une communauté de membres vérifiés.</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-none shadow-sm rounded-xl hover:shadow-md transition-shadow">
-              <CardContent className="p-6 flex items-start gap-4">
-                <div className="bg-[#e7f3ff] p-3 rounded-full">
-                  <TrendingUp className="h-6 w-6 text-[#1877f2]" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-[#1c1e21]">Épargne Flexible</h3>
-                  <p className="text-sm text-[#65676b] mt-1">Des plans adaptés à votre rythme et vos objectifs.</p>
-                </div>
-              </CardContent>
-            </Card>
-          </section>
-
-          {/* Featured Plans */}
-          <section>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-[#1c1e21]">Nos Plans de Tontine</h2>
-              <Link href="/products" onClick={handleLinkClick} className="text-sm font-semibold text-[#1877f2] hover:underline flex items-center">
-                Voir tout <ArrowRight className="ml-1 h-3 w-3" />
-              </Link>
+        {/* Left Sidebar - Navigation Rapide */}
+        <aside className="hidden lg:block space-y-2 sticky top-20 self-start">
+          <Link href="/" className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#e4e6eb] transition-all font-bold text-sm text-[#1c1e21]">
+            <div className="bg-primary/10 p-2 rounded-full text-primary">
+              <Home className="h-5 w-5" />
             </div>
-            {isLoading ? (
-              <div className="flex justify-center py-10"><LogoSpinner className="h-8 w-8 text-[#1877f2]"/></div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {products.slice(0, 4).map(product => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            )}
-          </section>
+            Accueil
+          </Link>
+          <Link href="/products" className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#e4e6eb] transition-all font-bold text-sm text-[#1c1e21]">
+            <div className="bg-blue-500/10 p-2 rounded-full text-blue-500">
+              <Users className="h-5 w-5" />
+            </div>
+            Plans de Tontine
+          </Link>
+          <Link href="/import" className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#e4e6eb] transition-all font-bold text-sm text-[#1c1e21]">
+            <div className="bg-green-500/10 p-2 rounded-full text-green-500">
+              <Ship className="h-5 w-5" />
+            </div>
+            Service Import
+          </Link>
+          <Link href="/support" className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#e4e6eb] transition-all font-bold text-sm text-[#1c1e21]">
+            <div className="bg-yellow-500/10 p-2 rounded-full text-yellow-500">
+              <LifeBuoy className="h-5 w-5" />
+            </div>
+            Centre d'Aide
+          </Link>
+          <div className="pt-4 mt-4 border-t border-[#dddfe2]">
+            <h3 className="px-2 mb-2 font-bold text-[#65676b] text-sm uppercase tracking-wider">Raccourcis</h3>
+            <Link href="/cart" className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#e4e6eb] transition-all font-bold text-sm text-[#1c1e21]">
+              🛒 Mon Panier
+            </Link>
+          </div>
+        </aside>
+
+        {/* Center Main Feed - Flux de Publications */}
+        <main className="lg:col-span-2 space-y-4">
           
-          {/* Testimonials - Style WhatsApp Chats */}
-          <section id="testimonials">
-            <h2 className="text-2xl font-bold text-[#1c1e21] mb-6">Témoignages de membres</h2>
+          {/* Create Post Style Box */}
+          <Card className="border border-[#dddfe2] shadow-sm rounded-xl overflow-hidden bg-white">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center border border-[#dddfe2]">
+                  <LogoIcon className="h-6 w-6 text-primary" />
+                </div>
+                <Button variant="ghost" className="flex-1 justify-start rounded-full bg-[#f0f2f5] hover:bg-[#e4e6eb] text-[#65676b] font-normal px-4 h-10">
+                  Besoin d'un plan d'épargne ?
+                </Button>
+              </div>
+              <div className="flex items-center gap-1 border-t border-[#f0f2f5] pt-2">
+                <Button variant="ghost" className="flex-1 h-10 gap-2 font-bold text-[#65676b] rounded-lg">
+                  <ShieldCheck className="h-5 w-5 text-green-500" />
+                  Sécurisé
+                </Button>
+                <Button variant="ghost" className="flex-1 h-10 gap-2 font-bold text-[#65676b] rounded-lg">
+                  <Users className="h-5 w-5 text-[#1877f2]" />
+                  Collectif
+                </Button>
+                <Button variant="ghost" className="flex-1 h-10 gap-2 font-bold text-[#65676b] rounded-lg">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  Croissance
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Feed Content */}
+          {isLoading ? (
+            <div className="flex flex-col items-center py-20 gap-4">
+              <LogoSpinner className="h-10 w-10 text-primary" />
+              <p className="text-[#65676b] font-bold">Chargement de votre flux...</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {products.map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+              
+              {products.length === 0 && (
+                <div className="text-center py-20 bg-white rounded-xl border border-[#dddfe2] shadow-sm">
+                  <Package className="mx-auto h-12 w-12 text-[#65676b] mb-4 opacity-20" />
+                  <p className="text-[#65676b] font-bold">Aucune actualité pour le moment.</p>
+                </div>
+              )}
+            </div>
+          )}
+        </main>
+
+        {/* Right Sidebar - Widgets & Témoignages */}
+        <aside className="hidden lg:block space-y-6 sticky top-20 self-start">
+          
+          {/* Widget Sponsorisé / Import */}
+          <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-white">
+            <CardContent className="p-4">
+              <h3 className="font-bold text-[#65676b] text-sm mb-3">SERVICES SAAH</h3>
+              <div className="space-y-4">
+                <div className="group cursor-pointer">
+                  <div className="relative aspect-video rounded-lg overflow-hidden mb-2 bg-[#f0f2f5]">
+                    <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                      <Ship className="h-12 w-12 text-primary opacity-50" />
+                    </div>
+                  </div>
+                  <h4 className="font-bold text-sm group-hover:underline">Importation Chine Express</h4>
+                  <p className="text-xs text-[#65676b] mt-1 line-clamp-2">Trouvez vos produits au meilleur prix directement à la source.</p>
+                  <Button asChild variant="secondary" size="sm" className="w-full mt-3 rounded-lg font-bold bg-[#f2f3f5] hover:bg-primary hover:text-white transition-all">
+                    <Link href="/import">En savoir plus</Link>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Témoignages Style "Suggestions" */}
+          <div>
+            <div className="flex items-center justify-between mb-3 px-2">
+              <h3 className="font-bold text-[#65676b] text-sm uppercase">Communauté</h3>
+              <Button variant="ghost" size="sm" className="h-7 text-primary font-bold text-xs hover:bg-primary/5" asChild>
+                <Link href="/#testimonials">Tout voir</Link>
+              </Button>
+            </div>
             <div className="space-y-3">
               {testimonials.slice(0, 3).map((testimonial) => (
-                <Card key={testimonial.id} className="border-none shadow-sm rounded-2xl overflow-hidden max-w-2xl">
-                  <CardContent className="p-4 flex gap-3">
-                     <Avatar className="h-10 w-10 shrink-0">
-                        <AvatarFallback className="bg-primary/20 text-[#1c1e21] font-bold">{testimonial.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 bg-[#f0f2f5] p-3 rounded-2xl rounded-tl-none">
-                        <div className="flex justify-between items-start mb-1">
-                          <p className="font-bold text-sm text-[#1c1e21]">{testimonial.name}</p>
-                          <ReviewStars rating={testimonial.rating || 5} readOnly />
-                        </div>
-                        <p className="text-sm text-[#4b4f56] italic">"{testimonial.comment}"</p>
-                      </div>
-                  </CardContent>
-                </Card>
+                <div key={testimonial.id} className="flex gap-3 px-2 group cursor-default">
+                  <Avatar className="h-10 w-10 shrink-0 border border-[#dddfe2]">
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold">{testimonial.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 overflow-hidden">
+                    <p className="font-bold text-sm text-[#1c1e21] truncate">{testimonial.name}</p>
+                    <p className="text-xs text-[#65676b] line-clamp-2 italic">"{testimonial.comment}"</p>
+                    <div className="mt-1">
+                      <ReviewStars rating={testimonial.rating || 5} readOnly />
+                    </div>
+                  </div>
+                </div>
               ))}
               
               <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="ghost" className="w-full max-w-2xl py-8 border-2 border-dashed border-[#dddfe2] rounded-2xl hover:bg-white transition-colors group">
-                    <PlusCircle className="mr-2 h-5 w-5 text-[#65676b] group-hover:text-primary" />
-                    <span className="text-[#65676b] font-bold">Ajouter un avis</span>
+                  <Button variant="outline" className="w-full rounded-lg border-[#dddfe2] text-[#1c1e21] font-bold text-sm h-10 mt-2 bg-white hover:bg-[#f2f3f5]">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Témoigner
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="rounded-2xl sm:max-w-[425px]">
@@ -225,33 +261,28 @@ export default function Home() {
                         <DialogFooter className="pt-2">
                             <Button type="submit" className="w-full bg-primary font-bold rounded-lg" disabled={isSubmittingReview}>
                                 {isSubmittingReview ? <LogoSpinner className="mr-2 h-4 w-4" /> : <Send className="mr-2 h-4 w-4" />}
-                                Envoyer mon avis
+                                Publier mon avis
                             </Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>
               </Dialog>
             </div>
-          </section>
+          </div>
 
-          {/* New PWA/Brand section with Large LogoIcon */}
-          <section className="py-20 flex flex-col items-center justify-center text-center space-y-8 bg-white rounded-3xl shadow-sm border border-[#dddfe2]">
-             <div className="relative">
-                <div className="absolute inset-0 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
-                <LogoIcon className="h-64 w-64 md:h-96 md:w-96 text-primary relative z-10 hover:scale-105 transition-transform duration-500 cursor-pointer drop-shadow-xl" />
-             </div>
-             <div className="max-w-xl px-4">
-                <h2 className="text-3xl font-black text-[#1c1e21]">SAAH Business dans votre poche</h2>
-                <p className="text-[#65676b] mt-4 text-lg">
-                  Installez notre application pour suivre vos cotisations et gérer vos plans de tontine en un clic, directement depuis votre écran d'accueil.
-                </p>
-                <Button size="lg" className="mt-8 rounded-full px-10 font-bold bg-[#1877f2] hover:bg-[#166fe5]">
-                  Installer l'application
-                </Button>
-             </div>
-          </section>
-        </div>
-      </main>
+          {/* Footer Side Links */}
+          <div className="px-2 pt-4 text-[12px] text-[#65676b] space-x-2 leading-relaxed">
+            <Link href="/" className="hover:underline">Confidentialité</Link>
+            <span>·</span>
+            <Link href="/" className="hover:underline">Conditions</Link>
+            <span>·</span>
+            <Link href="/" className="hover:underline">Publicité</Link>
+            <span>·</span>
+            <span>SAAH Business © {new Date().getFullYear()}</span>
+          </div>
+        </aside>
+
+      </div>
     </div>
   );
 }

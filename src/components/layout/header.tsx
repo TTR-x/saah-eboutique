@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Menu, Search, ShoppingCart, User, LogOut, LogIn } from 'lucide-react';
+import { Menu, Search, ShoppingCart, User, LogOut, LogIn, Home, Package, Ship, LifeBuoy } from 'lucide-react';
 import { Logo } from './logo';
 import {
   DropdownMenu,
@@ -21,13 +21,6 @@ import { UserAvatar } from '../auth/user-avatar';
 import { useCart } from '@/hooks/use-cart';
 import { useNavigation } from '@/hooks/use-navigation';
 import { useState } from 'react';
-
-const baseNavLinks = [
-  { name: 'Accueil', href: '/' },
-  { name: 'Plans', href: '/products' },
-  { name: 'Import', href: '/import' },
-  { name: 'Support', href: '/support' },
-];
 
 const ADMIN_EMAIL = "sabbataka02@gmail.com";
 
@@ -58,72 +51,67 @@ export function Header() {
     setIsSheetOpen(false);
   };
 
+  const navItems = [
+    { name: 'Accueil', href: '/', icon: <Home className="h-6 w-6" /> },
+    { name: 'Plans', href: '/products', icon: <Package className="h-6 w-6" /> },
+    { name: 'Import', href: '/import', icon: <Ship className="h-6 w-6" /> },
+    { name: 'Support', href: '/support', icon: <LifeBuoy className="h-6 w-6" /> },
+  ];
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-md shadow-sm">
       {isLoading && <Progress value={100} className="absolute top-0 h-[2px] animate-pulse duration-1000 bg-primary" />}
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center">
-          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden mr-2">
-                  <Menu className="h-6 w-6 text-[#1c1e21]" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[280px] p-0">
-                <SheetHeader className="p-6 border-b text-left">
-                  <SheetTitle>
-                    <Logo />
-                  </SheetTitle>
-                </SheetHeader>
-                <nav className="flex flex-col p-2">
-                  {baseNavLinks.map(link => (
-                    <Link
-                      key={link.name}
-                      href={link.href}
-                      onClick={handleLinkClick}
-                      className="flex items-center px-4 py-3 text-base font-bold text-[#1c1e21] rounded-lg hover:bg-[#f2f3f5] transition-colors"
-                    >
-                      {link.name}
-                    </Link>
-                  ))}
-                </nav>
-              </SheetContent>
-            </Sheet>
-          <Link href="/" className="flex items-center" onClick={handleLinkClick}>
+      <div className="container flex h-14 items-center justify-between px-4">
+        {/* Left: Logo & Search */}
+        <div className="flex items-center gap-2 flex-1">
+          <Link href="/" className="flex items-center shrink-0" onClick={handleLinkClick}>
             <Logo />
           </Link>
-        </div>
-
-        <nav className="hidden md:flex items-center space-x-1">
-          {baseNavLinks.map(link => (
-            <Link
-              key={link.name}
-              href={link.href}
-              onClick={handleLinkClick}
-              className={`px-4 py-2 text-sm font-bold transition-all rounded-full ${pathname === link.href ? 'text-primary bg-primary/10' : 'text-[#65676b] hover:bg-[#f2f3f5] hover:text-[#1c1e21]'}`}
-            >
-              {link.name}
-            </Link>
-          ))}
-        </nav>
-        
-        <div className="flex items-center space-x-2">
-          <form onSubmit={handleSearchSubmit} className="hidden sm:block">
+          <form onSubmit={handleSearchSubmit} className="hidden lg:block ml-2 group">
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#65676b]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#65676b]" />
               <Input 
                 type="search" 
-                placeholder="Rechercher..." 
-                className="pl-9 h-9 w-40 md:w-64 bg-[#f0f2f5] border-none rounded-full focus:ring-1 focus:ring-primary text-sm" 
+                placeholder="Rechercher sur SAAH..." 
+                className="pl-9 h-10 w-64 bg-[#f0f2f5] border-none rounded-full focus:ring-1 focus:ring-primary text-sm placeholder:text-[#65676b]" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
           </form>
-          
-          <Button asChild variant="ghost" size="icon" className="relative rounded-full hover:bg-[#f2f3f5]">
+          <Button variant="ghost" size="icon" className="lg:hidden rounded-full bg-[#f0f2f5] text-[#1c1e21]">
+            <Search className="h-5 w-5" />
+          </Button>
+        </div>
+
+        {/* Center: Navigation Icons */}
+        <nav className="hidden md:flex items-center justify-center flex-1 h-full gap-1">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={handleLinkClick}
+                className={`relative flex items-center justify-center w-24 h-full group transition-colors`}
+                title={item.name}
+              >
+                <div className={`flex items-center justify-center w-full h-12 rounded-lg group-hover:bg-[#f2f3f5] transition-all ${isActive ? 'text-primary' : 'text-[#65676b]'}`}>
+                  {item.icon}
+                </div>
+                {isActive && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+        
+        {/* Right: User Actions */}
+        <div className="flex items-center justify-end gap-2 flex-1">
+          <Button asChild variant="ghost" size="icon" className="relative rounded-full bg-[#f0f2f5] hover:bg-[#e4e6eb] text-[#1c1e21]">
             <Link href="/cart" onClick={handleLinkClick}>
-              <ShoppingCart className="h-5 w-5 text-[#1c1e21]" />
+              <ShoppingCart className="h-5 w-5" />
               {itemCount > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm">
                   {itemCount}
@@ -132,41 +120,72 @@ export function Header() {
             </Link>
           </Button>
 
-           <DropdownMenu>
+          <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-[#f2f3f5]" disabled={loading}>
-                     {user ? <UserAvatar /> : <div className="bg-[#f0f2f5] p-2 rounded-full"><User className="h-5 w-5 text-[#1c1e21]" /></div>}
+                <Button variant="ghost" size="icon" className="rounded-full bg-[#f0f2f5] hover:bg-[#e4e6eb] text-[#1c1e21]" disabled={loading}>
+                     {user ? <UserAvatar /> : <User className="h-5 w-5" />}
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-lg border-none mt-2">
+            <DropdownMenuContent align="end" className="w-64 rounded-xl shadow-xl border-none mt-2 p-2">
                 {user ? (
                     <>
-                         <DropdownMenuItem asChild>
-                           <Link href={isAdmin ? "/admin" : "#"} onClick={isAdmin ? handleLinkClick : (e) => e.preventDefault()} className="flex items-center w-full p-3 cursor-pointer">
+                         <DropdownMenuItem asChild className="rounded-lg">
+                           <Link href={isAdmin ? "/admin" : "#"} onClick={isAdmin ? handleLinkClick : (e) => e.preventDefault()} className="flex items-center w-full p-2 cursor-pointer gap-3">
+                              <UserAvatar />
                               <div className="flex flex-col items-start overflow-hidden">
-                                  <p className="font-bold text-[#1c1e21] truncate w-full">{user.displayName || user.email}</p>
-                                  {isAdmin && <p className="text-xs font-semibold text-primary">Tableau de bord</p>}
+                                  <p className="font-bold text-[#1c1e21] truncate w-full">{user.displayName || user.email?.split('@')[0]}</p>
+                                  <p className="text-xs text-[#65676b]">Voir le profil {isAdmin && '(Admin)'}</p>
                               </div>
                            </Link>
                         </DropdownMenuItem>
-                         <DropdownMenuSeparator />
+                         <DropdownMenuSeparator className="my-2" />
                         <SignOutButton>
-                            <DropdownMenuItem className="p-3 text-red-500 font-bold focus:text-red-500 focus:bg-red-50 cursor-pointer">
+                            <DropdownMenuItem className="p-2 text-red-500 font-bold focus:text-red-500 focus:bg-red-50 cursor-pointer rounded-lg">
                                 <LogOut className="mr-2 h-4 w-4" />
                                 Déconnexion
                             </DropdownMenuItem>
                         </SignOutButton>
                     </>
                 ) : (
-                  <DropdownMenuItem className="p-3 font-bold text-[#1c1e21] cursor-default">
-                     <div className="flex items-center w-full">
-                      <LogIn className="mr-2 h-4 w-4" />
+                  <DropdownMenuItem className="p-3 font-bold text-[#1c1e21] cursor-default rounded-lg">
+                     <div className="flex items-center w-full gap-2">
+                      <LogIn className="h-5 w-5" />
                        Visiteur
                     </div>
                   </DropdownMenuItem>
                 )}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden rounded-full bg-[#f0f2f5] text-[#1c1e21]">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[300px] p-0 border-none bg-[#f0f2f5]">
+                <SheetHeader className="p-4 bg-white border-b text-left">
+                  <SheetTitle>
+                    <Logo />
+                  </SheetTitle>
+                </SheetHeader>
+                <div className="p-2 space-y-1">
+                  {navItems.map(item => (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={handleLinkClick}
+                      className="flex items-center gap-3 px-3 py-2 text-sm font-bold text-[#1c1e21] rounded-lg hover:bg-white transition-all shadow-sm border border-transparent hover:border-[#dddfe2]"
+                    >
+                      <div className="p-2 rounded-full bg-primary/10 text-primary">
+                        {item.icon}
+                      </div>
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
         </div>
       </div>
     </header>
