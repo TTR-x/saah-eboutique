@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -7,7 +6,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
-import { ArrowRight, Star, MoreHorizontal, ShoppingCart } from 'lucide-react';
+import { ArrowRight, MoreHorizontal, ShoppingCart, CreditCard } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNavigation } from '@/hooks/use-navigation';
 import { LogoIcon } from './layout/logo-icon';
@@ -15,6 +14,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useCart } from '@/hooks/use-cart';
 import { useToast } from '@/hooks/use-toast';
+import { CheckoutDialog } from './checkout-dialog';
 
 interface ProductCardProps {
   product: Product;
@@ -25,6 +25,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const { handleLinkClick } = useNavigation();
   const { addItem } = useCart();
   const { toast } = useToast();
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   
   const timeAgo = product.createdAt 
     ? formatDistanceToNow(new Date(product.createdAt), { addSuffix: true, locale: fr })
@@ -88,15 +89,9 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </Link>
 
-        {/* Post Info Bar */}
-        <div className="px-4 py-3 border-b border-[#f0f2f5] flex items-center justify-between">
-            <div className="flex items-center -space-x-1">
-                <div className="h-5 w-5 rounded-full bg-[#1877f2] flex items-center justify-center ring-2 ring-white">
-                    <Star className="h-3 w-3 text-white fill-white" />
-                </div>
-                <span className="ml-2 text-sm text-[#65676b] pl-2">{product.rating ? product.rating.toFixed(1) : '5.0'} • {product.reviews || 0} membres</span>
-            </div>
-            <div className="text-sm text-[#65676b] font-bold">
+        {/* Post Info Bar - Just Price now */}
+        <div className="px-4 py-2 border-b border-[#f0f2f5] flex items-center justify-end">
+            <div className="text-sm text-primary font-black">
                 {product.price.toLocaleString('fr-FR')} FCFA
             </div>
         </div>
@@ -110,15 +105,29 @@ export function ProductCard({ product }: ProductCardProps) {
           onClick={handleAddToCart}
         >
             <ShoppingCart className="h-4 w-4" />
-            <span>Panier</span>
+            <span className="hidden xs:inline">Panier</span>
         </Button>
         <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="flex-1">
             <Button variant="ghost" className="w-full rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5]">
                 <ArrowRight className="h-4 w-4" />
-                <span>Détails</span>
+                <span className="hidden xs:inline">Détails</span>
             </Button>
         </Link>
+        <Button 
+          variant="ghost" 
+          className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5]"
+          onClick={() => setIsCheckoutOpen(true)}
+        >
+            <CreditCard className="h-4 w-4" />
+            <span className="hidden xs:inline">Payer</span>
+        </Button>
       </CardFooter>
+
+      <CheckoutDialog 
+        product={product} 
+        open={isCheckoutOpen} 
+        onOpenChange={setIsCheckoutOpen} 
+      />
     </Card>
   );
 }
