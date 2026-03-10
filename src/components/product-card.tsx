@@ -110,20 +110,6 @@ export function ProductCard({ product }: ProductCardProps) {
 
       {/* Post Actions */}
       <CardFooter className="p-1 flex items-center justify-between gap-0.5">
-        <Button variant="ghost" className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-1.5 px-1 hover:bg-[#f2f3f5]" onClick={handlePay}>
-            <CreditCard className="h-4 w-4" />
-            <span className="text-[11px] sm:text-xs">Payer</span>
-        </Button>
-        <Button variant="ghost" className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-1.5 px-1 hover:bg-[#f2f3f5]" onClick={handleInterested}>
-            <MessageCircle className="h-4 w-4" />
-            <span className="text-[11px] sm:text-xs">Intéressé</span>
-        </Button>
-        <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="flex-1">
-            <Button variant="ghost" className="w-full rounded-md text-[#65676b] font-bold h-10 gap-1.5 px-1 hover:bg-[#f2f3f5]">
-                <ArrowRight className="h-4 w-4" />
-                <span className="text-[11px] sm:text-xs">Détails</span>
-            </Button>
-        </Link>
         <Button 
           variant="ghost" 
           className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-1.5 px-1 hover:bg-[#f2f3f5]"
@@ -131,6 +117,20 @@ export function ProductCard({ product }: ProductCardProps) {
         >
             <ShoppingCart className="h-4 w-4" />
             <span className="text-[11px] sm:text-xs">Panier</span>
+        </Button>
+        <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="flex-1">
+            <Button variant="ghost" className="w-full rounded-md text-[#65676b] font-bold h-10 gap-1.5 px-1 hover:bg-[#f2f3f5]">
+                <ArrowRight className="h-4 w-4" />
+                <span className="text-[11px] sm:text-xs">Détails</span>
+            </Button>
+        </Link>
+        <Button variant="ghost" className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-1.5 px-1 hover:bg-[#f2f3f5]" onClick={handlePay}>
+            <CreditCard className="h-4 w-4" />
+            <span className="text-[11px] sm:text-xs">Payer</span>
+        </Button>
+        <Button variant="ghost" className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-1.5 px-1 hover:bg-[#f2f3f5]" onClick={handleInterested}>
+            <MessageCircle className="h-4 w-4" />
+            <span className="text-[11px] sm:text-xs">Intéressé</span>
         </Button>
       </CardFooter>
     </Card>
