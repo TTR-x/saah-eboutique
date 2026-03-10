@@ -119,10 +119,10 @@ export default function AdminProductsPage() {
             isTontine: editingProduct.isTontine || false,
             tontineDuration: editingProduct.tontineDuration || "",
         });
-    } else {
+    } else if (!isDialogOpen) {
         resetForm();
     }
-  }, [editingProduct]);
+  }, [editingProduct, isDialogOpen]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -192,12 +192,17 @@ export default function AdminProductsPage() {
       isTontine: false,
       tontineDuration: "",
     });
-    setEditingProduct(null);
     setImagesToDelete([]);
     setSubmissionStatus('');
   }
 
-  const handleOpenDialog = (product: Product | null = null) => {
+  const handleOpenNew = () => {
+    setEditingProduct(null);
+    resetForm();
+    setIsDialogOpen(true);
+  }
+
+  const handleOpenEdit = (product: Product) => {
     setEditingProduct(product);
     setIsDialogOpen(true);
   }
@@ -205,7 +210,7 @@ export default function AdminProductsPage() {
   const handleDuplicate = (product: Product) => {
     const duplicated = {
         ...product,
-        id: "", // Important: empty ID to save as new
+        id: "", 
         name: `${product.name} (Copie)`,
     };
     setEditingProduct(duplicated as any);
@@ -213,8 +218,10 @@ export default function AdminProductsPage() {
   }
 
   const handleCloseDialog = () => {
-    resetForm();
-    setIsDialogOpen(false);
+    if (!isSubmitting) {
+        setIsDialogOpen(false);
+        setEditingProduct(null);
+    }
   };
 
   const uploadImageUnsigned = async (file: File) => {
@@ -245,20 +252,9 @@ export default function AdminProductsPage() {
 
     const totalImages = productForm.existingImages.length + productForm.newImages.length;
     
-    // Validations
     if (!productForm.name || productForm.price === '' || totalImages === 0) {
       toast({ title: "Erreur", description: "Veuillez remplir le nom, le prix et ajouter au moins une image.", variant: "destructive" });
       return;
-    }
-
-    if (Number(productForm.price) <= 0) {
-        toast({ title: "Erreur", description: "Le prix doit être supérieur à 0.", variant: "destructive" });
-        return;
-    }
-
-    if (productForm.stock !== '' && Number(productForm.stock) < 0) {
-        toast({ title: "Erreur", description: "Le stock ne peut pas être négatif.", variant: "destructive" });
-        return;
     }
 
     setIsSubmitting(true);
@@ -308,17 +304,17 @@ export default function AdminProductsPage() {
             const productRef = doc(db, "products", editingProduct.id);
             const { createdAt, ...updateData } = productData;
             await updateDoc(productRef, updateData);
-            toast({ title: "Succès", description: "Produit mis à jour avec succès." });
+            toast({ title: "Succès", description: "Produit mis à jour." });
         } else {
             await addDoc(collection(db, 'products'), productData);
-            toast({ title: "Succès", description: "Nouveau produit ajouté." });
+            toast({ title: "Succès", description: "Article publié." });
         }
       
         handleCloseDialog();
         fetchProducts();
     } catch (error) {
       console.error(error);
-      toast({ title: "Erreur", description: "Une erreur est survenue lors de l'enregistrement.", variant: "destructive" });
+      toast({ title: "Erreur", description: "Échec de l'enregistrement.", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
       setSubmissionStatus('');
@@ -332,7 +328,7 @@ export default function AdminProductsPage() {
                 await deleteImageAction(product.imagePublicIds);
             }
             await deleteDoc(doc(db, "products", product.id));
-            toast({ title: "Succès", description: "Produit supprimé." });
+            toast({ title: "Succès", description: "Article supprimé." });
             fetchProducts();
         } catch (error) {
             toast({ title: "Erreur", description: "Échec de la suppression.", variant: "destructive" });
@@ -347,43 +343,43 @@ export default function AdminProductsPage() {
             <h2 className="text-3xl font-extrabold tracking-tight">Catalogue Articles</h2>
             <p className="text-muted-foreground">Gérez vos produits, stocks et options de paiement.</p>
         </div>
-        <Button onClick={() => handleOpenDialog()} className="shadow-lg">
-          <PlusCircle className="mr-2 h-4 w-4" /> Nouvel Article
+        <Button onClick={handleOpenNew} className="shadow-lg h-12 px-6 rounded-xl font-bold bg-primary text-black hover:bg-primary/90">
+          <PlusCircle className="mr-2 h-5 w-5" /> Nouvel Article
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
+      <Card className="rounded-2xl overflow-hidden border-none shadow-sm">
+        <CardHeader className="bg-white border-b">
             <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
                     <Package className="h-5 w-5 text-primary" />
                     Articles en vente ({products.length})
                 </CardTitle>
             </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4">
+        <CardContent className="p-0">
+          <div className="divide-y">
             {isLoading ? (
-                <div className="flex flex-col justify-center items-center h-40 gap-2">
-                    <LogoSpinner className="h-8 w-8 text-primary" />
-                    <p className="text-sm text-muted-foreground">Chargement du catalogue...</p>
+                <div className="flex flex-col justify-center items-center h-60 gap-3">
+                    <LogoSpinner className="h-10 w-10 text-primary" />
+                    <p className="text-sm font-medium text-muted-foreground">Chargement du catalogue...</p>
                 </div>
             ) : products.length > 0 ? (
               products.map((product) => (
-                <div key={product.id} className="flex items-center justify-between p-4 bg-muted/30 border rounded-xl hover:bg-muted/50 transition-colors">
+                <div key={product.id} className="flex items-center justify-between p-4 bg-white hover:bg-muted/30 transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className="relative h-16 w-16 rounded-lg overflow-hidden border bg-white">
+                    <div className="relative h-16 w-16 rounded-xl overflow-hidden border bg-muted/50">
                         <Image src={product.images[0]} alt={product.name} fill className="object-cover" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold">{product.name}</h3>
-                        <Badge variant={product.status === 'active' ? 'default' : 'outline'} className={product.status === 'active' ? 'bg-green-500 hover:bg-green-600' : 'text-muted-foreground'}>
-                            {product.status === 'active' ? 'Actif' : 'Inactif'}
+                        <h3 className="font-bold text-base">{product.name}</h3>
+                        <Badge variant={product.status === 'active' ? 'default' : 'outline'} className={product.status === 'active' ? 'bg-green-500 hover:bg-green-600 border-none' : 'text-muted-foreground'}>
+                            {product.status === 'active' ? 'Actif' : 'Masqué'}
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                        <span className="font-bold text-primary">{product.price.toLocaleString('fr-FR')} FCFA</span>
+                      <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground mt-1">
+                        <span className="text-primary font-bold">{product.price.toLocaleString('fr-FR')} FCFA</span>
                         <span>•</span>
                         <span>Stock: {product.stock}</span>
                         <span>•</span>
@@ -394,17 +390,17 @@ export default function AdminProductsPage() {
                   <div className="flex items-center gap-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="rounded-full"><MoreHorizontal className="h-5 w-5" /></Button>
+                            <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted"><MoreHorizontal className="h-5 w-5" /></Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem onClick={() => handleOpenDialog(product)}>
+                        <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-xl border-none p-2">
+                            <DropdownMenuItem onClick={() => handleOpenEdit(product)} className="rounded-lg">
                                 <Pencil className="mr-2 h-4 w-4" /> Modifier
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDuplicate(product)}>
+                            <DropdownMenuItem onClick={() => handleDuplicate(product)} className="rounded-lg">
                                 <Copy className="mr-2 h-4 w-4" /> Dupliquer
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleDelete(product)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                            <DropdownMenuSeparator className="my-2" />
+                            <DropdownMenuItem onClick={() => handleDelete(product)} className="text-destructive focus:bg-destructive/10 focus:text-destructive rounded-lg">
                                 <Trash2 className="mr-2 h-4 w-4" /> Supprimer
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -413,10 +409,10 @@ export default function AdminProductsPage() {
                 </div>
               ))
             ) : (
-              <div className="text-center py-20 bg-muted/20 rounded-xl border border-dashed">
-                <Package className="mx-auto h-12 w-12 text-muted-foreground opacity-20 mb-4" />
-                <p className="text-muted-foreground">Aucun article dans votre catalogue.</p>
-                <Button variant="link" onClick={() => handleOpenDialog()} className="mt-2">Ajouter votre premier produit</Button>
+              <div className="text-center py-24 bg-white">
+                <Package className="mx-auto h-16 w-16 text-muted-foreground opacity-20 mb-4" />
+                <p className="text-muted-foreground font-medium">Votre catalogue est vide.</p>
+                <Button variant="link" onClick={handleOpenNew} className="mt-2 text-primary font-bold">Ajouter votre premier produit</Button>
               </div>
             )}
           </div>
@@ -424,182 +420,193 @@ export default function AdminProductsPage() {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={(isOpen) => !isSubmitting && setIsDialogOpen(isOpen)}>
-        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-hidden flex flex-col p-0 rounded-2xl">
-          <DialogHeader className="p-6 border-b bg-muted/10">
-            <DialogTitle className="text-2xl flex items-center gap-2">
-                {editingProduct?.id ? <Pencil className="h-6 w-6 text-primary" /> : <PlusCircle className="h-6 w-6 text-primary" />}
-                {editingProduct?.id ? 'Modifier l\'article' : 'Nouvel Article'}
+        <DialogContent className="sm:max-w-[850px] max-h-[90vh] overflow-hidden flex flex-col p-0 border-none rounded-3xl shadow-2xl">
+          <DialogHeader className="p-6 border-b bg-white">
+            <DialogTitle className="text-2xl font-black flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    {editingProduct?.id ? <Pencil className="h-6 w-6" /> : <PlusCircle className="h-6 w-6" />}
+                </div>
+                {editingProduct?.id ? 'Modifier l\'article' : 'Publier un nouvel article'}
             </DialogTitle>
           </DialogHeader>
           
-          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
-            <div className="p-6 space-y-8 pb-20">
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto bg-[#f8f9fa]">
+            <div className="p-6 space-y-8 pb-24">
               
               {/* SECTION 1: INFOS GENERALES */}
               <div className="space-y-4">
-                <h3 className="font-black text-lg flex items-center gap-2 border-b pb-2"><LayoutGrid className="h-5 w-5" /> Informations de base</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="name">Nom de l'article *</Label>
-                        <Input id="name" name="name" value={productForm.name} onChange={handleInputChange} placeholder="Ex: iPhone 15 Pro Max" required />
+                <h3 className="font-black text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <LayoutGrid className="h-4 w-4" /> Informations générales
+                </h3>
+                <Card className="p-6 border-none shadow-sm rounded-2xl space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="name" className="font-bold">Nom de l'article *</Label>
+                            <Input id="name" name="name" value={productForm.name} onChange={handleInputChange} placeholder="Ex: iPhone 15 Pro Max" className="h-12 rounded-xl bg-muted/30 border-none focus:ring-primary" required />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="category" className="font-bold">Catégorie *</Label>
+                            <Select value={productForm.category} onValueChange={handleCategoryChange}>
+                                <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-none"><SelectValue placeholder="Choisir" /></SelectTrigger>
+                                <SelectContent className="rounded-xl border-none shadow-xl">
+                                    {productCategories.map(cat => (<SelectItem key={cat} value={cat} className="rounded-lg">{cat.charAt(0).toUpperCase() + cat.slice(1)}</SelectItem>))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="category">Catégorie *</Label>
-                        <Select value={productForm.category} onValueChange={handleCategoryChange}>
-                            <SelectTrigger><SelectValue placeholder="Choisir" /></SelectTrigger>
-                            <SelectContent>
-                                {productCategories.map(cat => (<SelectItem key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</SelectItem>))}
-                            </SelectContent>
-                        </Select>
+                        <Label htmlFor="description" className="font-bold">Description détaillée *</Label>
+                        <Textarea id="description" name="description" value={productForm.description} onChange={handleInputChange} placeholder="Détaillez les caractéristiques, tailles, couleurs..." className="min-h-[120px] rounded-xl bg-muted/30 border-none focus:ring-primary" required />
                     </div>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="description">Description détaillée *</Label>
-                    <Textarea id="description" name="description" value={productForm.description} onChange={handleInputChange} placeholder="Détaillez les caractéristiques, tailles, couleurs..." className="min-h-[120px]" required />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="brand">Marque / Fabricant</Label>
-                        <Input id="brand" name="brand" value={productForm.brand} onChange={handleInputChange} placeholder="Ex: Apple, Samsung..." />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="brand" className="font-bold">Marque / Fabricant</Label>
+                            <Input id="brand" name="brand" value={productForm.brand} onChange={handleInputChange} placeholder="Ex: Apple, Samsung..." className="h-12 rounded-xl bg-muted/30 border-none focus:ring-primary" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="tags" className="font-bold flex items-center gap-2"><TagIcon className="h-3 w-3" /> Tags (séparés par des virgules)</Label>
+                            <Input id="tags" name="tags" value={productForm.tags} onChange={handleInputChange} placeholder="Ex: homme, mode, premium" className="h-12 rounded-xl bg-muted/30 border-none focus:ring-primary" />
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="tags" className="flex items-center gap-2"><TagIcon className="h-3 w-3" /> Tags (séparés par des virgules)</Label>
-                        <Input id="tags" name="tags" value={productForm.tags} onChange={handleInputChange} placeholder="Ex: homme, mode, premium" />
-                    </div>
-                </div>
+                </Card>
               </div>
 
               {/* SECTION 2: PRIX, STOCK ET STATUT */}
-              <div className="space-y-4 pt-4 border-t">
-                <h3 className="font-black text-lg flex items-center gap-2 border-b pb-2"><Package className="h-5 w-5" /> Stock & Visibilité</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="price">Prix Cash (FCFA) *</Label>
-                        <Input id="price" name="price" type="number" value={productForm.price} onChange={handleNumberInputChange} className="font-bold text-primary" required />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="stock">Quantité en stock</Label>
-                        <Input id="stock" name="stock" type="number" value={productForm.stock} onChange={handleNumberInputChange} />
-                    </div>
-                    <div className="flex items-end pb-2">
-                        <div className="flex items-center justify-between w-full p-2 border rounded-lg bg-muted/20">
-                            <div className="space-y-0.5">
-                                <Label className="text-xs">Statut de l'article</Label>
-                                <p className="text-[10px] text-muted-foreground">{productForm.status === 'active' ? 'Visible sur le site' : 'Masqué'}</p>
+              <div className="space-y-4">
+                <h3 className="font-black text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Package className="h-4 w-4" /> Stock & Visibilité
+                </h3>
+                <Card className="p-6 border-none shadow-sm rounded-2xl space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="price" className="font-bold text-primary">Prix Cash (FCFA) *</Label>
+                            <Input id="price" name="price" type="number" value={productForm.price} onChange={handleNumberInputChange} className="h-12 rounded-xl bg-primary/5 border-none focus:ring-primary font-black text-lg text-primary" required />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="stock" className="font-bold">Quantité en stock</Label>
+                            <Input id="stock" name="stock" type="number" value={productForm.stock} onChange={handleNumberInputChange} className="h-12 rounded-xl bg-muted/30 border-none focus:ring-primary font-bold" />
+                        </div>
+                        <div className="flex flex-col justify-end">
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 h-12">
+                                <Label className="font-bold text-xs">Statut Visible</Label>
+                                <Switch checked={productForm.status === 'active'} onCheckedChange={(val) => setProductForm(p => ({...p, status: val ? 'active' : 'inactive'}))} />
                             </div>
-                            <Switch checked={productForm.status === 'active'} onCheckedChange={(val) => setProductForm(p => ({...p, status: val ? 'active' : 'inactive'}))} />
                         </div>
-                    </div>
-                </div>
-                
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-dashed">
-                        <div className="space-y-0.5">
-                            <Label className="font-bold">Autoriser la livraison</Label>
-                            <p className="text-xs text-muted-foreground">Permet au client de choisir la livraison lors de l'achat.</p>
-                        </div>
-                        <Switch checked={productForm.allowDelivery} onCheckedChange={(val) => setProductForm(p => ({...p, allowDelivery: val}))} />
                     </div>
                     
-                    {productForm.allowDelivery && (
-                        <div className="grid grid-cols-1 gap-4 pl-6 border-l-4 border-primary animate-in slide-in-from-left-2 duration-300">
-                            <div className="space-y-2">
-                                <Label>Frais de livraison (FCFA)</Label>
-                                <Input name="deliveryFees" type="number" value={productForm.deliveryFees} onChange={handleNumberInputChange} placeholder="Ex: 1500" />
+                    <div className="space-y-4 pt-4 border-t border-dashed">
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                                <Label className="font-black text-base">Autoriser la livraison</Label>
+                                <p className="text-xs text-muted-foreground">Permet au client de demander une expédition.</p>
                             </div>
+                            <Switch checked={productForm.allowDelivery} onCheckedChange={(val) => setProductForm(p => ({...p, allowDelivery: val}))} />
                         </div>
-                    )}
-                </div>
+                        
+                        {productForm.allowDelivery && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-6 border-l-4 border-primary animate-in slide-in-from-left duration-300">
+                                <div className="space-y-2">
+                                    <Label className="font-bold text-sm">Frais de livraison (FCFA)</Label>
+                                    <Input name="deliveryFees" type="number" value={productForm.deliveryFees} onChange={handleNumberInputChange} placeholder="Ex: 1500" className="h-10 rounded-xl bg-muted/30 border-none" />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </Card>
               </div>
 
               {/* SECTION 3: OPTIONS DE PAIEMENT */}
-              <div className="space-y-4 pt-4 border-t">
-                <h3 className="font-black text-lg flex items-center gap-2 border-b pb-2">💳 Options de paiement</h3>
-                
-                <div className="grid gap-4">
-                    <div className="flex items-center justify-between p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/30">
-                        <div className="space-y-0.5">
-                            <Label className="font-bold">Activer le paiement par tranches</Label>
-                            <p className="text-xs text-muted-foreground">Permet de payer en plusieurs mensualités.</p>
-                        </div>
-                        <Switch checked={productForm.allowInstallments} onCheckedChange={(val) => setProductForm(p => ({...p, allowInstallments: val}))} />
-                    </div>
-
-                    {productForm.allowInstallments && (
-                        <div className="grid grid-cols-2 gap-4 pl-6 border-l-4 border-blue-500 animate-in slide-in-from-left-2 duration-300">
-                            <div className="space-y-2">
-                                <Label>Mensualité (FCFA)</Label>
-                                <Input name="installmentPrice" type="number" value={productForm.installmentPrice} onChange={handleNumberInputChange} />
+              <div className="space-y-4">
+                <h3 className="font-black text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    💳 Modes de paiement avancés
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card className="p-6 border-none shadow-sm rounded-2xl space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                                <Label className="font-black text-base text-blue-600">Paiement par tranches</Label>
+                                <p className="text-xs text-muted-foreground">Vente échelonnée sur plusieurs mois.</p>
                             </div>
-                            <div className="space-y-2">
-                                <Label>Nombre de mois</Label>
-                                <Input name="installmentMonths" type="number" value={productForm.installmentMonths} onChange={handleNumberInputChange} />
-                            </div>
+                            <Switch checked={productForm.allowInstallments} onCheckedChange={(val) => setProductForm(p => ({...p, allowInstallments: val}))} />
                         </div>
-                    )}
 
-                    <div className="flex items-center justify-between p-4 bg-green-50/50 dark:bg-green-900/10 rounded-xl border border-green-100 dark:border-green-900/30">
-                        <div className="space-y-0.5">
-                            <Label className="font-bold">Proposer comme Plan de Tontine</Label>
-                            <p className="text-xs text-muted-foreground">Inclut l'article dans un cycle d'épargne collective.</p>
-                        </div>
-                        <Switch checked={productForm.isTontine} onCheckedChange={(val) => setProductForm(p => ({...p, isTontine: val}))} />
-                    </div>
-
-                    {productForm.isTontine && (
-                        <div className="grid grid-cols-1 gap-4 pl-6 border-l-4 border-green-500 animate-in slide-in-from-left-2 duration-300">
-                            <div className="space-y-2">
-                                <Label>Durée du cycle (ex: 6 mois, 12 mois...)</Label>
-                                <Input name="tontineDuration" value={productForm.tontineDuration} onChange={handleInputChange} placeholder="Ex: 10 mois" />
+                        {productForm.allowInstallments && (
+                            <div className="grid grid-cols-2 gap-4 pl-4 border-l-2 border-blue-500 animate-in zoom-in-95 duration-200">
+                                <div className="space-y-2">
+                                    <Label className="text-xs font-bold">Mensualité (FCFA)</Label>
+                                    <Input name="installmentPrice" type="number" value={productForm.installmentPrice} onChange={handleNumberInputChange} className="h-10 rounded-xl bg-muted/30 border-none font-bold" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-xs font-bold">Nb de mois</Label>
+                                    <Input name="installmentMonths" type="number" value={productForm.installmentMonths} onChange={handleNumberInputChange} className="h-10 rounded-xl bg-muted/30 border-none font-bold" />
+                                </div>
                             </div>
+                        )}
+                    </Card>
+
+                    <Card className="p-6 border-none shadow-sm rounded-2xl space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                                <Label className="font-black text-base text-green-600">Plan de Tontine</Label>
+                                <p className="text-xs text-muted-foreground">Inclure dans un cycle d'épargne.</p>
+                            </div>
+                            <Switch checked={productForm.isTontine} onCheckedChange={(val) => setProductForm(p => ({...p, isTontine: val}))} />
                         </div>
-                    )}
+
+                        {productForm.isTontine && (
+                            <div className="space-y-2 pl-4 border-l-2 border-green-500 animate-in zoom-in-95 duration-200">
+                                <Label className="text-xs font-bold">Durée du cycle (ex: 10 mois)</Label>
+                                <Input name="tontineDuration" value={productForm.tontineDuration} onChange={handleInputChange} placeholder="Ex: 6 mois" className="h-10 rounded-xl bg-muted/30 border-none font-bold" />
+                            </div>
+                        )}
+                    </Card>
                 </div>
               </div>
 
               {/* SECTION 4: IMAGES */}
-              <div className="space-y-4 pt-4 border-t">
-                <h3 className="font-black text-lg border-b pb-2">📸 Images de l'article *</h3>
-                <div className="space-y-4">
-                    <div className="border-2 border-dashed rounded-xl p-8 text-center hover:bg-muted/30 transition-colors cursor-pointer relative">
-                        <Input id="images" name="images" type="file" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" multiple />
-                        <PlusCircle className="mx-auto h-10 w-10 text-muted-foreground opacity-50 mb-2" />
-                        <p className="text-sm font-bold">Cliquez ou glissez pour ajouter des photos</p>
-                        <p className="text-xs text-muted-foreground mt-1">Format JPG, PNG (Max 5 Mo par image)</p>
+              <div className="space-y-4">
+                <h3 className="font-black text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    📸 Galerie Photos *
+                </h3>
+                <Card className="p-6 border-none shadow-sm rounded-2xl">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                        <div className="aspect-square border-2 border-dashed rounded-2xl flex flex-col items-center justify-center hover:bg-primary/5 hover:border-primary transition-all cursor-pointer relative group overflow-hidden">
+                            <Input id="images" name="images" type="file" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/*" multiple />
+                            <PlusCircle className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
+                            <span className="text-[10px] font-black mt-2 uppercase text-muted-foreground group-hover:text-primary">Ajouter</span>
+                        </div>
+                        
+                        {productForm.existingImages.map((image, index) => (
+                            <div key={`existing-${index}`} className="relative aspect-square rounded-2xl overflow-hidden border shadow-sm group">
+                                <Image src={image} alt="" fill className="object-cover" />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <Button type="button" size="icon" variant="destructive" className="h-8 w-8 rounded-full" onClick={() => removeExistingImage(index)}>
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                <span className="absolute top-1 left-1 bg-black/60 text-[8px] text-white px-1.5 py-0.5 rounded-full uppercase font-bold">Existant</span>
+                            </div>
+                        ))}
+                        {productForm.newImages.map((image, index) => (
+                            <div key={`new-${index}`} className="relative aspect-square rounded-2xl overflow-hidden border-2 border-primary shadow-sm group">
+                                <Image src={image.previewUrl} alt="" fill className="object-cover" />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <Button type="button" size="icon" variant="destructive" className="h-8 w-8 rounded-full" onClick={() => removeNewImage(index)}>
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                <span className="absolute top-1 left-1 bg-primary text-[8px] text-black px-1.5 py-0.5 rounded-full uppercase font-bold">Nouveau</span>
+                            </div>
+                        ))}
                     </div>
-                    
-                    <div className="flex flex-wrap gap-4 mt-4">
-                    {productForm.existingImages.map((image, index) => (
-                        <div key={`existing-${index}`} className="relative group">
-                        <div className="h-24 w-24 rounded-xl overflow-hidden border-2 border-primary/20">
-                            <Image src={image} alt="" fill className="object-cover" />
-                        </div>
-                        <Button type="button" size="icon" variant="destructive" className="absolute -top-2 -right-2 h-6 w-6 rounded-full shadow-lg" onClick={() => removeExistingImage(index)}>
-                            <X className="h-4 w-4" />
-                        </Button>
-                        <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-[8px] text-white text-center py-0.5">Existant</span>
-                        </div>
-                    ))}
-                    {productForm.newImages.map((image, index) => (
-                        <div key={`new-${index}`} className="relative group">
-                        <div className="h-24 w-24 rounded-xl overflow-hidden border-2 border-dashed border-primary">
-                            <Image src={image.previewUrl} alt="" fill className="object-cover" />
-                        </div>
-                        <Button type="button" size="icon" variant="destructive" className="absolute -top-2 -right-2 h-6 w-6 rounded-full shadow-lg" onClick={() => removeNewImage(index)}>
-                            <X className="h-4 w-4" />
-                        </Button>
-                        <span className="absolute bottom-0 left-0 right-0 bg-primary/80 text-[8px] text-white text-center py-0.5">Nouveau</span>
-                        </div>
-                    ))}
-                    </div>
-                </div>
+                </Card>
               </div>
             </div>
 
-            <DialogFooter className="p-6 border-t bg-muted/10 sticky bottom-0 z-10">
-              <Button type="button" variant="secondary" onClick={handleCloseDialog} disabled={isSubmitting} className="rounded-xl">Annuler</Button>
-              <Button type="submit" disabled={isSubmitting} className="rounded-xl px-8 font-bold min-w-[150px]">
-                {isSubmitting ? <><LogoSpinner className="mr-2 h-4 w-4" /> {submissionStatus}</> : (editingProduct?.id ? 'Mettre à jour' : 'Publier l\'article')}
+            <DialogFooter className="p-6 border-t bg-white sticky bottom-0 z-20 flex flex-row gap-3">
+              <Button type="button" variant="ghost" onClick={handleCloseDialog} disabled={isSubmitting} className="flex-1 rounded-2xl font-bold h-14">Annuler</Button>
+              <Button type="submit" disabled={isSubmitting} className="flex-[2] rounded-2xl h-14 font-black text-lg shadow-xl bg-primary text-black hover:bg-primary/90">
+                {isSubmitting ? <><LogoSpinner className="mr-2 h-5 w-5" /> {submissionStatus}</> : (editingProduct?.id ? 'Enregistrer les modifications' : 'Publier l\'article')}
               </Button>
             </DialogFooter>
           </form>
