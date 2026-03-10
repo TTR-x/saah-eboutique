@@ -1,9 +1,11 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
-import { ArrowRight, Star, MoreHorizontal, ShoppingCart, Heart } from 'lucide-react';
+import { ArrowRight, Star, MoreHorizontal, ShoppingCart, CreditCard } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNavigation } from '@/hooks/use-navigation';
 import { LogoIcon } from './layout/logo-icon';
@@ -34,6 +36,13 @@ export function ProductCard({ product }: ProductCardProps) {
     });
   };
 
+  const handlePay = () => {
+    const phoneNumber = "22890101392";
+    const message = `Bonjour SAAH Business, je souhaite acheter le produit suivant :\n\n*Produit:* ${product.name}\n*Prix:* ${product.price.toLocaleString('fr-FR')} FCFA\n\nMerci de m'indiquer comment procéder au paiement.`;
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
   return (
     <Card className="flex flex-col h-full border border-[#dddfe2] shadow-sm rounded-xl overflow-hidden bg-white mb-4">
       {/* Post Header */}
@@ -58,8 +67,8 @@ export function ProductCard({ product }: ProductCardProps) {
       <CardContent className="p-0">
         {/* Post Text */}
         <div className="px-4 pb-3">
-            <CardTitle className="text-[15px] font-normal text-[#1c1e21] leading-normal line-clamp-3">
-                {product.description}
+            <CardTitle className="text-[15px] font-normal text-[#1c1e21] leading-normal line-clamp-2">
+                {product.name} - {product.description}
             </CardTitle>
         </div>
 
@@ -82,24 +91,21 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="px-4 py-3 border-b border-[#f0f2f5] flex items-center justify-between">
             <div className="flex items-center -space-x-1">
                 <div className="h-5 w-5 rounded-full bg-[#1877f2] flex items-center justify-center ring-2 ring-white">
-                    <Heart className="h-3 w-3 text-white fill-white" />
-                </div>
-                <div className="h-5 w-5 rounded-full bg-[#f02849] flex items-center justify-center ring-2 ring-white">
                     <Star className="h-3 w-3 text-white fill-white" />
                 </div>
                 <span className="ml-2 text-sm text-[#65676b] pl-2">{product.rating ? product.rating.toFixed(1) : '5.0'} • {product.reviews || 0} membres</span>
             </div>
             <div className="text-sm text-[#65676b] font-bold">
-                {product.price.toLocaleString('fr-FR')} FCFA / mois
+                {product.price.toLocaleString('fr-FR')} FCFA
             </div>
         </div>
       </CardContent>
 
       {/* Post Actions */}
       <CardFooter className="p-1 flex items-center justify-between">
-        <Button variant="ghost" className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5]">
-            <Heart className="h-5 w-5" />
-            <span>Intéressé</span>
+        <Button variant="ghost" className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5]" onClick={handlePay}>
+            <CreditCard className="h-5 w-5" />
+            <span>Payer</span>
         </Button>
         <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="flex-1">
             <Button variant="ghost" className="w-full rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5]">
