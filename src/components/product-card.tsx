@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
-import { ArrowRight, Star, MoreHorizontal, ShoppingCart, CreditCard } from 'lucide-react';
+import { ArrowRight, Star, MoreHorizontal, ShoppingCart, CreditCard, MessageCircle } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNavigation } from '@/hooks/use-navigation';
 import { LogoIcon } from './layout/logo-icon';
@@ -39,6 +39,13 @@ export function ProductCard({ product }: ProductCardProps) {
   const handlePay = () => {
     const phoneNumber = "22890101392";
     const message = `Bonjour SAAH Business, je souhaite acheter le produit suivant :\n\n*Produit:* ${product.name}\n*Prix:* ${product.price.toLocaleString('fr-FR')} FCFA\n\nMerci de m'indiquer comment procéder au paiement.`;
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const handleInterested = () => {
+    const phoneNumber = "22890101392";
+    const message = `Bonjour SAAH Business, je suis intéressé(e) par le produit suivant :\n\n*Produit:* ${product.name}\n*Prix:* ${product.price.toLocaleString('fr-FR')} FCFA\n\nJ'aimerais en savoir plus à ce sujet.`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -102,24 +109,28 @@ export function ProductCard({ product }: ProductCardProps) {
       </CardContent>
 
       {/* Post Actions */}
-      <CardFooter className="p-1 flex items-center justify-between">
-        <Button variant="ghost" className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5]" onClick={handlePay}>
-            <CreditCard className="h-5 w-5" />
-            <span>Payer</span>
+      <CardFooter className="p-1 flex items-center justify-between gap-0.5">
+        <Button variant="ghost" className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-1.5 px-1 hover:bg-[#f2f3f5]" onClick={handlePay}>
+            <CreditCard className="h-4 w-4" />
+            <span className="text-[11px] sm:text-xs">Payer</span>
+        </Button>
+        <Button variant="ghost" className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-1.5 px-1 hover:bg-[#f2f3f5]" onClick={handleInterested}>
+            <MessageCircle className="h-4 w-4" />
+            <span className="text-[11px] sm:text-xs">Intéressé</span>
         </Button>
         <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="flex-1">
-            <Button variant="ghost" className="w-full rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5]">
-                <ArrowRight className="h-5 w-5" />
-                <span>Détails</span>
+            <Button variant="ghost" className="w-full rounded-md text-[#65676b] font-bold h-10 gap-1.5 px-1 hover:bg-[#f2f3f5]">
+                <ArrowRight className="h-4 w-4" />
+                <span className="text-[11px] sm:text-xs">Détails</span>
             </Button>
         </Link>
         <Button 
           variant="ghost" 
-          className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5]"
+          className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-1.5 px-1 hover:bg-[#f2f3f5]"
           onClick={handleAddToCart}
         >
-            <ShoppingCart className="h-5 w-5" />
-            <span>Panier</span>
+            <ShoppingCart className="h-4 w-4" />
+            <span className="text-[11px] sm:text-xs">Panier</span>
         </Button>
       </CardFooter>
     </Card>
