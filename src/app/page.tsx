@@ -1,8 +1,22 @@
+
 'use client';
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Star, PlusCircle, Send, ShieldCheck, Users, TrendingUp, Home, Ship, Info, ArrowRight, MessageCircle } from 'lucide-react';
+import { 
+  Star, 
+  PlusCircle, 
+  Send, 
+  ShieldCheck, 
+  Users, 
+  TrendingUp, 
+  Home, 
+  Ship, 
+  LifeBuoy, 
+  ArrowRight, 
+  MessageSquare,
+  Package
+} from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useEffect, useState } from 'react';
