@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -41,7 +42,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Card className="flex flex-col h-full border border-[#dddfe2] shadow-sm rounded-xl overflow-hidden bg-white mb-4">
-      {/* Post Header */}
+      {/* Post Header - Title of product as header */}
       <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center border border-[#dddfe2]">
@@ -89,7 +90,7 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </Link>
 
-        {/* Post Info Bar - Just Price now */}
+        {/* Post Info Bar */}
         <div className="px-4 py-2 border-b border-[#f0f2f5] flex items-center justify-end">
             <div className="text-sm text-primary font-black">
                 {product.price.toLocaleString('fr-FR')} FCFA
@@ -97,7 +98,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </CardContent>
 
-      {/* Post Actions */}
+      {/* Post Actions - With Icons and Labels */}
       <CardFooter className="p-1 flex items-center justify-between gap-1">
         <Button 
           variant="ghost" 

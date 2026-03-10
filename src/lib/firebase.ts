@@ -22,8 +22,8 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 // Initialisation de l'Auth
 export const auth = getAuth(app);
 
-// Initialisation de Firestore avec configuration de stabilité
-// experimentalForceLongPolling est indispensable dans certains environnements cloud
+// Initialisation de Firestore avec configuration de stabilité renforcée
+// experimentalForceLongPolling est indispensable dans certains environnements cloud restreints
 export const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
 });
