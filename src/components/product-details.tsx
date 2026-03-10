@@ -7,13 +7,14 @@ import Link from 'next/link';
 import type { Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, CheckCircle, ShieldCheck, Truck, Home, Share2, Wallet, Users } from 'lucide-react';
+import { Star, CheckCircle, ShieldCheck, Truck, Home, Share2, Wallet, Users, CreditCard } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/hooks/use-cart';
 import { useNavigation } from '@/hooks/use-navigation';
 import { Card, CardContent } from '@/components/ui/card';
+import { CheckoutDialog } from './checkout-dialog';
 
 interface ProductDetailsProps {
     product: Product;
@@ -23,36 +24,14 @@ export function ProductDetails({ product }: ProductDetailsProps) {
   const { toast } = useToast();
   const { addItem } = useCart();
   const { handleLinkClick } = useNavigation();
-  const [paymentMode, setPaymentPaymentMode] = useState<'cash' | 'installments' | 'tontine'>('cash');
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   const handleAddToCart = () => {
-    const finalName = paymentMode === 'cash' ? product.name : `${product.name} (${paymentMode === 'installments' ? 'Par tranches' : 'Tontine'})`;
-    const finalPrice = paymentMode === 'installments' ? (product.installmentPrice || product.price) : product.price;
-    
-    addItem({
-        ...product,
-        name: finalName,
-        price: finalPrice
-    });
-    
+    addItem(product);
     toast({
       title: "Ajouté au panier !",
-      description: `${finalName} est prêt.`,
+      description: `${product.name} est prêt.`,
     });
-  };
-
-  const handleBuyNow = () => {
-    const phoneNumber = "22890101392";
-    const modeLabel = paymentMode === 'cash' ? 'Cash' : (paymentMode === 'installments' ? 'Paiement par tranches' : 'Plan Tontine');
-    const message = `Bonjour SAAH Business, je suis intéressé(e) par :
-
-*Produit:* ${product.name}
-*Mode choisi:* ${modeLabel}
-*Lien:* ${window.location.href}
-
-Merci de m'indiquer les modalités d'adhésion.`;
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
   };
 
   return (
@@ -107,66 +86,30 @@ Merci de m'indiquer les modalités d'adhésion.`;
 
               <p className="mt-6 text-muted-foreground leading-relaxed whitespace-pre-line">{product.description}</p>
 
-              {/* Payment Options Selection */}
-              <div className="mt-8 space-y-4">
-                <h3 className="font-bold text-lg">Choisissez votre mode d'acquisition :</h3>
-                <div className="grid gap-3">
-                    {/* Option Cash */}
-                    <Card 
-                        className={`cursor-pointer transition-all border-2 ${paymentMode === 'cash' ? 'border-primary bg-primary/5 shadow-md' : 'border-transparent hover:bg-muted'}`}
-                        onClick={() => setPaymentPaymentMode('cash')}
-                    >
-                        <CardContent className="p-4 flex items-center gap-4">
-                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary"><Wallet className="h-5 w-5" /></div>
-                            <div className="flex-1">
-                                <p className="font-bold">Paiement Cash</p>
-                                <p className="text-xs text-muted-foreground">Règlement immédiat en une fois</p>
-                            </div>
-                            <div className="text-right font-bold">{product.price.toLocaleString('fr-FR')} FCFA</div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Option Tranches */}
-                    {product.allowInstallments && (
-                        <Card 
-                            className={`cursor-pointer transition-all border-2 ${paymentMode === 'installments' ? 'border-primary bg-primary/5 shadow-md' : 'border-transparent hover:bg-muted'}`}
-                            onClick={() => setPaymentPaymentMode('installments')}
-                        >
-                            <CardContent className="p-4 flex items-center gap-4">
-                                <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500"><Truck className="h-5 w-5" /></div>
-                                <div className="flex-1">
-                                    <p className="font-bold">Payer par tranches</p>
-                                    <p className="text-xs text-muted-foreground">{product.installmentMonths} versements mensuels</p>
-                                </div>
-                                <div className="text-right font-bold">{product.installmentPrice?.toLocaleString('fr-FR')} FCFA / mois</div>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {/* Option Tontine */}
-                    {product.isTontine && (
-                        <Card 
-                            className={`cursor-pointer transition-all border-2 ${paymentMode === 'tontine' ? 'border-primary bg-primary/5 shadow-md' : 'border-transparent hover:bg-muted'}`}
-                            onClick={() => setPaymentPaymentMode('tontine')}
-                        >
-                            <CardContent className="p-4 flex items-center gap-4">
-                                <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-500"><Users className="h-5 w-5" /></div>
-                                <div className="flex-1">
-                                    <p className="font-bold">Plan Tontine Collective</p>
-                                    <p className="text-xs text-muted-foreground">Épargne sur {product.tontineDuration}</p>
-                                </div>
-                                <div className="text-right font-bold text-green-600">Rejoindre</div>
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
+              <div className="mt-8 grid gap-4 p-4 bg-muted/20 rounded-xl border">
+                <h3 className="font-bold flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-primary" /> Modes d'acquisition
+                </h3>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center gap-2">✅ Paiement Cash immédiat</li>
+                  {product.allowInstallments && (
+                    <li className="flex items-center gap-2">✅ Par tranches : {product.installmentPrice?.toLocaleString('fr-FR')} FCFA x {product.installmentMonths} mois</li>
+                  )}
+                  {product.isTontine && (
+                    <li className="flex items-center gap-2">✅ Plan Tontine : Cycle de {product.tontineDuration}</li>
+                  )}
+                </ul>
               </div>
             </div>
             
             {/* Actions */}
             <div className="mt-8 flex flex-col gap-3">
-                <Button size="lg" className="w-full bg-primary text-black font-black h-14 text-lg rounded-xl hover:bg-primary/90 shadow-lg" onClick={handleBuyNow}>
-                    Finaliser via WhatsApp
+                <Button 
+                  size="lg" 
+                  className="w-full bg-primary text-black font-black h-14 text-lg rounded-xl hover:bg-primary/90 shadow-lg" 
+                  onClick={() => setIsCheckoutOpen(true)}
+                >
+                    Acheter maintenant
                 </Button>
                 <div className="grid grid-cols-2 gap-3">
                     <Button size="lg" variant="outline" className="rounded-xl font-bold h-12" onClick={handleAddToCart}>
@@ -197,6 +140,12 @@ Merci de m'indiquer les modalités d'adhésion.`;
                 <Link href="/support">Contacter le support</Link>
             </Button>
         </div>
+
+        <CheckoutDialog 
+          product={product} 
+          open={isCheckoutOpen} 
+          onOpenChange={setIsCheckoutOpen} 
+        />
       </div>
   );
 }

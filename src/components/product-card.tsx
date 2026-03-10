@@ -1,5 +1,7 @@
+
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +15,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useCart } from '@/hooks/use-cart';
 import { useToast } from '@/hooks/use-toast';
+import { CheckoutDialog } from './checkout-dialog';
 
 interface ProductCardProps {
   product: Product;
@@ -23,6 +26,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const { handleLinkClick } = useNavigation();
   const { addItem } = useCart();
   const { toast } = useToast();
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   
   const timeAgo = product.createdAt 
     ? formatDistanceToNow(new Date(product.createdAt), { addSuffix: true, locale: fr })
@@ -36,92 +40,97 @@ export function ProductCard({ product }: ProductCardProps) {
     });
   };
 
-  const handlePay = () => {
-    const phoneNumber = "22890101392";
-    const message = `Bonjour SAAH Business, je souhaite acheter le produit suivant :\n\n*Produit:* ${product.name}\n*Prix:* ${product.price.toLocaleString('fr-FR')} FCFA\n\nMerci de m'indiquer comment procéder au paiement.`;
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-  };
-
   return (
-    <Card className="flex flex-col h-full border border-[#dddfe2] shadow-sm rounded-xl overflow-hidden bg-white mb-4">
-      {/* Post Header */}
-      <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center border border-[#dddfe2]">
-            <LogoIcon className="h-6 w-6 text-primary" />
+    <>
+      <Card className="flex flex-col h-full border border-[#dddfe2] shadow-sm rounded-xl overflow-hidden bg-white mb-4">
+        {/* Post Header */}
+        <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center border border-[#dddfe2]">
+              <LogoIcon className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1">
+                  <span className="font-bold text-sm text-[#1c1e21] hover:underline cursor-pointer">SAAH Business</span>
+                  <Badge className="bg-[#1877f2] text-white border-none text-[8px] h-4 px-1">OFFICIEL</Badge>
+              </div>
+              <span className="text-[12px] text-[#65676b]">{timeAgo}</span>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1">
-                <span className="font-bold text-sm text-[#1c1e21] hover:underline cursor-pointer">SAAH Business</span>
-                <Badge className="bg-[#1877f2] text-white border-none text-[8px] h-4 px-1">OFFICIEL</Badge>
-            </div>
-            <span className="text-[12px] text-[#65676b]">{timeAgo}</span>
+          <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-[#65676b]">
+            <MoreHorizontal className="h-5 w-5" />
+          </Button>
+        </CardHeader>
+
+        <CardContent className="p-0">
+          {/* Post Text */}
+          <div className="px-4 pb-3">
+              <CardTitle className="text-[15px] font-normal text-[#1c1e21] leading-normal line-clamp-2">
+                  {product.name} - {product.description}
+              </CardTitle>
           </div>
-        </div>
-        <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-[#65676b]">
-          <MoreHorizontal className="h-5 w-5" />
-        </Button>
-      </CardHeader>
 
-      <CardContent className="p-0">
-        {/* Post Text */}
-        <div className="px-4 pb-3">
-            <CardTitle className="text-[15px] font-normal text-[#1c1e21] leading-normal line-clamp-2">
-                {product.name} - {product.description}
-            </CardTitle>
-        </div>
+          {/* Post Image */}
+          <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block relative aspect-video w-full overflow-hidden bg-[#f0f2f5] border-y border-[#dddfe2]">
+            <Image
+              src={product.images[0]}
+              alt={product.name}
+              fill
+              className="w-full h-full object-cover"
+            />
+            {isNew && (
+              <div className="absolute top-3 left-3">
+                  <Badge className="bg-[#1877f2] text-white border-none text-[10px] font-bold px-2 py-0.5">NOUVEAU PLAN</Badge>
+              </div>
+            )}
+          </Link>
 
-        {/* Post Image */}
-        <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block relative aspect-video w-full overflow-hidden bg-[#f0f2f5] border-y border-[#dddfe2]">
-          <Image
-            src={product.images[0]}
-            alt={product.name}
-            fill
-            className="w-full h-full object-cover"
-          />
-          {isNew && (
-            <div className="absolute top-3 left-3">
-                <Badge className="bg-[#1877f2] text-white border-none text-[10px] font-bold px-2 py-0.5">NOUVEAU PLAN</Badge>
-            </div>
-          )}
-        </Link>
+          {/* Post Info Bar */}
+          <div className="px-4 py-3 border-b border-[#f0f2f5] flex items-center justify-between">
+              <div className="flex items-center -space-x-1">
+                  <div className="h-5 w-5 rounded-full bg-[#1877f2] flex items-center justify-center ring-2 ring-white">
+                      <Star className="h-3 w-3 text-white fill-white" />
+                  </div>
+                  <span className="ml-2 text-sm text-[#65676b] pl-2">{product.rating ? product.rating.toFixed(1) : '5.0'} • {product.reviews || 0} membres</span>
+              </div>
+              <div className="text-sm text-[#65676b] font-bold">
+                  {product.price.toLocaleString('fr-FR')} FCFA
+              </div>
+          </div>
+        </CardContent>
 
-        {/* Post Info Bar */}
-        <div className="px-4 py-3 border-b border-[#f0f2f5] flex items-center justify-between">
-            <div className="flex items-center -space-x-1">
-                <div className="h-5 w-5 rounded-full bg-[#1877f2] flex items-center justify-center ring-2 ring-white">
-                    <Star className="h-3 w-3 text-white fill-white" />
-                </div>
-                <span className="ml-2 text-sm text-[#65676b] pl-2">{product.rating ? product.rating.toFixed(1) : '5.0'} • {product.reviews || 0} membres</span>
-            </div>
-            <div className="text-sm text-[#65676b] font-bold">
-                {product.price.toLocaleString('fr-FR')} FCFA
-            </div>
-        </div>
-      </CardContent>
+        {/* Post Actions */}
+        <CardFooter className="p-1 flex items-center justify-between gap-0.5">
+          <Button 
+            variant="ghost" 
+            className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-1.5 px-1 hover:bg-[#f2f3f5]"
+            onClick={handleAddToCart}
+          >
+              <ShoppingCart className="h-4 w-4" />
+              <span className="text-[11px] sm:text-xs">Panier</span>
+          </Button>
+          <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="flex-1">
+              <Button variant="ghost" className="w-full rounded-md text-[#65676b] font-bold h-10 gap-1.5 px-1 hover:bg-[#f2f3f5]">
+                  <ArrowRight className="h-4 w-4" />
+                  <span className="text-[11px] sm:text-xs">Détails</span>
+              </Button>
+          </Link>
+          <Button 
+            variant="ghost" 
+            className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-1.5 px-1 hover:bg-[#f2f3f5]" 
+            onClick={() => setIsCheckoutOpen(true)}
+          >
+              <CreditCard className="h-4 w-4" />
+              <span className="text-[11px] sm:text-xs">Payer</span>
+          </Button>
+        </CardFooter>
+      </Card>
 
-      {/* Post Actions */}
-      <CardFooter className="p-1 flex items-center justify-between gap-0.5">
-        <Button 
-          variant="ghost" 
-          className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-1.5 px-1 hover:bg-[#f2f3f5]"
-          onClick={handleAddToCart}
-        >
-            <ShoppingCart className="h-4 w-4" />
-            <span className="text-[11px] sm:text-xs">Panier</span>
-        </Button>
-        <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="flex-1">
-            <Button variant="ghost" className="w-full rounded-md text-[#65676b] font-bold h-10 gap-1.5 px-1 hover:bg-[#f2f3f5]">
-                <ArrowRight className="h-4 w-4" />
-                <span className="text-[11px] sm:text-xs">Détails</span>
-            </Button>
-        </Link>
-        <Button variant="ghost" className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-1.5 px-1 hover:bg-[#f2f3f5]" onClick={handlePay}>
-            <CreditCard className="h-4 w-4" />
-            <span className="text-[11px] sm:text-xs">Payer</span>
-        </Button>
-      </CardFooter>
-    </Card>
+      <CheckoutDialog 
+        product={product} 
+        open={isCheckoutOpen} 
+        onOpenChange={setIsCheckoutOpen} 
+      />
+    </>
   );
 }
