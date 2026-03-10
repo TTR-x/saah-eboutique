@@ -3,12 +3,14 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
-import { ArrowRight, Star, MoreHorizontal, Share2, MessageCircle, Heart } from 'lucide-react';
+import { ArrowRight, Star, MoreHorizontal, ShoppingCart, Heart } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNavigation } from '@/hooks/use-navigation';
 import { LogoIcon } from './layout/logo-icon';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useCart } from '@/hooks/use-cart';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProductCardProps {
   product: Product;
@@ -17,10 +19,20 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const isNew = product.createdAt && (new Date().getTime() - new Date(product.createdAt).getTime()) < 7 * 24 * 60 * 60 * 1000;
   const { handleLinkClick } = useNavigation();
+  const { addItem } = useCart();
+  const { toast } = useToast();
   
   const timeAgo = product.createdAt 
     ? formatDistanceToNow(new Date(product.createdAt), { addSuffix: true, locale: fr })
     : 'Récemment';
+
+  const handleAddToCart = () => {
+    addItem(product);
+    toast({
+      title: "Ajouté au panier",
+      description: `${product.name} a été ajouté avec succès.`,
+    });
+  };
 
   return (
     <Card className="flex flex-col h-full border border-[#dddfe2] shadow-sm rounded-xl overflow-hidden bg-white mb-4">
@@ -95,9 +107,13 @@ export function ProductCard({ product }: ProductCardProps) {
                 <span>Détails</span>
             </Button>
         </Link>
-        <Button variant="ghost" className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5]">
-            <Share2 className="h-5 w-5" />
-            <span>Partager</span>
+        <Button 
+          variant="ghost" 
+          className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5]"
+          onClick={handleAddToCart}
+        >
+            <ShoppingCart className="h-5 w-5" />
+            <span>Panier</span>
         </Button>
       </CardFooter>
     </Card>
