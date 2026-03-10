@@ -1,7 +1,7 @@
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, initializeFirestore } from 'firebase/firestore';
 
 if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
     throw new Error('NEXT_PUBLIC_FIREBASE_API_KEY is not set');
@@ -16,7 +16,14 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+// Initialisation de l'application
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
+// Initialisation de l'Auth
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+
+// Initialisation de Firestore avec configuration spécifique pour éviter les erreurs de connexion
+// experimentalForceLongPolling est crucial pour les environnements de développement cloud
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+});
