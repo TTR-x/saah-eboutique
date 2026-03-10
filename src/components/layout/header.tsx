@@ -22,7 +22,7 @@ import { useCart } from '@/hooks/use-cart';
 import { useNavigation } from '@/hooks/use-navigation';
 import { useState } from 'react';
 
-const ADMIN_EMAIL = "sabbataka02@gmail.com";
+const ADMIN_EMAIL = "saahbusiness2026@gmail.com";
 
 export function Header() {
   const { user, loading } = useAuth();

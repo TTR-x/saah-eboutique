@@ -1,4 +1,3 @@
-
 'use client'
 
 import Link from 'next/link';
@@ -13,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { LogoSpinner } from '@/components/logo-spinner';
 
-const ADMIN_EMAIL = "sabbataka02@gmail.com";
+const ADMIN_EMAIL = "saahbusiness2026@gmail.com";
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
