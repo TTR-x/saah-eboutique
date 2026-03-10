@@ -101,25 +101,25 @@ export function ProductCard({ product }: ProductCardProps) {
       <CardFooter className="p-1 flex items-center justify-between gap-1">
         <Button 
           variant="ghost" 
-          className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5]"
+          className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5] text-[13px]"
           onClick={handleAddToCart}
         >
             <ShoppingCart className="h-4 w-4" />
-            <span className="hidden xs:inline">Panier</span>
+            <span>Panier</span>
         </Button>
         <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="flex-1">
-            <Button variant="ghost" className="w-full rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5]">
+            <Button variant="ghost" className="w-full rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5] text-[13px]">
                 <ArrowRight className="h-4 w-4" />
-                <span className="hidden xs:inline">Détails</span>
+                <span>Détails</span>
             </Button>
         </Link>
         <Button 
           variant="ghost" 
-          className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5]"
+          className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5] text-[13px]"
           onClick={() => setIsCheckoutOpen(true)}
         >
             <CreditCard className="h-4 w-4" />
-            <span className="hidden xs:inline">Payer</span>
+            <span>Payer</span>
         </Button>
       </CardFooter>
 
