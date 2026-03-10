@@ -9,6 +9,8 @@ export type Product = {
   category: 'high-tech' | 'beauté' | 'maison' | 'artisanat' | 'mode' | 'divers';
   brand?: string;
   stock: number;
+  status: 'active' | 'inactive';
+  allowDelivery: boolean;
   rating: number;
   reviews: number;
   tags?: string[];
