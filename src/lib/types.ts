@@ -14,6 +14,12 @@ export type Product = {
   tags?: string[];
   attributes?: { [key: string]: string };
   createdAt: any;
+  // Nouvelles options de paiement
+  allowInstallments?: boolean;
+  installmentPrice?: number;
+  installmentMonths?: number;
+  isTontine?: boolean;
+  tontineDuration?: string; // ex: "6 mois", "1 an"
 };
 
 export type ProductInput = Omit<Product, 'id' | 'images' | 'imagePublicIds' | 'createdAt' | 'rating' | 'reviews'> & {
