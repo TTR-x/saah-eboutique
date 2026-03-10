@@ -11,6 +11,7 @@ export type Product = {
   stock: number;
   status: 'active' | 'inactive';
   allowDelivery: boolean;
+  deliveryFees?: number;
   rating: number;
   reviews: number;
   tags?: string[];

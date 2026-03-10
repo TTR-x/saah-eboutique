@@ -39,6 +39,7 @@ type ProductFormData = {
   stock: number | '';
   status: 'active' | 'inactive';
   allowDelivery: boolean;
+  deliveryFees: number | '';
   existingImages: string[];
   existingPublicIds: string[];
   newImages: ImagePreview[];
@@ -68,6 +69,7 @@ export default function AdminProductsPage() {
     stock: 100,
     status: 'active',
     allowDelivery: true,
+    deliveryFees: '',
     existingImages: [],
     existingPublicIds: [],
     newImages: [],
@@ -107,6 +109,7 @@ export default function AdminProductsPage() {
             stock: editingProduct.stock || 0,
             status: editingProduct.status || 'active',
             allowDelivery: editingProduct.allowDelivery ?? true,
+            deliveryFees: editingProduct.deliveryFees || '',
             existingImages: editingProduct.images,
             existingPublicIds: editingProduct.imagePublicIds || [],
             newImages: [],
@@ -179,6 +182,7 @@ export default function AdminProductsPage() {
       stock: 100,
       status: 'active',
       allowDelivery: true,
+      deliveryFees: '',
       existingImages: [],
       existingPublicIds: [],
       newImages: [],
@@ -289,6 +293,7 @@ export default function AdminProductsPage() {
             stock: productForm.stock === '' ? 0 : Number(productForm.stock),
             status: productForm.status,
             allowDelivery: productForm.allowDelivery,
+            deliveryFees: productForm.deliveryFees === '' ? 0 : Number(productForm.deliveryFees),
             createdAt: serverTimestamp(),
             rating: editingProduct?.rating || 5,
             reviews: editingProduct?.reviews || 0,
@@ -459,7 +464,7 @@ export default function AdminProductsPage() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="tags" className="flex items-center gap-2"><TagIcon className="h-3 w-3" /> Tags (séparés par des virgules)</Label>
-                        <Input id="tags" name="tags" value={productForm.tags} onChange={handleInputChange} placeholder="Ex: promotion, nouveau, premium" />
+                        <Input id="tags" name="tags" value={productForm.tags} onChange={handleInputChange} placeholder="Ex: homme, mode, premium" />
                     </div>
                 </div>
               </div>
@@ -486,12 +491,24 @@ export default function AdminProductsPage() {
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-dashed">
-                    <div className="space-y-0.5">
-                        <Label className="font-bold">Autoriser la livraison</Label>
-                        <p className="text-xs text-muted-foreground">Permet au client de choisir la livraison lors de l'achat.</p>
+                
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-dashed">
+                        <div className="space-y-0.5">
+                            <Label className="font-bold">Autoriser la livraison</Label>
+                            <p className="text-xs text-muted-foreground">Permet au client de choisir la livraison lors de l'achat.</p>
+                        </div>
+                        <Switch checked={productForm.allowDelivery} onCheckedChange={(val) => setProductForm(p => ({...p, allowDelivery: val}))} />
                     </div>
-                    <Switch checked={productForm.allowDelivery} onCheckedChange={(val) => setProductForm(p => ({...p, allowDelivery: val}))} />
+                    
+                    {productForm.allowDelivery && (
+                        <div className="grid grid-cols-1 gap-4 pl-6 border-l-4 border-primary animate-in slide-in-from-left-2 duration-300">
+                            <div className="space-y-2">
+                                <Label>Frais de livraison (FCFA)</Label>
+                                <Input name="deliveryFees" type="number" value={productForm.deliveryFees} onChange={handleNumberInputChange} placeholder="Ex: 1500" />
+                            </div>
+                        </div>
+                    )}
                 </div>
               </div>
 

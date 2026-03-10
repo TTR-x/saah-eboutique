@@ -56,14 +56,18 @@ export function CheckoutDialog({ product, open, onOpenChange }: CheckoutDialogPr
                      (formData.paymentMode === 'installments' ? 'Paiement par tranches' : 'Plan Tontine');
     
     const deliveryInfo = formData.isDelivery 
-      ? `✅ Livraison demandée\n📍 Adresse: ${formData.address}`
+      ? `✅ Livraison demandée\n📍 Adresse: ${formData.address}\n🚚 Frais: ${product.deliveryFees || 0} FCFA`
       : `🏪 Retrait en boutique (Lomé, Deckon)`;
+
+    const totalToPay = formData.isDelivery && product.deliveryFees 
+      ? (formData.paymentMode === 'installments' ? product.installmentPrice! + product.deliveryFees : product.price + product.deliveryFees)
+      : (formData.paymentMode === 'installments' ? product.installmentPrice! : product.price);
 
     const message = `Bonjour SAAH Business, je souhaite finaliser ma commande :
 
 *PRODUIT:* ${product.name}
 *MODE:* ${modeLabel}
-${formData.paymentMode === 'installments' ? `💰 ${product.installmentPrice?.toLocaleString('fr-FR')} FCFA / mois pendant ${product.installmentMonths} mois` : ''}
+${formData.paymentMode === 'installments' ? `💰 Mensualité: ${product.installmentPrice?.toLocaleString('fr-FR')} FCFA x ${product.installmentMonths} mois` : ''}
 
 *CLIENT:*
 👤 ${formData.name}
@@ -72,6 +76,8 @@ ${formData.paymentMode === 'installments' ? `💰 ${product.installmentPrice?.to
 
 *LIVRAISON:*
 ${deliveryInfo}
+
+*TOTAL ESTIMÉ:* ${totalToPay.toLocaleString('fr-FR')} FCFA
 
 Merci de m'envoyer les instructions de paiement.`;
 
@@ -192,12 +198,13 @@ Merci de m'envoyer les instructions de paiement.`;
                 <Checkbox 
                   id="isDelivery" 
                   checked={formData.isDelivery} 
+                  disabled={!product.allowDelivery}
                   onCheckedChange={checked => setFormData({...formData, isDelivery: !!checked})} 
                 />
-                <Label htmlFor="isDelivery" className="font-bold">Je souhaite être livré</Label>
+                <Label htmlFor="isDelivery" className="font-bold">Je souhaite être livré {!product.allowDelivery && "(Non disponible)"}</Label>
               </div>
 
-              {formData.isDelivery ? (
+              {formData.isDelivery && product.allowDelivery ? (
                 <div className="grid gap-2 pl-6 border-l-2 border-primary">
                   <Label htmlFor="address">Adresse de livraison complète</Label>
                   <Input 
@@ -207,7 +214,7 @@ Merci de m'envoyer les instructions de paiement.`;
                     placeholder="Quartier, Rue, Maison, Ville..." 
                     required 
                   />
-                  <p className="text-xs text-muted-foreground">Frais de livraison à la charge du client (Lomé & environs).</p>
+                  <p className="text-xs text-muted-foreground">Frais de livraison : <strong>{product.deliveryFees ? `${product.deliveryFees.toLocaleString('fr-FR')} FCFA` : 'Gratuit'}</strong></p>
                 </div>
               ) : (
                 <div className="bg-muted/50 p-4 rounded-lg space-y-2">
@@ -233,10 +240,16 @@ Merci de m'envoyer les instructions de paiement.`;
                     <span className="text-muted-foreground">Paiement:</span>
                     <span className="font-medium">{formData.paymentMode === 'cash' ? 'Cash' : (formData.paymentMode === 'installments' ? 'Tranches' : 'Tontine')}</span>
                   </div>
+                  {formData.isDelivery && (
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Livraison:</span>
+                        <span className="font-medium">{product.deliveryFees?.toLocaleString('fr-FR')} FCFA</span>
+                    </div>
+                  )}
                   <div className="flex justify-between border-t pt-2 mt-2 font-bold">
-                    <span>Total {formData.paymentMode === 'installments' ? '(Mensuel)' : ''}:</span>
+                    <span>Total {formData.paymentMode === 'installments' ? '(Initiale + Livraison)' : ''}:</span>
                     <span className="text-primary">
-                      {formData.paymentMode === 'installments' ? product.installmentPrice?.toLocaleString('fr-FR') : product.price.toLocaleString('fr-FR')} FCFA
+                      {((formData.paymentMode === 'installments' ? product.installmentPrice! : product.price) + (formData.isDelivery ? (product.deliveryFees || 0) : 0)).toLocaleString('fr-FR')} FCFA
                     </span>
                   </div>
                 </div>
