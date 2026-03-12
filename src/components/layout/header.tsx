@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Menu, Search, ShoppingCart, User, LogOut, LogIn, Home, Package, Ship, LifeBuoy } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
+import { Menu, Search, ShoppingCart, User, LogOut, LogIn, Home, Package, Ship, LifeBuoy, Trash2, Plus, Minus } from 'lucide-react';
 import { Logo } from './logo';
 import {
   DropdownMenu,
@@ -21,14 +21,18 @@ import { UserAvatar } from '../auth/user-avatar';
 import { useCart } from '@/hooks/use-cart';
 import { useNavigation } from '@/hooks/use-navigation';
 import { useState } from 'react';
+import Image from 'next/image';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 
 const ADMIN_EMAIL = "saahbusiness2026@gmail.com";
 
 export function Header() {
   const { user, loading } = useAuth();
-  const { items } = useCart();
+  const { items, removeItem, updateQuantity, total, clearCart } = useCart();
   const { isLoading, handleLinkClick: originalHandleLinkClick } = useNavigation();
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const isAdmin = user?.email === ADMIN_EMAIL;
@@ -48,7 +52,20 @@ export function Header() {
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     originalHandleLinkClick(e);
-    setIsSheetOpen(false);
+    setIsMenuOpen(false);
+  };
+
+  const handleCheckout = () => {
+    const phoneNumber = "22890101392";
+    const cartDetails = items.map(item => 
+      `- ${item.name} (x${item.quantity}) : ${(item.price * item.quantity).toLocaleString('fr-FR')} FCFA`
+    ).join('\n');
+
+    const message = `Bonjour SAAH Business, je souhaite passer commande pour :\n\n${cartDetails}\n\n*Total : ${total.toLocaleString('fr-FR')} FCFA*\n\nMerci de m'indiquer la marche à suivre.`;
+
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    setIsCartOpen(false);
   };
 
   const navItems = [
@@ -109,16 +126,103 @@ export function Header() {
         
         {/* Right: User Actions */}
         <div className="flex items-center justify-end gap-2 flex-1">
-          <Button asChild variant="ghost" size="icon" className="relative rounded-full bg-[#f0f2f5] hover:bg-[#e4e6eb] text-[#1c1e21]">
-            <Link href="/cart" onClick={handleLinkClick}>
-              <ShoppingCart className="h-5 w-5" />
-              {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm">
-                  {itemCount}
-                </span>
+          {/* PANIER - SHEET WINDOW */}
+          <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative rounded-full bg-[#f0f2f5] hover:bg-[#e4e6eb] text-[#1c1e21]">
+                <ShoppingCart className="h-5 w-5" />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm">
+                    {itemCount}
+                  </span>
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0 border-none rounded-l-3xl shadow-2xl overflow-hidden">
+              <SheetHeader className="p-6 border-b bg-white">
+                <SheetTitle className="text-xl font-black flex items-center gap-2">
+                  <ShoppingCart className="h-6 w-6 text-primary" />
+                  Mon Panier ({itemCount})
+                </SheetTitle>
+              </SheetHeader>
+              
+              <div className="flex-1 overflow-hidden">
+                {items.length > 0 ? (
+                  <ScrollArea className="h-full p-6">
+                    <div className="space-y-6">
+                      {items.map((item) => (
+                        <div key={item.id} className="flex gap-4 group">
+                          <div className="relative h-20 w-20 rounded-xl overflow-hidden bg-muted border shrink-0">
+                            <Image src={item.images[0]} alt={item.name} fill className="object-cover" />
+                          </div>
+                          <div className="flex-1 space-y-1">
+                            <h4 className="font-bold text-sm line-clamp-1">{item.name}</h4>
+                            <p className="text-primary font-black text-sm">{item.price.toLocaleString('fr-FR')} F</p>
+                            <div className="flex items-center justify-between pt-1">
+                              <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-7 w-7 rounded-md"
+                                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                                <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-7 w-7 rounded-md"
+                                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                              </div>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                onClick={() => removeItem(item.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+                    <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center mb-4">
+                      <ShoppingCart className="h-10 w-10 text-muted-foreground opacity-20" />
+                    </div>
+                    <p className="font-bold text-gray-500">Votre panier est vide</p>
+                    <Button variant="link" onClick={() => setIsCartOpen(false)} className="text-primary font-bold mt-2">
+                      Continuer mes achats
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {items.length > 0 && (
+                <div className="p-6 border-t bg-gray-50 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500 font-bold text-sm uppercase">Total</span>
+                    <span className="text-2xl font-black text-primary">{total.toLocaleString('fr-FR')} FCFA</span>
+                  </div>
+                  <div className="grid gap-2">
+                    <Button onClick={handleCheckout} className="w-full h-14 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-black text-lg shadow-xl shadow-green-100">
+                      Commander sur WhatsApp
+                    </Button>
+                    <Button variant="ghost" onClick={clearCart} className="text-muted-foreground text-xs font-bold uppercase tracking-widest h-10">
+                      Vider le panier
+                    </Button>
+                  </div>
+                </div>
               )}
-            </Link>
-          </Button>
+            </SheetContent>
+          </Sheet>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -157,7 +261,7 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="md:hidden rounded-full bg-[#f0f2f5] text-[#1c1e21]">
                   <Menu className="h-5 w-5" />
