@@ -16,7 +16,8 @@ import {
   MessageSquare,
   Package,
   Search,
-  ShoppingCart as CartIcon
+  ShoppingCart as CartIcon,
+  User
 } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -132,7 +133,7 @@ export default function HomePage() {
           </Link>
           <Link href="/products" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
             <div className="bg-blue-500/10 p-2 rounded-full text-blue-500">
-              <Users className="h-5 w-5" />
+              <Package className="h-5 w-5" />
             </div>
             Plans de Tontine
           </Link>
@@ -152,6 +153,12 @@ export default function HomePage() {
             <h3 className="px-2 mb-2 font-bold text-gray-500 text-xs uppercase tracking-wider">Raccourcis</h3>
             <Link href="/cart" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
               <CartIcon className="h-5 w-5 text-red-500" /> Mon Panier
+            </Link>
+            <Link href="/login" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
+              <div className="bg-blue-500/10 p-1.5 rounded-full">
+                <User className="h-4 w-4 text-blue-500" />
+              </div>
+              Mon Profil
             </Link>
           </div>
         </aside>
