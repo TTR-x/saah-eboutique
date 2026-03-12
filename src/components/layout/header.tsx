@@ -60,7 +60,7 @@ export function Header() {
 
   const navItems = [
     { name: 'Accueil', href: '/', icon: <Home className="h-6 w-6" /> },
-    { name: 'Plans', href: '/products', icon: <Package className="h-6 w-6" /> },
+    { name: 'Boutique', href: '/products', icon: <Package className="h-6 w-6" /> },
     { name: 'Import', href: '/import', icon: <Ship className="h-6 w-6" /> },
     { name: 'Support', href: '/support', icon: <LifeBuoy className="h-6 w-6" /> },
   ];

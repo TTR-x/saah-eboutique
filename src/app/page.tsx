@@ -132,7 +132,7 @@ export default function HomePage() {
             <div className="bg-blue-500/10 p-2 rounded-full text-blue-500">
               <Package className="h-5 w-5" />
             </div>
-            Plans de Tontine
+            Catalogue Articles
           </Link>
           <Link href="/import" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
             <div className="bg-green-500/10 p-2 rounded-full text-green-500">
@@ -166,22 +166,22 @@ export default function HomePage() {
         {/* Flux principal - Articles */}
         <main className="lg:col-span-2 space-y-4">
           
-          {/* Barre de recherche style Alibaba (réduite) */}
-          <form onSubmit={handleSearchSubmit} className="relative group mb-6 max-w-xl mx-auto">
-            <div className="relative flex items-center bg-white rounded-full border-2 border-primary overflow-hidden shadow-sm transition-all focus-within:ring-4 focus-within:ring-primary/10">
+          {/* Barre de recherche */}
+          <form onSubmit={handleSearchSubmit} className="relative group mb-6 max-w-sm mx-auto">
+            <div className="relative flex items-center bg-white rounded-full border border-gray-200 overflow-hidden shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/20">
               <Search className="absolute left-3 h-4 w-4 text-gray-400" />
               <Input 
                 type="search" 
-                placeholder="Chercher un article ou un plan..." 
-                className="pl-10 pr-24 h-10 border-none bg-transparent focus-visible:ring-0 text-sm" 
+                placeholder="Rechercher un article..." 
+                className="pl-10 pr-20 h-10 border-none bg-transparent focus-visible:ring-0 text-sm" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               <Button 
                 type="submit" 
-                className="absolute right-0 h-10 px-6 rounded-l-none rounded-r-full bg-primary text-black font-black hover:bg-primary/90 text-xs"
+                className="absolute right-0 h-10 px-4 rounded-l-none rounded-r-full bg-primary text-black font-bold hover:bg-primary/90 text-xs"
               >
-                Rechercher
+                Chercher
               </Button>
             </div>
           </form>
@@ -199,11 +199,11 @@ export default function HomePage() {
             </Badge>
           </div>
 
-          {/* Grille d'articles Style Alibaba (2 colonnes sur mobile et desktop) */}
+          {/* Grille d'articles Style Alibaba */}
           {isLoading ? (
             <div className="flex flex-col items-center py-20 gap-4">
               <LogoSpinner className="h-10 w-10 text-primary" />
-              <p className="text-gray-500 font-bold">Mise à jour de vos offres...</p>
+              <p className="text-gray-500 font-bold">Mise à jour des offres...</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2 sm:gap-4">
@@ -214,7 +214,7 @@ export default function HomePage() {
               {products.length === 0 && (
                 <div className="col-span-full text-center py-20 bg-white rounded-xl border border-gray-200 shadow-sm">
                   <Package className="mx-auto h-12 w-12 text-gray-300 mb-4 opacity-20" />
-                  <p className="text-gray-500 font-bold">Aucun article disponible pour le moment.</p>
+                  <p className="text-gray-500 font-bold">Aucun article disponible.</p>
                 </div>
               )}
             </div>

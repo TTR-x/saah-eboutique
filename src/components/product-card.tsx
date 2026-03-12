@@ -60,7 +60,6 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
 
           <div className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 flex gap-1">
-            {product.isTontine && <Badge className="bg-green-600 text-white border-none text-[7px] sm:text-[9px] font-bold">TONTINE</Badge>}
             {product.allowInstallments && <Badge className="bg-blue-600 text-white border-none text-[7px] sm:text-[9px] font-bold">TRANCHES</Badge>}
           </div>
         </Link>
@@ -77,13 +76,6 @@ export function ProductCard({ product }: ProductCardProps) {
               {product.price.toLocaleString('fr-FR')}
             </span>
             <span className="text-[9px] sm:text-[11px] font-bold text-gray-600">FCFA</span>
-          </div>
-
-          <div className="flex items-center gap-1 py-0.5 px-1.5 bg-orange-50 rounded-md border border-orange-100">
-            <div className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
-            <span className="text-[8px] sm:text-[10px] font-black text-orange-700 uppercase tracking-tight truncate">
-              200f/jour ou 1000f/semaine
-            </span>
           </div>
 
           <div className="flex items-center justify-between text-[9px] sm:text-[11px] text-gray-400 font-medium">

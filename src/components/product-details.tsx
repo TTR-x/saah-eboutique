@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState } from 'react';
@@ -73,7 +72,6 @@ export function ProductDetails({ product }: ProductDetailsProps) {
           <div className="flex flex-col">
             <div className="flex-grow">
               <div className="flex gap-2 mb-2">
-                {product.isTontine && <Badge className="bg-primary text-black">Tontine Disponible</Badge>}
                 {product.allowInstallments && <Badge variant="secondary">Paiement échelonné</Badge>}
               </div>
               <h1 className="text-3xl font-extrabold">{product.name}</h1>
@@ -94,9 +92,6 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                   <li className="flex items-center gap-2">✅ Paiement Cash immédiat</li>
                   {product.allowInstallments && (
                     <li className="flex items-center gap-2">✅ Par tranches : {product.installmentPrice?.toLocaleString('fr-FR')} FCFA x {product.installmentMonths} mois</li>
-                  )}
-                  {product.isTontine && (
-                    <li className="flex items-center gap-2">✅ Plan Tontine : Cycle de {product.tontineDuration}</li>
                   )}
                 </ul>
               </div>
@@ -135,7 +130,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
         <div className="max-w-2xl mx-auto text-center">
             <h2 className="text-2xl font-black mb-4">Besoin d'aide ?</h2>
-            <p className="text-muted-foreground mb-8">Nos conseillers sont disponibles pour vous guider dans le choix de votre plan d'épargne ou de tontine.</p>
+            <p className="text-muted-foreground mb-8">Nos conseillers sont disponibles pour vous guider dans votre choix.</p>
             <Button asChild variant="outline" size="lg" className="rounded-full px-8 font-bold border-primary text-primary hover:bg-primary/5">
                 <Link href="/support">Contacter le support</Link>
             </Button>
