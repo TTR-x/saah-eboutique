@@ -119,6 +119,18 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#f0f2f5] py-4">
+      {/* Bouton Cadeau Flottant (Petit comme WhatsApp) */}
+      <div className="fixed top-20 right-4 z-40 md:right-8">
+        <div className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden shadow-lg border-2 border-primary bg-white animate-bounce hover:animate-none transition-transform cursor-pointer">
+          <Image 
+            src="/cadeaux.png" 
+            alt="Offres Spéciales" 
+            fill 
+            className="object-contain p-1.5" 
+          />
+        </div>
+      </div>
+
       <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-6">
         
         {/* Barre latérale gauche - Navigation Rapide */}
@@ -167,22 +179,22 @@ export default function HomePage() {
         {/* Flux principal - Articles */}
         <main className="lg:col-span-2 space-y-4">
           
-          {/* Barre de recherche compacte */}
-          <form onSubmit={handleSearchSubmit} className="relative group mb-6 max-w-[280px] mx-auto">
-            <div className="relative flex items-center bg-white rounded-full border border-gray-200 overflow-hidden shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/20">
-              <Search className="absolute left-3 h-3.5 w-3.5 text-gray-400" />
+          {/* Barre de recherche compacte (Style Alibaba) */}
+          <form onSubmit={handleSearchSubmit} className="relative group mb-6 max-w-md mx-auto">
+            <div className="relative flex items-center bg-white rounded-full border-2 border-primary overflow-hidden shadow-sm transition-all focus-within:shadow-md">
+              <Search className="absolute left-4 h-4 w-4 text-gray-400" />
               <Input 
                 type="search" 
-                placeholder="Recherche..." 
-                className="pl-9 pr-16 h-9 border-none bg-transparent focus-visible:ring-0 text-xs" 
+                placeholder="Je cherche un produit..." 
+                className="pl-10 pr-24 h-10 border-none bg-transparent focus-visible:ring-0 text-sm" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               <Button 
                 type="submit" 
-                className="absolute right-0 h-9 px-3 rounded-l-none rounded-r-full bg-primary text-black font-bold hover:bg-primary/90 text-[10px]"
+                className="absolute right-0 h-10 px-6 rounded-l-none rounded-r-full bg-primary text-black font-black hover:bg-primary/90 text-xs"
               >
-                Go
+                Rechercher
               </Button>
             </div>
           </form>
@@ -208,34 +220,11 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2 sm:gap-4">
-              {/* Injection de l'image cadeaux à côté du premier article */}
               {products.length > 0 ? (
-                <>
-                  <ProductCard product={products[0]} />
-                  <div className="relative aspect-square rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-white group">
-                    <Image 
-                      src="/cadeaux.png" 
-                      alt="Offres SAAH Business" 
-                      fill 
-                      className="object-cover transition-transform duration-500 group-hover:scale-105" 
-                    />
-                  </div>
-                  {products.slice(1).map(product => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </>
+                products.map(product => (
+                  <ProductCard key={product.id} product={product} />
+                ))
               ) : (
-                <div className="relative aspect-square rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-white group">
-                  <Image 
-                    src="/cadeaux.png" 
-                    alt="Offres SAAH Business" 
-                    fill 
-                    className="object-cover transition-transform duration-500 group-hover:scale-105" 
-                  />
-                </div>
-              )}
-              
-              {products.length === 0 && (
                 <div className="col-span-full text-center py-20 bg-white rounded-xl border border-gray-200 shadow-sm mt-4">
                   <Package className="mx-auto h-12 w-12 text-gray-300 mb-4 opacity-20" />
                   <p className="text-gray-500 font-bold">Aucun article disponible.</p>
