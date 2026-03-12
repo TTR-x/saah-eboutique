@@ -4,9 +4,16 @@
 import Link from 'next/link';
 import { Logo } from './logo';
 import { useNavigation } from '@/hooks/use-navigation';
+import { usePathname } from 'next/navigation';
 
 export function Footer() {
   const { handleLinkClick } = useNavigation();
+  const pathname = usePathname();
+
+  // Masquer le footer sur le dashboard client et l'espace administration
+  if (pathname === '/dashboard' || pathname.startsWith('/admin')) {
+    return null;
+  }
 
   return (
     <footer className="border-t bg-background">
