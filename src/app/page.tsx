@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -134,45 +135,54 @@ export default function HomePage() {
       <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-6">
         
         {/* Barre latérale gauche - Navigation Rapide */}
-        <aside className="hidden lg:block space-y-2 sticky top-20 self-start">
-          <Link href="/" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
-            <div className="bg-primary/10 p-2 rounded-full text-primary">
-              <Home className="h-5 w-5" />
-            </div>
-            Accueil
-          </Link>
-          <Link href="/products" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
-            <div className="bg-blue-500/10 p-2 rounded-full text-blue-500">
-              <Package className="h-5 w-5" />
-            </div>
-            Catalogue Articles
-          </Link>
-          <Link href="/import" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
-            <div className="bg-green-500/10 p-2 rounded-full text-green-500">
-              <Ship className="h-5 w-5" />
-            </div>
-            Service Import
-          </Link>
-          <Link href="/support" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
-            <div className="bg-yellow-500/10 p-2 rounded-full text-yellow-500">
-              <LifeBuoy className="h-5 w-5" />
-            </div>
-            Centre d'Aide
-          </Link>
-          <div className="pt-4 mt-4 border-t border-gray-200">
-            <h3 className="px-2 mb-2 font-bold text-gray-500 text-xs uppercase tracking-wider">Raccourcis</h3>
-            <Link href="/cart" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
-              <div className="bg-red-500/10 p-1.5 rounded-full">
-                <CartIcon className="h-4 w-4 text-red-500" />
+        <aside className="hidden lg:flex flex-col space-y-2 sticky top-20 self-start h-[calc(100vh-100px)]">
+          <div className="flex-1 space-y-2">
+            <Link href="/" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
+              <div className="bg-primary/10 p-2 rounded-full text-primary">
+                <Home className="h-5 w-5" />
               </div>
-              Mon Panier
+              Accueil
             </Link>
+            <Link href="/products" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
+              <div className="bg-blue-500/10 p-2 rounded-full text-blue-500">
+                <Package className="h-5 w-5" />
+              </div>
+              Catalogue Articles
+            </Link>
+            <Link href="/import" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
+              <div className="bg-green-500/10 p-2 rounded-full text-green-500">
+                <Ship className="h-5 w-5" />
+              </div>
+              Service Import
+            </Link>
+            <Link href="/support" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
+              <div className="bg-yellow-500/10 p-2 rounded-full text-yellow-500">
+                <LifeBuoy className="h-5 w-5" />
+              </div>
+              Centre d'Aide
+            </Link>
+            <div className="pt-4 mt-4 border-t border-gray-200">
+              <h3 className="px-2 mb-2 font-bold text-gray-500 text-xs uppercase tracking-wider">Raccourcis</h3>
+              <Link href="/cart" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
+                <div className="bg-red-500/10 p-1.5 rounded-full">
+                  <CartIcon className="h-4 w-4 text-red-500" />
+                </div>
+                Mon Panier
+              </Link>
+            </div>
+          </div>
+
+          {/* Profil tout en bas */}
+          <div className="pt-4 mt-auto border-t border-gray-200">
             <Link href="/login" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
               <div className="bg-blue-500/10 p-1.5 rounded-full">
                 <User className="h-4 w-4 text-blue-500" />
               </div>
               Mon Profil
             </Link>
+            <div className="px-2 mt-2 text-[10px] text-gray-400">
+              SAAH Business © {new Date().getFullYear()}
+            </div>
           </div>
         </aside>
 
