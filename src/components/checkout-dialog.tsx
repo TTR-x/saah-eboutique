@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Product } from '@/lib/types';
-import { Wallet, Truck, User, MapPin, CheckCircle2, ChevronLeft, ArrowRight } from 'lucide-react';
+import { Wallet, Truck, User, CheckCircle2, ChevronLeft, ArrowRight, MessageSquare, FileEdit } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface CheckoutDialogProps {
@@ -23,7 +23,7 @@ interface CheckoutDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-type Step = 'payment' | 'details' | 'summary';
+type Step = 'payment' | 'choice' | 'details' | 'summary';
 
 export function CheckoutDialog({ product, open, onOpenChange }: CheckoutDialogProps) {
   const [step, setStep] = useState<Step>('payment');
@@ -38,12 +38,28 @@ export function CheckoutDialog({ product, open, onOpenChange }: CheckoutDialogPr
 
   const handleModeSelect = (mode: 'cash' | 'installments') => {
     setFormData({ ...formData, paymentMode: mode });
-    setStep('details');
+    setStep('choice');
   };
 
   const prevStep = () => {
-    if (step === 'summary') setStep('details');
-    else if (step === 'details') setStep('payment');
+    if (step === 'choice') setStep('payment');
+    else if (step === 'details') setStep('choice');
+    else if (step === 'summary') setStep('details');
+  };
+
+  const handleDirectWhatsApp = () => {
+    const phoneNumber = "22890101392";
+    const modeLabel = formData.paymentMode === 'cash' ? 'Paiement Cash' : 'Paiement par tranches';
+    
+    const message = `Bonjour SAAH Business, je suis intéressé par l'article : *${product.name}*
+Mode de paiement souhaité : *${modeLabel}*
+
+Merci de m'indiquer la marche à suivre pour finaliser mon achat rapidement.`;
+
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    onOpenChange(false);
+    setTimeout(() => setStep('payment'), 500);
   };
 
   const handleFinish = () => {
@@ -58,7 +74,7 @@ export function CheckoutDialog({ product, open, onOpenChange }: CheckoutDialogPr
       ? (formData.paymentMode === 'installments' ? product.installmentPrice! + product.deliveryFees : product.price + product.deliveryFees)
       : (formData.paymentMode === 'installments' ? product.installmentPrice! : product.price);
 
-    const message = `Bonjour SAAH Business, je souhaite finaliser ma commande :
+    const message = `Bonjour SAAH Business, voici ma commande détaillée :
 
 *PRODUIT:* ${product.name}
 *MODE:* ${modeLabel}
@@ -74,7 +90,7 @@ ${deliveryInfo}
 
 *TOTAL ESTIMÉ:* ${totalToPay.toLocaleString('fr-FR')} FCFA
 
-Merci de m'envoyer les instructions de paiement.`;
+Merci de valider ma commande.`;
 
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
@@ -87,11 +103,15 @@ Merci de m'envoyer les instructions de paiement.`;
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+        onOpenChange(isOpen);
+        if(!isOpen) setTimeout(() => setStep('payment'), 500);
+    }}>
       <DialogContent className="sm:max-w-[450px] max-h-[90vh] overflow-y-auto p-0 border-none rounded-3xl shadow-2xl">
         <DialogHeader className="p-6 border-b bg-white">
           <DialogTitle className="flex items-center gap-3 text-xl font-black">
-            {step === 'payment' && <><div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary"><Wallet className="h-5 w-5" /></div> Choisir le paiement</>}
+            {step === 'payment' && <><div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary"><Wallet className="h-5 w-5" /></div> Mode de paiement</>}
+            {step === 'choice' && <><div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary"><ArrowRight className="h-5 w-5" /></div> Comment commander ?</>}
             {step === 'details' && <><div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary"><User className="h-5 w-5" /></div> Vos informations</>}
             {step === 'summary' && <><div className="h-8 w-8 rounded-lg bg-green-500/10 flex items-center justify-center text-green-500"><CheckCircle2 className="h-5 w-5" /></div> Résumé</>}
           </DialogTitle>
@@ -103,7 +123,7 @@ Merci de m'envoyer les instructions de paiement.`;
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="grid gap-4">
                 <Card 
-                  className={`group cursor-pointer border-2 transition-all hover:border-primary hover:bg-primary/5 ${formData.paymentMode === 'cash' ? 'border-primary bg-primary/5' : 'border-gray-100'}`}
+                  className="group cursor-pointer border-2 transition-all hover:border-primary hover:bg-primary/5 border-gray-100"
                   onClick={() => handleModeSelect('cash')}
                 >
                   <CardContent className="p-5 flex items-center gap-4">
@@ -120,7 +140,7 @@ Merci de m'envoyer les instructions de paiement.`;
 
                 {product.allowInstallments && (
                   <Card 
-                    className={`group cursor-pointer border-2 transition-all hover:border-blue-500 hover:bg-blue-50/50 ${formData.paymentMode === 'installments' ? 'border-blue-500 bg-blue-50/50' : 'border-gray-100'}`}
+                    className="group cursor-pointer border-2 transition-all hover:border-blue-500 hover:bg-blue-50/50 border-gray-100"
                     onClick={() => handleModeSelect('installments')}
                   >
                     <CardContent className="p-5 flex items-center gap-4">
@@ -136,11 +156,45 @@ Merci de m'envoyer les instructions de paiement.`;
                   </Card>
                 )}
               </div>
-              <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest font-bold mt-4">Cliquez sur une option pour continuer</p>
+              <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest font-bold mt-4">Sélectionnez une option pour continuer</p>
             </div>
           )}
 
-          {/* STEP 2: DETAILS */}
+          {/* STEP 2: CHOICE */}
+          {step === 'choice' && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                <div className="grid gap-4">
+                    <Button 
+                        onClick={handleDirectWhatsApp}
+                        className="h-20 rounded-2xl bg-green-600 hover:bg-green-700 text-white flex items-center justify-start px-6 gap-4 border-none shadow-lg shadow-green-100"
+                    >
+                        <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
+                            <MessageSquare className="h-6 w-6" />
+                        </div>
+                        <div className="text-left">
+                            <p className="font-black text-base">Direct sur WhatsApp</p>
+                            <p className="text-[10px] opacity-80 font-bold uppercase tracking-tighter">Rapide et sans formulaire</p>
+                        </div>
+                    </Button>
+
+                    <Button 
+                        variant="outline"
+                        onClick={() => setStep('details')}
+                        className="h-20 rounded-2xl border-2 border-gray-100 hover:border-primary hover:bg-primary/5 flex items-center justify-start px-6 gap-4 transition-all"
+                    >
+                        <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 group-hover:text-primary">
+                            <FileEdit className="h-6 w-6" />
+                        </div>
+                        <div className="text-left text-gray-800">
+                            <p className="font-black text-base">Remplir le formulaire</p>
+                            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Pour un devis avec livraison</p>
+                        </div>
+                    </Button>
+                </div>
+            </div>
+          )}
+
+          {/* STEP 3: DETAILS */}
           {step === 'details' && (
             <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="space-y-4">
@@ -191,7 +245,7 @@ Merci de m'envoyer les instructions de paiement.`;
             </div>
           )}
 
-          {/* STEP 3: SUMMARY */}
+          {/* STEP 4: SUMMARY */}
           {step === 'summary' && (
             <div className="space-y-6 animate-in zoom-in-95 duration-300">
               <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100 space-y-4">
@@ -226,14 +280,9 @@ Merci de m'envoyer les instructions de paiement.`;
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3">
-                <Button onClick={handleFinish} className="w-full h-16 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-black text-lg shadow-xl shadow-green-200 transition-all active:scale-95">
-                  Confirmer sur WhatsApp
-                </Button>
-                <p className="text-[10px] text-center text-muted-foreground font-medium px-6 leading-relaxed">
-                  En confirmant, vous serez mis en relation directe avec un conseiller SAAH Business.
-                </p>
-              </div>
+              <Button onClick={handleFinish} className="w-full h-16 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-black text-lg shadow-xl shadow-green-200 transition-all active:scale-95">
+                Confirmer sur WhatsApp
+              </Button>
             </div>
           )}
         </div>
