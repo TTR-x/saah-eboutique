@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
-import { ShoppingCart, CreditCard, Clock, Zap, Check, User } from 'lucide-react';
+import { ShoppingCart, Clock, Zap, Check } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNavigation } from '@/hooks/use-navigation';
 import { formatDistanceToNow } from 'date-fns';
@@ -14,7 +14,6 @@ import { fr } from 'date-fns/locale';
 import { useCart } from '@/hooks/use-cart';
 import { useToast } from '@/hooks/use-toast';
 import { CheckoutDialog } from './checkout-dialog';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
 interface ProductCardProps {
@@ -102,16 +101,9 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </CardContent>
 
-      {/* Pied de carte avec Avatar et Boutons */}
-      <CardFooter className="p-2 sm:p-3 pt-0 flex items-center gap-2 sm:gap-3 mt-auto">
-        {/* Logo de l'utilisateur (vendeur) en bas à gauche sans texte "SAAH" */}
-        <Avatar className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 border border-gray-100 shadow-sm">
-          <AvatarFallback className="bg-gray-50 text-gray-400">
-            <User className="h-4 w-4" />
-          </AvatarFallback>
-        </Avatar>
-        
-        <div className="flex flex-1 gap-1.5 sm:gap-2">
+      {/* Pied de carte avec Boutons uniquement */}
+      <CardFooter className="p-2 sm:p-3 pt-0 flex items-center mt-auto">
+        <div className="flex w-full gap-1.5 sm:gap-2">
           {/* Bouton Panier : Devient vert avec Check si ajouté */}
           <Button 
             variant="outline" 
@@ -129,10 +121,9 @@ export function ProductCard({ product }: ProductCardProps) {
           </Button>
           
           <Button 
-            className="flex-1 rounded-lg bg-primary text-black font-black h-9 sm:h-10 gap-1.5 hover:bg-primary/90 text-[11px] sm:text-[13px] shadow-sm transition-all"
+            className="flex-1 rounded-lg bg-primary text-black font-black h-9 sm:h-10 hover:bg-primary/90 text-[11px] sm:text-[13px] shadow-sm transition-all"
             onClick={() => setIsCheckoutOpen(true)}
           >
-            <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>Payer</span>
           </Button>
         </div>
