@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { createUserWithEmailAndPassword, updateProfile, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
@@ -62,16 +62,13 @@ export default function SignupPage() {
         createdAt: serverTimestamp(),
       });
 
-      // 4. Déconnexion immédiate pour forcer le login
-      await signOut(auth);
-
       toast({ 
-        title: 'Compte créé avec succès !', 
-        description: 'Veuillez maintenant vous connecter pour accéder à votre espace.',
+        title: 'Bienvenue chez SAAH !', 
+        description: 'Votre compte a été créé avec succès.',
       });
       
-      // 5. Redirection vers la page de login
-      router.push('/login');
+      // 4. Redirection directe vers le tableau de bord
+      router.push('/dashboard');
     } catch (error: any) {
       console.error(error);
       let message = 'Impossible de créer le compte.';
