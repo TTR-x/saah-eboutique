@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { usePathname, useRouter } from 'next/navigation';
 import { Progress } from '@/components/ui/progress';
-import { useUser, useAuth as useFirebaseAuth } from '@/firebase';
+import { useUser } from '@/firebase';
 import { SignOutButton } from '../auth/sign-out-button';
 import { UserAvatar } from '../auth/user-avatar';
 import { useCart } from '@/hooks/use-cart';
@@ -23,6 +23,7 @@ import { useNavigation } from '@/hooks/use-navigation';
 import { useState } from 'react';
 import Image from 'next/image';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 const ADMIN_EMAIL = "saahbusiness2026@gmail.com";
 
@@ -62,8 +63,8 @@ export function Header() {
   const navItems = [
     { name: 'Accueil', href: '/', icon: <Home className="h-6 w-6" /> },
     { name: 'Boutique', href: '/products', icon: <Package className="h-6 w-6" /> },
-    { name: 'Import', href: '/import', icon: <Ship className="h-6 w-6" /> },
-    { name: 'Support', href: '/support', icon: <LifeBuoy className="h-6 w-6" /> },
+    { name: 'Import Chine', href: '/import', icon: <Ship className="h-6 w-6" /> },
+    { name: 'Centre d\'Aide', href: '/support', icon: <LifeBuoy className="h-6 w-6" /> },
   ];
 
   return (
@@ -71,9 +72,28 @@ export function Header() {
       {isLoading && <Progress value={100} className="absolute top-0 h-[3px] animate-pulse duration-1000 bg-primary" />}
       
       <div className="container flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center shrink-0" onClick={handleLinkClick}>
-          <Logo />
-        </Link>
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center shrink-0" onClick={handleLinkClick}>
+            <Logo />
+          </Link>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-6">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={handleLinkClick}
+                className={cn(
+                  "text-sm font-bold transition-colors hover:text-primary",
+                  pathname === item.href ? "text-primary" : "text-gray-600"
+                )}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+        </div>
 
         <div className="flex items-center gap-2">
           <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
@@ -237,9 +257,15 @@ export function Header() {
                         key={item.name}
                         href={item.href}
                         onClick={handleLinkClick}
-                        className="flex items-center gap-3 px-3 py-3 text-sm font-bold text-gray-800 rounded-xl hover:bg-white transition-all shadow-sm border border-transparent hover:border-gray-200"
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-3 text-sm font-bold rounded-xl transition-all shadow-sm border border-transparent hover:bg-white hover:border-gray-200",
+                          pathname === item.href ? "bg-primary/10 text-primary" : "text-gray-800"
+                        )}
                       >
-                        <div className="p-2 rounded-full bg-primary/10 text-primary">
+                        <div className={cn(
+                          "p-2 rounded-full",
+                          pathname === item.href ? "bg-primary text-black" : "bg-primary/10 text-primary"
+                        )}>
                           {item.icon}
                         </div>
                         {item.name}
