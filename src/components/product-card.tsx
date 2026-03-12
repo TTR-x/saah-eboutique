@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
-import { ShoppingCart, CreditCard, MoreHorizontal } from 'lucide-react';
+import { ShoppingCart, CreditCard, MoreHorizontal, Clock, Zap } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNavigation } from '@/hooks/use-navigation';
 import { formatDistanceToNow } from 'date-fns';
@@ -39,78 +39,83 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <Card className="flex flex-col h-full border border-[#dddfe2] shadow-sm rounded-xl overflow-hidden bg-white mb-4">
-      {/* En-tête : Titre et Badge */}
-      <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1">
-                <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="font-bold text-sm text-[#1c1e21] hover:underline">
-                  {product.name}
-                </Link>
-                <Badge className="bg-[#1877f2] text-white border-none text-[8px] h-4 px-1">OFFICIEL</Badge>
-            </div>
-            <span className="text-[12px] text-[#65676b]">{timeAgo}</span>
-          </div>
-        </div>
-        <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-[#65676b]">
-          <MoreHorizontal className="h-5 w-5" />
-        </Button>
-      </CardHeader>
-
+    <Card className="flex flex-col h-full border border-gray-200 shadow-sm rounded-xl overflow-hidden bg-white mb-6 group transition-all hover:shadow-md">
+      {/* Image Style Alibaba - Plus grande et nette */}
       <CardContent className="p-0">
-        {/* Image du Post */}
-        <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block relative aspect-video w-full overflow-hidden bg-[#f0f2f5] border-y border-[#dddfe2]">
+        <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block relative aspect-square w-full overflow-hidden bg-gray-50">
           <Image
             src={product.images[0]}
             alt={product.name}
             fill
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          {isNew && (
-            <div className="absolute top-3 left-3">
-                <Badge className="bg-[#1877f2] text-white border-none text-[10px] font-bold px-2 py-0.5">NOUVEAU PLAN</Badge>
-            </div>
-          )}
-          {(product.isTontine || product.allowInstallments) && (
-            <div className="absolute bottom-3 right-3 flex gap-1">
-                {product.isTontine && <Badge className="bg-green-500 text-white border-none text-[10px]">TONTINE</Badge>}
-                {product.allowInstallments && <Badge className="bg-blue-500 text-white border-none text-[10px]">TRANCHES</Badge>}
-            </div>
-          )}
+          
+          {/* Badges sur l'image */}
+          <div className="absolute top-2 left-2 flex flex-col gap-1">
+            {isNew && (
+              <Badge className="bg-orange-500 text-white border-none text-[10px] font-black px-2 py-0.5 rounded-sm">NOUVEAU</Badge>
+            )}
+            <Badge className="bg-primary text-black border-none text-[10px] font-black px-2 py-0.5 rounded-sm flex items-center gap-1">
+              <Zap className="h-3 w-3 fill-black" /> OFFICIEL
+            </Badge>
+          </div>
+
+          <div className="absolute bottom-2 right-2 flex gap-1">
+            {product.isTontine && <Badge className="bg-green-600 text-white border-none text-[9px] font-bold">TONTINE</Badge>}
+            {product.allowInstallments && <Badge className="bg-blue-600 text-white border-none text-[9px] font-bold">TRANCHES</Badge>}
+          </div>
         </Link>
 
-        {/* Barre d'info sous l'image */}
-        <div className="px-4 py-2 border-b border-[#f0f2f5] flex items-center justify-end">
-            <div className="text-sm text-primary font-black">
-                {product.price.toLocaleString('fr-FR')} FCFA
-            </div>
+        {/* Contenu textuel sous l'image - Style Alibaba */}
+        <div className="p-3 space-y-2">
+          {/* Titre du produit */}
+          <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block">
+            <h3 className="text-[15px] font-medium text-gray-800 line-clamp-2 leading-tight hover:text-primary transition-colors min-h-[40px]">
+              {product.name}
+            </h3>
+          </Link>
+
+          {/* Prix très saillant */}
+          <div className="flex items-baseline gap-1">
+            <span className="text-xl font-black text-gray-900">
+              {product.price.toLocaleString('fr-FR')}
+            </span>
+            <span className="text-[11px] font-bold text-gray-600">FCFA</span>
+          </div>
+
+          {/* Mention Paiement par tranche - Style "Promo Alibaba" */}
+          <div className="flex items-center gap-1.5 py-1 px-2 bg-orange-50 rounded-md border border-orange-100">
+            <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
+            <span className="text-[11px] font-black text-orange-700 uppercase tracking-tight">
+              200f/jour ou 1000f/semaine
+            </span>
+          </div>
+
+          {/* Info secondaire (Stock/Temps) */}
+          <div className="flex items-center justify-between text-[11px] text-gray-400 font-medium">
+            <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {timeAgo}</span>
+            <span>Stock: {product.stock > 0 ? product.stock : 'Épuisé'}</span>
+          </div>
         </div>
       </CardContent>
 
-      {/* Mention Paiement par tranche et Actions */}
-      <CardFooter className="p-1 flex flex-col gap-1">
-        <div className="w-full px-3 py-2 text-[12px] font-bold text-[#1877f2] bg-blue-50/50 rounded-lg text-center mb-1">
-            payer par tranche 200f par jour et 1000f par semaine
-        </div>
-        <div className="flex w-full items-center justify-between gap-1">
-            <Button 
-              variant="ghost" 
-              className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5] text-[13px]"
-              onClick={handleAddToCart}
-            >
-                <ShoppingCart className="h-4 w-4" />
-                <span>Panier</span>
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5] text-[13px]"
-              onClick={() => setIsCheckoutOpen(true)}
-            >
-                <CreditCard className="h-4 w-4" />
-                <span>Payer</span>
-            </Button>
-        </div>
+      {/* Pied de carte avec boutons d'action épurés */}
+      <CardFooter className="p-3 pt-0 flex gap-2">
+        <Button 
+          variant="outline" 
+          className="flex-1 rounded-lg border-gray-200 text-gray-700 font-bold h-10 gap-2 hover:bg-gray-50 text-[13px] transition-all"
+          onClick={handleAddToCart}
+        >
+          <ShoppingCart className="h-4 w-4" />
+          <span>Panier</span>
+        </Button>
+        <Button 
+          className="flex-[1.5] rounded-lg bg-primary text-black font-black h-10 gap-2 hover:bg-primary/90 text-[13px] shadow-sm transition-all"
+          onClick={() => setIsCheckoutOpen(true)}
+        >
+          <CreditCard className="h-4 w-4" />
+          <span>Payer</span>
+        </Button>
       </CardFooter>
 
       <CheckoutDialog 
