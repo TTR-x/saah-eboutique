@@ -1,0 +1,53 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Profil utilisateur pour les clients et l'administrateur.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["client", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Article en vente dans le catalogue.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "category": { "type": "string" },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "status": { "type": "string", "enum": ["active", "inactive"] }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["password"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "#/backend/entities/UserProfile",
+      "description": "Données privées de l'utilisateur."
+    },
+    "/products/{productId}": {
+      "schema": "#/backend/entities/Product",
+      "description": "Catalogue des articles."
+    },
+    "/contact-messages/{messageId}": {
+      "schema": "object",
+      "description": "Messages envoyés via le support."
+    },
+    "/import-orders/{orderId}": {
+      "schema": "object",
+      "description": "Demandes d'importation."
+    }
+  }
+}

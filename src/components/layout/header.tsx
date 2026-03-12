@@ -1,9 +1,10 @@
+
 'use client';
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Menu, ShoppingCart, User, LogOut, LogIn, Home, Package, Ship, LifeBuoy, Trash2, Plus, Minus } from 'lucide-react';
+import { Menu, ShoppingCart, User, LogOut, LogIn, Home, Package, Ship, LifeBuoy, Trash2, Plus, Minus, LayoutGrid } from 'lucide-react';
 import { Logo } from './logo';
 import {
   DropdownMenu,
@@ -14,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { usePathname, useRouter } from 'next/navigation';
 import { Progress } from '@/components/ui/progress';
-import { useAuth } from '@/hooks/use-auth';
+import { useUser, useAuth as useFirebaseAuth } from '@/firebase';
 import { SignOutButton } from '../auth/sign-out-button';
 import { UserAvatar } from '../auth/user-avatar';
 import { useCart } from '@/hooks/use-cart';
@@ -26,7 +27,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 const ADMIN_EMAIL = "saahbusiness2026@gmail.com";
 
 export function Header() {
-  const { user, loading } = useAuth();
+  const { user, loading } = useUser();
   const { items, removeItem, updateQuantity, total, clearCart } = useCart();
   const { isLoading, handleLinkClick: originalHandleLinkClick } = useNavigation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -41,7 +42,7 @@ export function Header() {
   }
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    originalHandleLinkClick(e);
+    originalHandleHandleLinkClick(e);
     setIsMenuOpen(false);
   };
 
@@ -182,11 +183,11 @@ export function Header() {
                 {user ? (
                     <>
                          <DropdownMenuItem asChild className="rounded-xl">
-                           <Link href={isAdmin ? "/admin" : "#"} onClick={isAdmin ? handleLinkClick : (e) => e.preventDefault()} className="flex items-center w-full p-2 cursor-pointer gap-3">
+                           <Link href={isAdmin ? "/admin" : "/dashboard"} onClick={handleLinkClick} className="flex items-center w-full p-2 cursor-pointer gap-3">
                               <UserAvatar />
                               <div className="flex flex-col items-start overflow-hidden">
                                   <p className="font-bold text-gray-900 truncate w-full">{user.displayName || user.email?.split('@')[0]}</p>
-                                  <p className="text-xs text-gray-500">Voir le profil {isAdmin && '(Admin)'}</p>
+                                  <p className="text-xs text-gray-500">Mon Tableau de bord {isAdmin && '(Admin)'}</p>
                               </div>
                            </Link>
                         </DropdownMenuItem>
@@ -199,12 +200,20 @@ export function Header() {
                         </SignOutButton>
                     </>
                 ) : (
-                  <DropdownMenuItem className="p-3 font-bold text-gray-900 cursor-default rounded-xl">
-                     <div className="flex items-center w-full gap-2">
-                      <User className="h-5 w-5" />
-                       Visiteur
-                    </div>
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem asChild className="rounded-xl">
+                      <Link href="/login" onClick={handleLinkClick} className="flex items-center w-full p-3 font-bold text-gray-900 cursor-pointer gap-2">
+                        <LogIn className="h-5 w-5 text-primary" />
+                        Se connecter
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="rounded-xl">
+                      <Link href="/signup" onClick={handleLinkClick} className="flex items-center w-full p-3 font-bold text-gray-900 cursor-pointer gap-2">
+                        <User className="h-5 w-5 text-blue-500" />
+                        Créer un compte
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
                 )}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -236,6 +245,18 @@ export function Header() {
                         {item.name}
                       </Link>
                     ))}
+                    {user && (
+                      <Link
+                        href={isAdmin ? "/admin" : "/dashboard"}
+                        onClick={handleLinkClick}
+                        className="flex items-center gap-3 px-3 py-3 text-sm font-bold text-blue-600 rounded-xl hover:bg-white transition-all shadow-sm border border-transparent"
+                      >
+                        <div className="p-2 rounded-full bg-blue-50">
+                          <LayoutGrid className="h-6 w-6" />
+                        </div>
+                        Tableau de bord
+                      </Link>
+                    )}
                   </nav>
                 </div>
               </SheetContent>

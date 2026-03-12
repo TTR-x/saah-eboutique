@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -189,23 +188,17 @@ export default function HomePage() {
         {/* Flux principal - Articles */}
         <main className="lg:col-span-2 space-y-4">
           
-          {/* Barre de recherche compacte (Style Alibaba) */}
-          <form onSubmit={handleSearchSubmit} className="relative group mb-6 max-w-md mx-auto">
-            <div className="relative flex items-center bg-white rounded-full border-2 border-primary overflow-hidden shadow-sm transition-all focus-within:shadow-md">
+          {/* Barre de recherche compacte */}
+          <form onSubmit={handleSearchSubmit} className="relative group mb-6 max-w-sm mx-auto">
+            <div className="relative flex items-center bg-white rounded-full border-2 border-primary/50 overflow-hidden shadow-sm transition-all focus-within:border-primary focus-within:shadow-md">
               <Search className="absolute left-4 h-4 w-4 text-gray-400" />
               <Input 
                 type="search" 
-                placeholder="Je cherche un produit..." 
-                className="pl-10 pr-24 h-10 border-none bg-transparent focus-visible:ring-0 text-sm" 
+                placeholder="Rechercher..." 
+                className="pl-10 pr-4 h-10 border-none bg-transparent focus-visible:ring-0 text-sm" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <Button 
-                type="submit" 
-                className="absolute right-0 h-10 px-6 rounded-l-none rounded-r-full bg-primary text-black font-black hover:bg-primary/90 text-xs"
-              >
-                Rechercher
-              </Button>
             </div>
           </form>
 

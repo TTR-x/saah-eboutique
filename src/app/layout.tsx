@@ -1,3 +1,4 @@
+
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -10,6 +11,7 @@ import { CartProvider } from '@/hooks/use-cart';
 import { NavigationProvider } from '@/hooks/use-navigation';
 import { WhatsAppButton } from '@/components/whatsapp-button';
 import { GoogleAnalytics } from '@/components/google-analytics';
+import { FirebaseClientProvider } from '@/firebase';
 
 const siteConfig = {
   name: 'SAAH Business',
@@ -120,25 +122,27 @@ export default function RootLayout({
           fontInter.variable
         )}
       >
-        {process.env.NEXT_PUBLIC_GOOGLE_ADS_ID && <GoogleAnalytics />}
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <NavigationProvider>
-            <CartProvider>
-                <div className="relative flex min-h-screen flex-col">
-                  <Header />
-                  <main className="flex-1">{children}</main>
-                  <Footer />
-                </div>
-                <WhatsAppButton />
-                <Toaster />
-            </CartProvider>
-          </NavigationProvider>
-        </ThemeProvider>
+        <FirebaseClientProvider>
+          {process.env.NEXT_PUBLIC_GOOGLE_ADS_ID && <GoogleAnalytics />}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+            disableTransitionOnChange
+          >
+            <NavigationProvider>
+              <CartProvider>
+                  <div className="relative flex min-h-screen flex-col">
+                    <Header />
+                    <main className="flex-1">{children}</main>
+                    <Footer />
+                  </div>
+                  <WhatsAppButton />
+                  <Toaster />
+              </CartProvider>
+            </NavigationProvider>
+          </ThemeProvider>
+        </FirebaseClientProvider>
       </body>
     </html>
   );

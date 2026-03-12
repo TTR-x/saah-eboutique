@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { initializeFirestore } from 'firebase/firestore';
+import { getFirestore, initializeFirestore } from 'firebase/firestore';
 
 if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
     throw new Error('NEXT_PUBLIC_FIREBASE_API_KEY is not set');
@@ -21,8 +21,14 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 // Initialisation de l'Auth
 export const auth = getAuth(app);
 
-// Initialisation de Firestore avec configuration de stabilité maximale pour Firebase Studio
-export const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-  useFetchStreams: false,
-});
+// Initialisation de Firestore avec configuration de stabilité maximale (idempotent)
+export const db = (function() {
+    try {
+        return initializeFirestore(app, {
+            experimentalForceLongPolling: true,
+            useFetchStreams: false,
+        });
+    } catch (e) {
+        return getFirestore(app);
+    }
+})();
