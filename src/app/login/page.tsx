@@ -1,4 +1,3 @@
-
 'use client'
 
 import Link from 'next/link';
@@ -63,7 +62,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center py-12 px-4 min-h-screen bg-muted/40">
-      <Card className="w-full max-w-sm shadow-xl border-none rounded-2xl">
+      <Card className="w-full max-w-sm shadow-xl border-none rounded-xl">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-black">Se connecter</CardTitle>
           <CardDescription>
@@ -82,7 +81,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
-                className="h-12 rounded-xl"
+                className="h-12 rounded-lg"
               />
             </div>
             <div className="grid gap-2">
@@ -94,10 +93,10 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
-                className="h-12 rounded-xl"
+                className="h-12 rounded-lg"
               />
             </div>
-            <Button type="submit" className="w-full h-12 rounded-xl font-bold bg-primary text-black hover:bg-primary/90" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-12 rounded-lg font-bold bg-primary text-black hover:bg-primary/90" disabled={isSubmitting}>
               {isSubmitting ? <LogoSpinner /> : 'Se connecter'}
             </Button>
           </form>

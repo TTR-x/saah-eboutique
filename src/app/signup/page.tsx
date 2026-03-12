@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -90,7 +89,7 @@ export default function SignupPage() {
 
   return (
     <div className="flex items-center justify-center py-12 px-4 min-h-screen bg-[#f0f2f5]">
-      <Card className="w-full max-w-md shadow-xl border-none rounded-3xl overflow-hidden">
+      <Card className="w-full max-w-md shadow-xl border-none rounded-xl overflow-hidden">
         <CardHeader className="text-center bg-white pb-8">
           <CardTitle className="text-3xl font-black text-gray-900">Rejoindre SAAH</CardTitle>
           <CardDescription className="text-gray-500 font-medium">
@@ -107,7 +106,7 @@ export default function SignupPage() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="h-12 rounded-2xl bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all placeholder:text-gray-400"
+                className="h-12 rounded-lg bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all placeholder:text-gray-400"
               />
             </div>
             <div className="grid gap-2">
@@ -120,7 +119,7 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
-                className="h-12 rounded-2xl bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all placeholder:text-gray-400"
+                className="h-12 rounded-lg bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all placeholder:text-gray-400"
               />
             </div>
             <div className="grid gap-2">
@@ -131,7 +130,7 @@ export default function SignupPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-12 rounded-2xl bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all"
+                className="h-12 rounded-lg bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all"
               />
             </div>
             <div className="grid gap-2">
@@ -142,12 +141,12 @@ export default function SignupPage() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="h-12 rounded-2xl bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all"
+                className="h-12 rounded-lg bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all"
               />
             </div>
             <Button 
               type="submit" 
-              className="w-full h-14 rounded-2xl font-black text-lg bg-primary text-black hover:bg-primary/90 shadow-lg shadow-yellow-100 mt-2" 
+              className="w-full h-14 rounded-lg font-black text-lg bg-primary text-black hover:bg-primary/90 shadow-lg shadow-yellow-100 mt-2" 
               disabled={isSubmitting}
             >
               {isSubmitting ? <LogoSpinner className="mr-2" /> : "S'inscrire gratuitement"}

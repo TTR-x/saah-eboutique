@@ -103,7 +103,7 @@ export default function HomePage() {
                 {/* Carousel */}
                 {slides.length > 0 ? (
                     <Carousel 
-                        className="w-full rounded-2xl overflow-hidden shadow-2xl border-none"
+                        className="w-full rounded-xl overflow-hidden shadow-2xl border-none"
                         plugins={[Autoplay({ delay: 5000 })]}
                     >
                         <CarouselContent>
@@ -126,7 +126,7 @@ export default function HomePage() {
                         <CarouselNext className="right-4 bg-white/20 text-white border-none hover:bg-white hover:text-black" />
                     </Carousel>
                 ) : (
-                    <div className="w-full aspect-[21/9] rounded-2xl bg-muted animate-pulse flex items-center justify-center">
+                    <div className="w-full aspect-[21/9] rounded-xl bg-muted animate-pulse flex items-center justify-center">
                         <LogoSpinner className="h-10 w-10 text-primary" />
                     </div>
                 )}
@@ -160,7 +160,7 @@ export default function HomePage() {
           </section>
 
           {/* Banner: Tontine (Visible on Mobile/Tablet only as Horizontal) */}
-          <section className="lg:hidden relative rounded-2xl overflow-hidden bg-black text-white p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
+          <section className="lg:hidden relative rounded-xl overflow-hidden bg-black text-white p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
             <div className="relative h-48 w-48 shrink-0">
                 <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
                 <Image 
@@ -212,7 +212,7 @@ export default function HomePage() {
         {/* Right Sidebar Sticky (Desktop Only) */}
         <aside className="hidden lg:block lg:col-span-1 relative">
           <div className="sticky top-24 space-y-8 h-fit">
-            <section className="relative rounded-2xl overflow-hidden bg-black text-white p-8 flex flex-col items-center text-center gap-6 shadow-2xl">
+            <section className="relative rounded-xl overflow-hidden bg-black text-white p-8 flex flex-col items-center text-center gap-6 shadow-2xl">
                 <div className="relative h-40 w-40 shrink-0">
                     <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
                     <Image 
