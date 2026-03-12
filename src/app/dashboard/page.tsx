@@ -59,7 +59,7 @@ export default function DashboardPage() {
     <div className="container mx-auto px-4 py-8 max-w-5xl animate-in fade-in duration-500 pb-20">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-4">
-          <div className="h-16 w-16 rounded-3xl bg-primary flex items-center justify-center text-black shadow-lg shadow-yellow-100">
+          <div className="h-16 w-16 rounded-2xl bg-primary flex items-center justify-center text-black shadow-lg shadow-yellow-100">
             <User className="h-8 w-8" />
           </div>
           <div>
@@ -69,13 +69,13 @@ export default function DashboardPage() {
             <p className="text-muted-foreground text-sm font-medium">UID: <span className="font-mono text-xs opacity-50">{user.uid.slice(0, 8)}...</span></p>
           </div>
         </div>
-        <div className="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
+        <div className="flex items-center gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
             <Badge variant="outline" className="border-none font-bold text-green-600 bg-green-50 px-3">Compte Actif</Badge>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3 mb-10">
-        <Card className="border-none shadow-sm rounded-3xl bg-white">
+        <Card className="border-none shadow-sm rounded-2xl bg-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
               <ShoppingBag className="h-3 w-3 text-primary" /> Commandes
@@ -87,7 +87,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm rounded-3xl bg-white">
+        <Card className="border-none shadow-sm rounded-2xl bg-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
               <CreditCard className="h-3 w-3 text-blue-500" /> Total Engagé
@@ -99,7 +99,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm rounded-3xl bg-white">
+        <Card className="border-none shadow-sm rounded-2xl bg-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
               <Clock className="h-3 w-3 text-orange-500" /> Tranches
@@ -123,9 +123,9 @@ export default function DashboardPage() {
       ) : orders && orders.length > 0 ? (
         <div className="grid gap-4">
           {orders.map((order: any) => (
-            <Card key={order.id} className="border-none shadow-sm rounded-3xl bg-white overflow-hidden hover:shadow-md transition-all group">
+            <Card key={order.id} className="border-none shadow-sm rounded-2xl bg-white overflow-hidden hover:shadow-md transition-all group">
               <CardContent className="p-4 flex items-center gap-4">
-                <div className="relative h-16 w-16 rounded-2xl overflow-hidden bg-gray-50 border shrink-0">
+                <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-gray-50 border shrink-0">
                   {order.productImage ? (
                     <Image src={order.productImage} alt={order.productName} fill className="object-cover" />
                   ) : (
@@ -161,7 +161,7 @@ export default function DashboardPage() {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-3xl p-12 text-center border-2 border-dashed border-gray-100">
+        <div className="bg-white rounded-2xl p-12 text-center border-2 border-dashed border-gray-100">
           <div className="h-20 w-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
             <Package className="h-10 w-10 text-gray-300" />
           </div>
@@ -169,7 +169,7 @@ export default function DashboardPage() {
           <p className="text-muted-foreground max-w-sm mx-auto mt-2 text-sm">
             Vos intentions d'achat apparaîtront ici une fois que vous aurez cliqué sur "Payer" depuis le catalogue.
           </p>
-          <Button asChild className="mt-6 rounded-2xl font-bold bg-primary text-black" size="lg">
+          <Button asChild className="mt-6 rounded-xl font-bold bg-primary text-black" size="lg">
             <Link href="/products">Explorer le catalogue</Link>
           </Button>
         </div>

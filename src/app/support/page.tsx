@@ -111,7 +111,7 @@ export default function SupportPage() {
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 md:py-20 max-w-6xl">
       <div className="flex flex-col items-center text-center mb-16">
-        <div className="h-20 w-20 rounded-3xl bg-primary flex items-center justify-center text-black shadow-xl shadow-yellow-100 mb-6">
+        <div className="h-20 w-20 rounded-2xl bg-primary flex items-center justify-center text-black shadow-xl shadow-yellow-100 mb-6">
             <LifeBuoy className="h-10 w-10" />
         </div>
         <h1 className="text-4xl font-black tracking-tight lg:text-5xl mb-4">
@@ -124,7 +124,7 @@ export default function SupportPage() {
 
       {/* IA ASSISTANCE SECTION */}
       <section className="mb-20">
-        <Card className="border-none shadow-2xl rounded-3xl overflow-hidden bg-gradient-to-br from-white to-gray-50 border border-gray-100">
+        <Card className="border-none shadow-2xl rounded-2xl overflow-hidden bg-gradient-to-br from-white to-gray-50 border border-gray-100">
             <CardHeader className="bg-white border-b border-dashed p-8">
                 <div className="flex items-center gap-3 text-primary mb-2">
                     <div className="bg-primary/10 p-2 rounded-full"><Sparkles className="h-5 w-5" /></div>
@@ -137,17 +137,17 @@ export default function SupportPage() {
                 <form onSubmit={handleAiAsk} className="flex gap-2">
                     <Input 
                         placeholder="Ex: Comment fonctionnent les paiements par tranches ?" 
-                        className="h-14 rounded-2xl border-2 focus:border-primary bg-white shadow-sm"
+                        className="h-14 rounded-xl border-2 focus:border-primary bg-white shadow-sm"
                         value={aiQuestion}
                         onChange={(e) => setAiQuestion(e.target.value)}
                     />
-                    <Button type="submit" disabled={isAiLoading} className="h-14 w-14 rounded-2xl bg-black text-white hover:bg-gray-800 shrink-0">
+                    <Button type="submit" disabled={isAiLoading} className="h-14 w-14 rounded-xl bg-black text-white hover:bg-gray-800 shrink-0">
                         {isAiLoading ? <LogoSpinner className="h-6 w-6" /> : <Send className="h-6 w-6" />}
                     </Button>
                 </form>
 
                 {aiAnswer && (
-                    <div className="mt-8 p-6 bg-primary/5 rounded-3xl border-2 border-primary/20 animate-in zoom-in-95 duration-300">
+                    <div className="mt-8 p-6 bg-primary/5 rounded-2xl border-2 border-primary/20 animate-in zoom-in-95 duration-300">
                         <div className="flex items-start gap-4">
                             <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-black shrink-0 shadow-lg">
                                 <Bot className="h-5 w-5" />
@@ -173,7 +173,7 @@ export default function SupportPage() {
             </h2>
             <Accordion type="single" collapsible className="w-full space-y-3">
                 {faqs.map((faq, index) => (
-                <AccordionItem key={index} value={`item-${index}`} className="border-none bg-white rounded-2xl shadow-sm px-6 overflow-hidden">
+                <AccordionItem key={index} value={`item-${index}`} className="border-none bg-white rounded-xl shadow-sm px-6 overflow-hidden">
                     <AccordionTrigger className="text-base font-black hover:no-underline py-5 text-left">{faq.question}</AccordionTrigger>
                     <AccordionContent className="text-base text-muted-foreground pb-5 font-medium leading-relaxed">
                     {faq.answer}
@@ -185,7 +185,7 @@ export default function SupportPage() {
         </div>
         
         <div>
-          <Card className="border-none shadow-xl rounded-3xl bg-white sticky top-24 overflow-hidden">
+          <Card className="border-none shadow-xl rounded-2xl bg-white sticky top-24 overflow-hidden">
             <div className="h-2 bg-primary w-full" />
             <CardHeader className="p-8">
               <CardTitle className="text-2xl font-black">Message Direct</CardTitle>
@@ -195,21 +195,21 @@ export default function SupportPage() {
               <form onSubmit={handleContactSubmit} className="space-y-5">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="font-bold ml-1">Nom</Label>
-                  <Input id="name" name="name" placeholder="Votre nom complet" value={contactForm.name} onChange={handleInputChange} className="h-12 rounded-xl bg-gray-50 border-none" required />
+                  <Input id="name" name="name" placeholder="Votre nom complet" value={contactForm.name} onChange={handleInputChange} className="h-12 rounded-lg bg-gray-50 border-none" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email" className="font-bold ml-1">Email</Label>
-                  <Input id="email" name="email" type="email" placeholder="votre@email.com" value={contactForm.email} onChange={handleInputChange} className="h-12 rounded-xl bg-gray-50 border-none" required />
+                  <Input id="email" name="email" type="email" placeholder="votre@email.com" value={contactForm.email} onChange={handleInputChange} className="h-12 rounded-lg bg-gray-50 border-none" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="font-bold ml-1">Téléphone</Label>
-                  <Input id="phone" name="phone" type="tel" placeholder="WhatsApp (conseillé)" value={contactForm.phone} onChange={handleInputChange} className="h-12 rounded-xl bg-gray-50 border-none" />
+                  <Input id="phone" name="phone" type="tel" placeholder="WhatsApp (conseillé)" value={contactForm.phone} onChange={handleInputChange} className="h-12 rounded-lg bg-gray-50 border-none" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="message" className="font-bold ml-1">Message</Label>
-                  <Textarea id="message" name="message" placeholder="Votre question..." rows={4} value={contactForm.message} onChange={handleInputChange} className="rounded-xl bg-gray-50 border-none" required />
+                  <Textarea id="message" name="message" placeholder="Votre question..." rows={4} value={contactForm.message} onChange={handleInputChange} className="rounded-lg bg-gray-50 border-none" required />
                 </div>
-                <Button type="submit" className="w-full h-14 rounded-2xl bg-primary text-black font-black text-lg shadow-lg hover:bg-primary/90 mt-4" disabled={isSubmitting}>
+                <Button type="submit" className="w-full h-14 rounded-xl bg-primary text-black font-black text-lg shadow-lg hover:bg-primary/90 mt-4" disabled={isSubmitting}>
                   {isSubmitting ? <LogoSpinner className="mr-2 h-5 w-5" /> : <Send className="mr-2 h-5 w-5" />}
                   Envoyer
                 </Button>

@@ -91,11 +91,11 @@ export default function HomePage() {
                     <Input 
                         type="search" 
                         placeholder="Rechercher un article, une marque..." 
-                        className="pl-12 h-14 w-full rounded-2xl border-2 border-primary/20 focus:border-primary shadow-sm bg-background font-medium"
+                        className="pl-12 h-14 w-full rounded-xl border-2 border-primary/20 focus:border-primary shadow-sm bg-background font-medium"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <Button type="submit" className="absolute right-2 top-2 h-10 rounded-xl bg-primary text-black font-black hover:bg-primary/90">
+                    <Button type="submit" className="absolute right-2 top-2 h-10 rounded-lg bg-primary text-black font-black hover:bg-primary/90">
                         Trouver
                     </Button>
                 </form>
@@ -103,7 +103,7 @@ export default function HomePage() {
                 {/* Carousel */}
                 {slides.length > 0 ? (
                     <Carousel 
-                        className="w-full rounded-[2rem] overflow-hidden shadow-2xl border-none"
+                        className="w-full rounded-2xl overflow-hidden shadow-2xl border-none"
                         plugins={[Autoplay({ delay: 5000 })]}
                     >
                         <CarouselContent>
@@ -114,7 +114,7 @@ export default function HomePage() {
                                         <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex flex-col justify-center p-8 md:p-16 text-white">
                                             <h2 className="text-3xl md:text-5xl font-black mb-4 max-w-xl leading-tight">{slide.title}</h2>
                                             <p className="text-lg md:text-xl font-medium mb-8 max-w-md opacity-90">{slide.subtitle}</p>
-                                            <Button asChild size="lg" className="w-fit h-14 px-8 rounded-2xl bg-primary text-black font-black text-lg hover:bg-primary/90 shadow-xl shadow-primary/20">
+                                            <Button asChild size="lg" className="w-fit h-14 px-8 rounded-xl bg-primary text-black font-black text-lg hover:bg-primary/90 shadow-xl shadow-primary/20">
                                                 <Link href="/products">Découvrir l'offre</Link>
                                             </Button>
                                         </div>
@@ -126,7 +126,7 @@ export default function HomePage() {
                         <CarouselNext className="right-4 bg-white/20 text-white border-none hover:bg-white hover:text-black" />
                     </Carousel>
                 ) : (
-                    <div className="w-full aspect-[21/9] rounded-[2rem] bg-muted animate-pulse flex items-center justify-center">
+                    <div className="w-full aspect-[21/9] rounded-2xl bg-muted animate-pulse flex items-center justify-center">
                         <LogoSpinner className="h-10 w-10 text-primary" />
                     </div>
                 )}
@@ -160,7 +160,7 @@ export default function HomePage() {
           </section>
 
           {/* Banner: Tontine (Visible on Mobile/Tablet only as Horizontal) */}
-          <section className="lg:hidden relative rounded-[2.5rem] overflow-hidden bg-black text-white p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
+          <section className="lg:hidden relative rounded-2xl overflow-hidden bg-black text-white p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
             <div className="relative h-48 w-48 shrink-0">
                 <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
                 <Image 
@@ -177,7 +177,7 @@ export default function HomePage() {
                 <h2 className="text-3xl md:text-4xl font-black tracking-tight">Le Plan Tontine SAAH</h2>
                 <p className="text-gray-400 font-medium max-w-xl text-lg">Acquérez vos articles préférés en douceur grâce à notre système d'épargne en groupe.</p>
                 <div className="flex wrap gap-4 justify-center md:justify-start pt-4">
-                    <Button asChild size="lg" className="rounded-2xl h-14 bg-white text-black font-black hover:bg-gray-100">
+                    <Button asChild size="lg" className="rounded-xl h-14 bg-white text-black font-black hover:bg-gray-100">
                         <Link href="/products">Voir les articles éligibles</Link>
                     </Button>
                 </div>
@@ -212,7 +212,7 @@ export default function HomePage() {
         {/* Right Sidebar Sticky (Desktop Only) */}
         <aside className="hidden lg:block lg:col-span-1 relative">
           <div className="sticky top-24 space-y-8 h-fit">
-            <section className="relative rounded-[2.5rem] overflow-hidden bg-black text-white p-8 flex flex-col items-center text-center gap-6 shadow-2xl">
+            <section className="relative rounded-2xl overflow-hidden bg-black text-white p-8 flex flex-col items-center text-center gap-6 shadow-2xl">
                 <div className="relative h-40 w-40 shrink-0">
                     <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
                     <Image 
@@ -231,10 +231,10 @@ export default function HomePage() {
                     Acquérez vos articles préférés en douceur grâce à notre système d'épargne en groupe.
                     </p>
                     <div className="flex flex-col gap-3 pt-4">
-                        <Button asChild size="lg" className="rounded-2xl h-12 bg-white text-black font-black hover:bg-gray-100 w-full">
+                        <Button asChild size="lg" className="rounded-xl h-12 bg-white text-black font-black hover:bg-gray-100 w-full">
                             <Link href="/products">Voir les articles</Link>
                         </Button>
-                        <Button asChild variant="outline" size="lg" className="rounded-2xl h-12 border-white/20 text-white font-black hover:bg-white/10 w-full">
+                        <Button asChild variant="outline" size="lg" className="rounded-xl h-12 border-white/20 text-white font-black hover:bg-white/10 w-full">
                             <Link href="/support">En savoir plus</Link>
                         </Button>
                     </div>
