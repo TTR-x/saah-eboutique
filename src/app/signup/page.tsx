@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, signOut } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
@@ -46,23 +46,33 @@ export default function SignupPage() {
 
     setIsSubmitting(true);
     try {
+      // 1. Création du compte dans Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Mettre à jour le profil Firebase Auth
+      // 2. Mise à jour du nom d'affichage
       await updateProfile(user, { displayName: name });
 
-      // Créer le profil dans Firestore
+      // 3. Sauvegarde du profil dans Firestore avec l'UID
       await setDoc(doc(db, 'users', user.uid), {
-        uid: user.uid,
+        uid: user.uid, // On stocke explicitement l'UID
         email: user.email,
         displayName: name,
         role: 'client',
         createdAt: serverTimestamp(),
       });
 
-      toast({ title: 'Compte créé !', description: 'Bienvenue sur SAAH Business.' });
-      router.push('/dashboard');
+      // 4. Déconnexion immédiate (Firebase connecte l'utilisateur automatiquement à la création)
+      // pour forcer le passage par la page de login comme demandé.
+      await signOut(auth);
+
+      toast({ 
+        title: 'Compte créé avec succès !', 
+        description: 'Veuillez maintenant vous connecter pour accéder à votre espace.',
+      });
+      
+      // 5. Redirection vers la page de login
+      router.push('/login');
     } catch (error: any) {
       console.error(error);
       let message = 'Impossible de créer le compte.';
