@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -7,7 +6,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
-import { ArrowRight, MoreHorizontal, ShoppingCart, CreditCard } from 'lucide-react';
+import { ShoppingCart, CreditCard, MoreHorizontal } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNavigation } from '@/hooks/use-navigation';
 import { LogoIcon } from './layout/logo-icon';
@@ -42,7 +41,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Card className="flex flex-col h-full border border-[#dddfe2] shadow-sm rounded-xl overflow-hidden bg-white mb-4">
-      {/* Post Header - Title of product as header */}
+      {/* Post Header - Product Title as header */}
       <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center border border-[#dddfe2]">
@@ -50,7 +49,9 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-1">
-                <span className="font-bold text-sm text-[#1c1e21] hover:underline cursor-pointer">{product.name}</span>
+                <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="font-bold text-sm text-[#1c1e21] hover:underline">
+                  {product.name}
+                </Link>
                 <Badge className="bg-[#1877f2] text-white border-none text-[8px] h-4 px-1">OFFICIEL</Badge>
             </div>
             <span className="text-[12px] text-[#65676b]">{timeAgo}</span>
@@ -69,7 +70,7 @@ export function ProductCard({ product }: ProductCardProps) {
             </p>
         </div>
 
-        {/* Post Image */}
+        {/* Post Image - Clicking image still leads to details */}
         <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block relative aspect-video w-full overflow-hidden bg-[#f0f2f5] border-y border-[#dddfe2]">
           <Image
             src={product.images[0]}
@@ -98,7 +99,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </CardContent>
 
-      {/* Post Actions - With Icons and Labels */}
+      {/* Post Actions - Panier and Payer only */}
       <CardFooter className="p-1 flex items-center justify-between gap-1">
         <Button 
           variant="ghost" 
@@ -108,12 +109,6 @@ export function ProductCard({ product }: ProductCardProps) {
             <ShoppingCart className="h-4 w-4" />
             <span>Panier</span>
         </Button>
-        <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="flex-1">
-            <Button variant="ghost" className="w-full rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5] text-[13px]">
-                <ArrowRight className="h-4 w-4" />
-                <span>Détails</span>
-            </Button>
-        </Link>
         <Button 
           variant="ghost" 
           className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5] text-[13px]"
