@@ -65,9 +65,9 @@ export default function LoginPage() {
     <div className="flex items-center justify-center py-12 px-4 min-h-screen bg-muted/40">
       <Card className="w-full max-w-sm shadow-xl border-none rounded-2xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-black">Administration</CardTitle>
+          <CardTitle className="text-2xl font-black">Se connecter</CardTitle>
           <CardDescription>
-            Identifiez-vous pour gérer votre boutique.
+            Accédez à votre espace personnel SAAH Business.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -77,7 +77,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@example.com"
+                placeholder="votre@email.com"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -101,8 +101,14 @@ export default function LoginPage() {
               {isSubmitting ? <LogoSpinner /> : 'Se connecter'}
             </Button>
           </form>
-          <div className="mt-6 text-center text-sm">
-            <Link href="/" className="text-muted-foreground hover:text-primary transition-colors">
+          <div className="mt-6 text-center text-sm space-y-4">
+            <p className="text-muted-foreground">
+              Pas encore de compte ?{' '}
+              <Link href="/signup" className="text-primary font-bold hover:underline">
+                S'inscrire
+              </Link>
+            </p>
+            <Link href="/" className="block text-xs text-muted-foreground hover:text-primary transition-colors">
               Retour au site
             </Link>
           </div>
