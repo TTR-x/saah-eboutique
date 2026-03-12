@@ -144,26 +144,26 @@ export default function HomePage() {
             )}
           </section>
 
-          {/* Banner: Tontine (Visible on Mobile/Tablet only as Horizontal) */}
+          {/* Banner: Surprise (Visible on Mobile/Tablet only as Horizontal) */}
           <section className="lg:hidden relative rounded-xl overflow-hidden bg-black text-white p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
             <div className="relative h-48 w-48 shrink-0">
                 <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
                 <Image 
                   src={placeholders.tontine_gift.url} 
                   data-ai-hint={placeholders.tontine_gift.hint} 
-                  alt="Tontine" 
+                  alt="Cadeau" 
                   width={placeholders.tontine_gift.width} 
                   height={placeholders.tontine_gift.height} 
                   className="object-contain relative z-10" 
                 />
             </div>
             <div className="text-center md:text-left space-y-4">
-                <Badge className="bg-primary text-black font-black border-none px-4 py-1">ÉPARGNE COLLABORATIVE</Badge>
-                <h2 className="text-3xl md:text-4xl font-black tracking-tight">Le Plan Tontine SAAH</h2>
-                <p className="text-gray-400 font-medium max-w-xl text-lg">Acquérez vos articles préférés en douceur grâce à notre système d'épargne en groupe.</p>
+                <Badge className="bg-primary text-black font-black border-none px-4 py-1">OFFRE EXCLUSIVE</Badge>
+                <h2 className="text-3xl md:text-4xl font-black tracking-tight">Gagnez un cadeau incroyable !</h2>
+                <p className="text-gray-400 font-medium max-w-xl text-lg">Cliquez ci-dessous pour découvrir votre surprise et la réclamer dès maintenant.</p>
                 <div className="flex wrap gap-4 justify-center md:justify-start pt-4">
                     <Button asChild size="lg" className="rounded-xl h-14 bg-white text-black font-black hover:bg-gray-100">
-                        <Link href="/products">Voir les articles éligibles</Link>
+                        <Link href="/support">Réclamer mon cadeau</Link>
                     </Button>
                 </div>
             </div>
@@ -203,24 +203,21 @@ export default function HomePage() {
                     <Image 
                       src={placeholders.tontine_gift.url} 
                       data-ai-hint={placeholders.tontine_gift.hint} 
-                      alt="Tontine" 
+                      alt="Cadeau" 
                       width={placeholders.tontine_gift.width} 
                       height={placeholders.tontine_gift.height} 
                       className="object-contain relative z-10" 
                     />
                 </div>
                 <div className="space-y-4">
-                    <Badge className="bg-primary text-black font-black border-none px-4 py-1">ÉPARGNE COLLABORATIVE</Badge>
-                    <h2 className="text-2xl font-black tracking-tight leading-tight">Le Plan Tontine SAAH Business</h2>
+                    <Badge className="bg-primary text-black font-black border-none px-4 py-1">OFFRE EXCLUSIVE</Badge>
+                    <h2 className="text-2xl font-black tracking-tight leading-tight">Gagnez un Cadeau Incroyable !</h2>
                     <p className="text-gray-400 font-medium text-sm leading-relaxed">
-                    Acquérez vos articles préférés en douceur grâce à notre système d'épargne en groupe.
+                    C'est votre jour de chance. Cliquez ici pour obtenir votre récompense spéciale SAAH Business.
                     </p>
                     <div className="flex flex-col gap-3 pt-4">
                         <Button asChild size="lg" className="rounded-xl h-12 bg-white text-black font-black hover:bg-gray-100 w-full">
-                            <Link href="/products">Voir les articles</Link>
-                        </Button>
-                        <Button asChild variant="outline" size="lg" className="rounded-xl h-12 border-white/20 text-white font-black hover:bg-white/10 w-full">
-                            <Link href="/support">En savoir plus</Link>
+                            <Link href="/support">Réclamer mon cadeau</Link>
                         </Button>
                     </div>
                 </div>
