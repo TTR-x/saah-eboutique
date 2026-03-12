@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
-import { ShoppingCart, Clock, Check } from 'lucide-react';
+import { ShoppingCart, Clock, Check, CreditCard } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNavigation } from '@/hooks/use-navigation';
 import { formatDistanceToNow } from 'date-fns';
@@ -58,10 +58,6 @@ export function ProductCard({ product }: ProductCardProps) {
               <Badge className="bg-orange-500 text-white border-none text-[8px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-sm">NOUVEAU</Badge>
             )}
           </div>
-
-          <div className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 flex gap-1">
-            {product.allowInstallments && <Badge className="bg-blue-600 text-white border-none text-[7px] sm:text-[9px] font-bold">TRANCHES</Badge>}
-          </div>
         </Link>
 
         <div className="p-2 sm:p-3 space-y-1.5">
@@ -84,7 +80,19 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </CardContent>
 
-      <CardFooter className="p-2 sm:p-3 pt-0 flex items-center mt-auto">
+      <CardFooter className="p-2 sm:p-3 pt-0 flex flex-col gap-2 mt-auto">
+        {product.allowInstallments && (
+          <div className="w-full bg-blue-50 border border-blue-100 rounded-lg p-1.5 flex items-center gap-2">
+            <div className="bg-blue-600 p-1 rounded-md text-white">
+              <CreditCard className="h-3 w-3" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[9px] font-black text-blue-700 uppercase leading-none">Payer par tranche</span>
+              <span className="text-[10px] font-bold text-blue-600 leading-tight">200F / jour • 1000F / semaine</span>
+            </div>
+          </div>
+        )}
+
         <div className="flex w-full gap-1.5 sm:gap-2">
           <Button 
             variant="outline" 
