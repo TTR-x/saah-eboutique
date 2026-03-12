@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Product } from '@/lib/types';
-import { Wallet, Truck, User, CheckCircle2, ChevronLeft, ArrowRight, MessageSquare, FileEdit } from 'lucide-react';
+import { Wallet, Truck, User, CheckCircle2, ChevronLeft, ArrowRight, MessageSquare, FileEdit, Mail } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface CheckoutDialogProps {
@@ -71,8 +71,8 @@ Merci de m'indiquer la marche à suivre pour finaliser mon achat rapidement.`;
       : `🏪 Retrait en boutique (Lomé, Deckon)`;
 
     const totalToPay = formData.isDelivery && product.deliveryFees 
-      ? (formData.paymentMode === 'installments' ? product.installmentPrice! + product.deliveryFees : product.price + product.deliveryFees)
-      : (formData.paymentMode === 'installments' ? product.installmentPrice! : product.price);
+      ? (formData.paymentMode === 'installments' ? (product.installmentPrice || 0) + product.deliveryFees : product.price + product.deliveryFees)
+      : (formData.paymentMode === 'installments' ? (product.installmentPrice || 0) : product.price);
 
     const message = `Bonjour SAAH Business, voici ma commande détaillée :
 
@@ -199,12 +199,16 @@ Merci de valider ma commande.`;
             <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="space-y-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name" className="font-bold text-xs uppercase text-muted-foreground">Nom Complet</Label>
+                  <Label htmlFor="name" className="font-bold text-xs uppercase text-muted-foreground">Nom Complet *</Label>
                   <Input id="name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Jean Dupont" className="h-12 rounded-xl border-gray-100 bg-gray-50 focus:ring-primary" required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="phone" className="font-bold text-xs uppercase text-muted-foreground">Numéro WhatsApp</Label>
+                  <Label htmlFor="phone" className="font-bold text-xs uppercase text-muted-foreground">Numéro WhatsApp *</Label>
                   <Input id="phone" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="90 00 00 00" className="h-12 rounded-xl border-gray-100 bg-gray-50 focus:ring-primary" required />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="email" className="font-bold text-xs uppercase text-muted-foreground">Adresse Email (Optionnel)</Label>
+                  <Input id="email" type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="votre@email.com" className="h-12 rounded-xl border-gray-100 bg-gray-50 focus:ring-primary" />
                 </div>
                 
                 <div className="pt-2">
@@ -274,7 +278,7 @@ Merci de valider ma commande.`;
                   <div className="flex justify-between border-t border-gray-200 pt-3 mt-3">
                     <span className="font-black text-lg">TOTAL</span>
                     <span className="font-black text-xl text-primary">
-                      {((formData.paymentMode === 'installments' ? product.installmentPrice! : product.price) + (formData.isDelivery ? (product.deliveryFees || 0) : 0)).toLocaleString('fr-FR')} FCFA
+                      {((formData.paymentMode === 'installments' ? (product.installmentPrice || 0) : product.price) + (formData.isDelivery ? (product.deliveryFees || 0) : 0)).toLocaleString('fr-FR')} FCFA
                     </span>
                   </div>
                 </div>
