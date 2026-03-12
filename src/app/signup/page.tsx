@@ -55,15 +55,14 @@ export default function SignupPage() {
 
       // 3. Sauvegarde du profil dans Firestore avec l'UID
       await setDoc(doc(db, 'users', user.uid), {
-        uid: user.uid, // On stocke explicitement l'UID
+        uid: user.uid,
         email: user.email,
         displayName: name,
         role: 'client',
         createdAt: serverTimestamp(),
       });
 
-      // 4. Déconnexion immédiate (Firebase connecte l'utilisateur automatiquement à la création)
-      // pour forcer le passage par la page de login comme demandé.
+      // 4. Déconnexion immédiate pour forcer le login
       await signOut(auth);
 
       toast({ 
@@ -111,7 +110,7 @@ export default function SignupPage() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="h-12 rounded-2xl bg-gray-50 border-gray-100 focus:ring-primary"
+                className="h-12 rounded-2xl bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all placeholder:text-gray-400"
               />
             </div>
             <div className="grid gap-2">
@@ -124,7 +123,7 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
-                className="h-12 rounded-2xl bg-gray-50 border-gray-100 focus:ring-primary"
+                className="h-12 rounded-2xl bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all placeholder:text-gray-400"
               />
             </div>
             <div className="grid gap-2">
@@ -135,7 +134,7 @@ export default function SignupPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-12 rounded-2xl bg-gray-50 border-gray-100 focus:ring-primary"
+                className="h-12 rounded-2xl bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all"
               />
             </div>
             <div className="grid gap-2">
@@ -146,7 +145,7 @@ export default function SignupPage() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="h-12 rounded-2xl bg-gray-50 border-gray-100 focus:ring-primary"
+                className="h-12 rounded-2xl bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all"
               />
             </div>
             <Button 
