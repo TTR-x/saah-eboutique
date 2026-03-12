@@ -2,26 +2,30 @@
 'use client'
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { MessageSquare, Package, ShoppingBag, Users } from "lucide-react";
+import { MessageSquare, Package, ShoppingBag, Users, BadgeEuro, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getProducts } from "@/lib/products-service";
 import { getMessages } from "@/lib/messages-service";
 import { getImportOrders } from "@/lib/import-orders-service";
-import type { Product, ContactMessage, ImportOrder } from "@/lib/types";
+import { getAllOrders } from "@/lib/orders-service";
+import type { Product, ContactMessage, ImportOrder, Order } from "@/lib/types";
 import { LogoSpinner } from "@/components/logo-spinner";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-function StatCard({ title, value, icon, isLoading }: { title: string, value: string | number, icon: React.ReactNode, isLoading: boolean }) {
+function StatCard({ title, value, icon, isLoading, subtext }: { title: string, value: string | number, icon: React.ReactNode, isLoading: boolean, subtext?: string }) {
     return (
-        <Card>
+        <Card className="border-none shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{title}</CardTitle>
-                {icon}
+                <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">{title}</CardTitle>
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                    {icon}
+                </div>
             </CardHeader>
             <CardContent>
-                {isLoading ? <LogoSpinner className="h-6 w-6" /> : <div className="text-2xl font-bold">{value}</div>}
+                {isLoading ? <LogoSpinner className="h-6 w-6" /> : <div className="text-2xl font-black">{value}</div>}
+                {subtext && <p className="text-[10px] font-bold text-muted-foreground mt-1">{subtext}</p>}
             </CardContent>
         </Card>
     );
@@ -30,21 +34,24 @@ function StatCard({ title, value, icon, isLoading }: { title: string, value: str
 export default function AdminDashboardPage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [messages, setMessages] = useState<ContactMessage[]>([]);
-    const [orders, setOrders] = useState<ImportOrder[]>([]);
+    const [importOrders, setImportOrders] = useState<ImportOrder[]>([]);
+    const [sales, setSales] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                const [productsData, messagesData, ordersData] = await Promise.all([
+                const [productsData, messagesData, importsData, salesData] = await Promise.all([
                     getProducts(),
                     getMessages(),
-                    getImportOrders()
+                    getImportOrders(),
+                    getAllOrders()
                 ]);
                 setProducts(productsData);
                 setMessages(messagesData);
-                setOrders(ordersData);
+                setImportOrders(importsData);
+                setSales(salesData);
             } catch (error) {
                 console.error("Failed to fetch dashboard data:", error);
             } finally {
@@ -55,63 +62,76 @@ export default function AdminDashboardPage() {
     }, []);
 
     const recentMessages = messages.slice(0, 3);
-    const recentOrders = orders.slice(0, 3);
+    const recentSales = sales.slice(0, 3);
+    const totalPotentialRevenue = sales.reduce((acc, sale) => acc + (sale.status !== 'cancelled' ? sale.amount : 0), 0);
 
   return (
-    <div>
-      <h2 className="text-3xl font-bold mb-6">Tableau de bord</h2>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <StatCard title="Produits" value={products.length} icon={<ShoppingBag className="h-4 w-4 text-muted-foreground" />} isLoading={isLoading} />
-        <StatCard title="Messages" value={messages.length} icon={<MessageSquare className="h-4 w-4 text-muted-foreground" />} isLoading={isLoading} />
-        <StatCard title="Demandes Import" value={orders.length} icon={<Package className="h-4 w-4 text-muted-foreground" />} isLoading={isLoading} />
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-3xl font-black tracking-tight">Tableau de Bord</h2>
+        <p className="text-muted-foreground">Vue d'ensemble de l'activité de SAAH Business.</p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard title="Ventes" value={sales.length} icon={<BadgeEuro className="h-4 w-4" />} isLoading={isLoading} subtext="Intentions d'achat directes" />
+        <StatCard title="Revenu Potentiel" value={`${totalPotentialRevenue.toLocaleString('fr-FR')} F`} icon={<TrendingUp className="h-4 w-4 text-green-500" />} isLoading={isLoading} subtext="Total des ventes engagées" />
+        <StatCard title="Demandes Import" value={importOrders.length} icon={<Package className="h-4 w-4" />} isLoading={isLoading} subtext="Projets d'importation Chine" />
+        <StatCard title="Messages" value={messages.length} icon={<MessageSquare className="h-4 w-4" />} isLoading={isLoading} subtext="Support & Contacts" />
       </div>
       
       <div className="mt-8 grid gap-8 md:grid-cols-2">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Derniers Messages</CardTitle>
-            <Button asChild variant="outline" size="sm">
-                <Link href="/admin/messages">Voir tout</Link>
+        <Card className="border-none shadow-sm rounded-2xl overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between bg-white border-b">
+            <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                <BadgeEuro className="h-4 w-4 text-primary" /> Dernières Ventes
+            </CardTitle>
+            <Button asChild variant="ghost" size="sm" className="text-xs font-bold">
+                <Link href="/admin/sales">Tout voir</Link>
             </Button>
           </CardHeader>
-          <CardContent>
-            {isLoading ? <LogoSpinner /> : recentMessages.length > 0 ? (
-                <ul className="space-y-3">
-                    {recentMessages.map(msg => (
-                        <li key={msg.id} className="flex justify-between items-center text-sm p-2 rounded-md hover:bg-muted">
-                            <div>
-                                <span className="font-semibold">{msg.name}</span>
-                                <p className="text-muted-foreground truncate max-w-xs">{msg.message}</p>
+          <CardContent className="p-0">
+            {isLoading ? <div className="p-10 flex justify-center"><LogoSpinner /></div> : recentSales.length > 0 ? (
+                <div className="divide-y">
+                    {recentSales.map(sale => (
+                        <div key={sale.id} className="flex justify-between items-center p-4 hover:bg-muted/30">
+                            <div className="flex flex-col min-w-0">
+                                <span className="font-bold text-sm truncate">{sale.productName}</span>
+                                <span className="text-[10px] text-muted-foreground">{sale.userName}</span>
                             </div>
-                            {!msg.isRead && <Badge>Nouveau</Badge>}
-                        </li>
+                            <div className="text-right shrink-0">
+                                <p className="font-black text-xs text-primary">{sale.amount.toLocaleString('fr-FR')} F</p>
+                                <Badge variant="outline" className="text-[8px] h-4 mt-1">{sale.status === 'pending' ? 'Attente' : sale.status}</Badge>
+                            </div>
+                        </div>
                     ))}
-                </ul>
-            ) : <p className="text-muted-foreground">Aucun message récent.</p>}
+                </div>
+            ) : <p className="p-10 text-center text-muted-foreground italic text-sm">Aucune vente récente.</p>}
           </CardContent>
         </Card>
 
-        <Card>
-           <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Dernières Demandes d'Import</CardTitle>
-                <Button asChild variant="outline" size="sm">
-                    <Link href="/admin/orders">Voir tout</Link>
-                </Button>
-            </CardHeader>
-          <CardContent>
-             {isLoading ? <LogoSpinner /> : recentOrders.length > 0 ? (
-                <ul className="space-y-3">
-                    {recentOrders.map(order => (
-                         <li key={order.id} className="flex justify-between items-center text-sm p-2 rounded-md hover:bg-muted">
-                            <div>
-                                <span className="font-semibold">{order.name}</span>
-                                <p className="text-muted-foreground">Produit: {order.productName}</p>
+        <Card className="border-none shadow-sm rounded-2xl overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between bg-white border-b">
+            <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-primary" /> Support Client
+            </CardTitle>
+            <Button asChild variant="ghost" size="sm" className="text-xs font-bold">
+                <Link href="/admin/messages">Voir tout</Link>
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0">
+            {isLoading ? <div className="p-10 flex justify-center"><LogoSpinner /></div> : recentMessages.length > 0 ? (
+                <div className="divide-y">
+                    {recentMessages.map(msg => (
+                        <div key={msg.id} className="flex justify-between items-center p-4 hover:bg-muted/30">
+                            <div className="min-w-0">
+                                <span className="font-bold text-sm">{msg.name}</span>
+                                <p className="text-[10px] text-muted-foreground truncate max-w-[200px]">{msg.message}</p>
                             </div>
-                            {!order.isRead && <Badge>Nouveau</Badge>}
-                        </li>
+                            {!msg.isRead && <Badge className="bg-red-500 h-2 w-2 p-0 rounded-full shrink-0" />}
+                        </div>
                     ))}
-                </ul>
-            ) : <p className="text-muted-foreground">Aucune demande récente.</p>}
+                </div>
+            ) : <p className="p-10 text-center text-muted-foreground italic text-sm">Aucun message récent.</p>}
           </CardContent>
         </Card>
       </div>

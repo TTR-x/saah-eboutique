@@ -23,6 +23,7 @@ import {
   Package,
   MessageSquare,
   Shield,
+  BadgeEuro,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Logo } from '@/components/layout/logo';
@@ -46,7 +47,7 @@ function AdminHeader() {
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background px-4">
        {isLoading && <Progress value={100} className="absolute top-0 left-0 right-0 h-1 animate-pulse duration-1000" />}
       <SidebarTrigger/>
-      <h1 className="text-2xl font-bold">Espace Administration</h1>
+      <h1 className="text-2xl font-bold">Administration</h1>
       <UserAvatar />
     </header>
   );
@@ -89,7 +90,6 @@ export default function AdminLayout({
             };
             fetchUnreadCounts();
             
-            // Re-fetch counts every 30 seconds
             const interval = setInterval(fetchUnreadCounts, 30000);
             return () => clearInterval(interval);
         }
@@ -104,7 +104,6 @@ export default function AdminLayout({
     }
     
     const handleMenuClick = () => {
-      // For mobile, the sidebar is a sheet, so we manage its state here
       if (window.innerWidth < 768) {
         setIsSidebarOpen(false);
       }
@@ -120,7 +119,7 @@ export default function AdminLayout({
             <SidebarContent onClick={handleMenuClick}>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild isActive={pathname === '/admin'}>
                     <Link href="/admin">
                       <LayoutGrid />
                       Tableau de bord
@@ -128,7 +127,24 @@ export default function AdminLayout({
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild isActive={pathname === '/admin/sales'}>
+                    <Link href="/admin/sales">
+                      <BadgeEuro />
+                      Ventes Directes
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={pathname === '/admin/orders'}>
+                    <Link href="/admin/orders">
+                      <Package />
+                      Demandes Import
+                      {unreadOrders > 0 && <SidebarMenuBadge>{unreadOrders}</SidebarMenuBadge>}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={pathname === '/admin/messages'}>
                     <Link href="/admin/messages">
                       <MessageSquare />
                       Messages
@@ -137,40 +153,31 @@ export default function AdminLayout({
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <Link href="/admin/orders">
-                      <Package />
-                      Commandes
-                      {unreadOrders > 0 && <SidebarMenuBadge>{unreadOrders}</SidebarMenuBadge>}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild isActive={pathname === '/admin/clients'}>
                     <Link href="/admin/clients">
                       <Users />
-                      Clients
+                      Base Clients
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild isActive={pathname === '/admin/products'}>
                     <Link href="/admin/products">
                       <ShoppingBag />
-                      Produits
+                      Catalogue Articles
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild isActive={pathname === '/admin/slides'}>
                     <Link href="/admin/slides">
                       <ImageIcon />
-                      Slides
+                      Carousels
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild isActive={pathname === '/admin/security'}>
                     <Link href="/admin/security">
                       <Shield />
                       Sécurité
@@ -193,7 +200,7 @@ export default function AdminLayout({
                   <SidebarMenuButton asChild>
                     <Link href="/">
                       <LogOut />
-                      Retour au site
+                      Quitter l'admin
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
