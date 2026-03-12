@@ -1,4 +1,3 @@
-
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { initializeFirestore } from 'firebase/firestore';
@@ -22,8 +21,7 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 // Initialisation de l'Auth
 export const auth = getAuth(app);
 
-// Initialisation de Firestore avec configuration de stabilité maximale
-// experimentalForceLongPolling et useFetchStreams désactivé pour éviter les erreurs de connexion
+// Initialisation de Firestore avec configuration de stabilité maximale pour Firebase Studio
 export const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
   useFetchStreams: false,
