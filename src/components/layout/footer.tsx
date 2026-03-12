@@ -10,8 +10,11 @@ export function Footer() {
   const { handleLinkClick } = useNavigation();
   const pathname = usePathname();
 
-  // Masquer le footer sur le dashboard client et l'espace administration
-  if (pathname === '/dashboard' || pathname.startsWith('/admin')) {
+  // Masquer le footer sur le dashboard client, l'admin, et les pages d'auth
+  const hiddenRoutes = ['/dashboard', '/admin', '/login', '/signup'];
+  const shouldHide = hiddenRoutes.some(route => pathname.startsWith(route));
+
+  if (shouldHide) {
     return null;
   }
 
