@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -6,7 +7,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
-import { ShoppingCart, Clock, Check, CreditCard } from 'lucide-react';
+import { ShoppingCart, Clock, Check, CreditCard, Users } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNavigation } from '@/hooks/use-navigation';
 import { formatDistanceToNow } from 'date-fns';
@@ -57,6 +58,11 @@ export function ProductCard({ product }: ProductCardProps) {
             {isNew && (
               <Badge className="bg-orange-500 text-white border-none text-[8px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-sm">NOUVEAU</Badge>
             )}
+            {product.isTontine && (
+              <Badge className="bg-green-600 text-white border-none text-[8px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-sm flex items-center gap-1">
+                <Users className="h-2 w-2 sm:h-3 sm:w-3" /> TONTINE
+              </Badge>
+            )}
           </div>
         </Link>
 
@@ -88,7 +94,9 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
             <div className="flex flex-col">
               <span className="text-[9px] font-black text-blue-700 uppercase leading-none">Payer par tranche</span>
-              <span className="text-[10px] font-bold text-blue-600 leading-tight">200F / jour • 1000F / semaine</span>
+              <span className="text-[10px] font-bold text-blue-600 leading-tight">
+                {product.installmentPrice?.toLocaleString('fr-FR')} F / mois
+              </span>
             </div>
           </div>
         )}

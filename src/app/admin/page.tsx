@@ -2,7 +2,7 @@
 'use client'
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { MessageSquare, Package, ShoppingBag, Users, BadgeEuro, TrendingUp, Clock } from "lucide-react";
+import { MessageSquare, Package, ShoppingBag, Users, BadgeEuro, TrendingUp, Clock, MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getProducts } from "@/lib/products-service";
 import { getMessages } from "@/lib/messages-service";
@@ -62,7 +62,7 @@ export default function AdminDashboardPage() {
     }, []);
 
     const recentMessages = messages.slice(0, 3);
-    const recentSales = sales.slice(0, 3);
+    const recentSales = sales.slice(0, 5);
     const pendingSalesCount = sales.filter(s => s.status === 'pending').length;
     const totalPotentialRevenue = sales.reduce((acc, sale) => acc + (sale.status !== 'cancelled' ? sale.amount : 0), 0);
 
@@ -81,8 +81,8 @@ export default function AdminDashboardPage() {
         <StatCard title="Messages" value={messages.length} icon={<MessageSquare className="h-4 w-4" />} isLoading={isLoading} subtext="Support" colorClass="text-purple-500" />
       </div>
       
-      <div className="mt-8 grid gap-8 md:grid-cols-2">
-        <Card className="border-none shadow-sm rounded-2xl overflow-hidden">
+      <div className="mt-8 grid gap-8 md:grid-cols-3">
+        <Card className="md:col-span-2 border-none shadow-sm rounded-2xl overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between bg-white border-b">
             <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
                 <BadgeEuro className="h-4 w-4 text-primary" /> Dernières Ventes
@@ -94,20 +94,45 @@ export default function AdminDashboardPage() {
           <CardContent className="p-0">
             {isLoading ? <div className="p-10 flex justify-center"><LogoSpinner /></div> : recentSales.length > 0 ? (
                 <div className="divide-y">
-                    {recentSales.map(sale => (
-                        <div key={sale.id} className="flex justify-between items-center p-4 hover:bg-muted/30">
-                            <div className="flex flex-col min-w-0">
-                                <span className="font-bold text-sm truncate">{sale.productName}</span>
-                                <span className="text-[10px] text-muted-foreground">{sale.userName}</span>
+                    {recentSales.map(sale => {
+                        const userPhone = (sale as any).userPhone;
+                        return (
+                            <div key={sale.id} className="flex justify-between items-center p-4 hover:bg-muted/30">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className="relative h-10 w-10 rounded-lg overflow-hidden border bg-muted shrink-0">
+                                        {sale.productImage && <Image src={sale.productImage} alt="" fill className="object-cover" />}
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="font-bold text-sm truncate">{sale.productName}</span>
+                                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                            {sale.userName} 
+                                            {userPhone && <span className="text-green-600 font-bold">• {userPhone}</span>}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 shrink-0">
+                                    <div className="text-right">
+                                        <p className="font-black text-xs text-primary">{sale.amount.toLocaleString('fr-FR')} F</p>
+                                        <Badge variant="outline" className={`text-[8px] h-4 mt-1 border-none ${
+                                            sale.status === 'pending' ? 'text-orange-600 bg-orange-50' : 
+                                            sale.status === 'validated' ? 'text-blue-600 bg-blue-50' :
+                                            sale.status === 'cancelled' ? 'text-red-600 bg-red-50' :
+                                            'text-green-600 bg-green-50'
+                                        }`}>
+                                            {sale.status === 'pending' ? 'Attente' : sale.status}
+                                        </Badge>
+                                    </div>
+                                    {userPhone && (
+                                        <Button asChild size="icon" variant="ghost" className="h-8 w-8 rounded-full text-green-600">
+                                            <Link href={`https://wa.me/${userPhone.replace(/\s+/g, '')}`} target="_blank">
+                                                <MessageCircle className="h-4 w-4" />
+                                            </Link>
+                                        </Button>
+                                    )}
+                                </div>
                             </div>
-                            <div className="text-right shrink-0">
-                                <p className="font-black text-xs text-primary">{sale.amount.toLocaleString('fr-FR')} F</p>
-                                <Badge variant="outline" className={`text-[8px] h-4 mt-1 ${sale.status === 'pending' ? 'border-orange-200 text-orange-600 bg-orange-50' : ''}`}>
-                                    {sale.status === 'pending' ? 'Attente' : sale.status}
-                                </Badge>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             ) : <p className="p-10 text-center text-muted-foreground italic text-sm">Aucune vente récente.</p>}
           </CardContent>
