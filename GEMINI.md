@@ -1,3 +1,4 @@
+
 # Règles de Développement pour SAAH Business
 
 Ce document définit les règles strictes que Gemini doit suivre pour ne pas casser le site et maintenir sa cohérence.
@@ -12,6 +13,7 @@ Ce document définit les règles strictes que Gemini doit suivre pour ne pas cas
 - **Source** : Toutes les images de remplacement (placeholders) doivent être définies dans `src/app/lib/placeholder-images.json`.
 - **Format** : Utiliser `next/image` avec les attributs `width`, `height` ou `fill`.
 - **Pertinence** : Toujours ajouter un `data-ai-hint` avec deux mots-clés précis pour la recherche d'images réelles (ex: `gift box`).
+- **Image Tontine** : Utiliser impérativement l'image `/cadeaux.png` située dans le dossier public pour toutes les bannières ou cartes relatives au "Plan Tontine".
 
 ## 🛠 Stack Technique
 - **Framework** : Next.js 15 (App Router).
