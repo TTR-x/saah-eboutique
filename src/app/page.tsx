@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { 
   Star, 
@@ -166,22 +167,22 @@ export default function HomePage() {
         {/* Flux principal - Articles */}
         <main className="lg:col-span-2 space-y-4">
           
-          {/* Barre de recherche */}
-          <form onSubmit={handleSearchSubmit} className="relative group mb-6 max-w-sm mx-auto">
+          {/* Barre de recherche compacte */}
+          <form onSubmit={handleSearchSubmit} className="relative group mb-6 max-w-[280px] mx-auto">
             <div className="relative flex items-center bg-white rounded-full border border-gray-200 overflow-hidden shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/20">
-              <Search className="absolute left-3 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 h-3.5 w-3.5 text-gray-400" />
               <Input 
                 type="search" 
-                placeholder="Rechercher un article..." 
-                className="pl-10 pr-20 h-10 border-none bg-transparent focus-visible:ring-0 text-sm" 
+                placeholder="Recherche..." 
+                className="pl-9 pr-16 h-9 border-none bg-transparent focus-visible:ring-0 text-xs" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               <Button 
                 type="submit" 
-                className="absolute right-0 h-10 px-4 rounded-l-none rounded-r-full bg-primary text-black font-bold hover:bg-primary/90 text-xs"
+                className="absolute right-0 h-9 px-3 rounded-l-none rounded-r-full bg-primary text-black font-bold hover:bg-primary/90 text-[10px]"
               >
-                Chercher
+                Go
               </Button>
             </div>
           </form>
@@ -207,12 +208,35 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2 sm:gap-4">
-              {products.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+              {/* Injection de l'image cadeaux à côté du premier article */}
+              {products.length > 0 ? (
+                <>
+                  <ProductCard product={products[0]} />
+                  <div className="relative aspect-square rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-white group">
+                    <Image 
+                      src="/cadeaux.png" 
+                      alt="Offres SAAH Business" 
+                      fill 
+                      className="object-cover transition-transform duration-500 group-hover:scale-105" 
+                    />
+                  </div>
+                  {products.slice(1).map(product => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </>
+              ) : (
+                <div className="relative aspect-square rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-white group">
+                  <Image 
+                    src="/cadeaux.png" 
+                    alt="Offres SAAH Business" 
+                    fill 
+                    className="object-cover transition-transform duration-500 group-hover:scale-105" 
+                  />
+                </div>
+              )}
               
               {products.length === 0 && (
-                <div className="col-span-full text-center py-20 bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div className="col-span-full text-center py-20 bg-white rounded-xl border border-gray-200 shadow-sm mt-4">
                   <Package className="mx-auto h-12 w-12 text-gray-300 mb-4 opacity-20" />
                   <p className="text-gray-500 font-bold">Aucun article disponible.</p>
                 </div>
