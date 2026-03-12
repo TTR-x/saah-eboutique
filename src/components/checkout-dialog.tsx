@@ -16,6 +16,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import type { Product } from '@/lib/types';
 import { Wallet, Truck, User, CheckCircle2, ChevronLeft, ArrowRight, MessageSquare, FileEdit, Mail } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { useUser, useFirestore } from '@/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface CheckoutDialogProps {
   product: Product;
@@ -26,6 +30,8 @@ interface CheckoutDialogProps {
 type Step = 'payment' | 'choice' | 'details' | 'summary';
 
 export function CheckoutDialog({ product, open, onOpenChange }: CheckoutDialogProps) {
+  const { user } = useUser();
+  const db = useFirestore();
   const [step, setStep] = useState<Step>('payment');
   const [formData, setFormData] = useState({
     paymentMode: 'cash' as 'cash' | 'installments',
@@ -47,10 +53,41 @@ export function CheckoutDialog({ product, open, onOpenChange }: CheckoutDialogPr
     else if (step === 'summary') setStep('details');
   };
 
+  const saveOrderToFirestore = (totalToPay: number) => {
+    if (!user) return;
+
+    const orderData = {
+      userId: user.uid,
+      userEmail: user.email,
+      userName: formData.name || user.displayName || 'Client SAAH',
+      productId: product.id,
+      productName: product.name,
+      productImage: product.images[0],
+      amount: totalToPay,
+      paymentMode: formData.paymentMode,
+      status: 'pending',
+      createdAt: serverTimestamp(),
+    };
+
+    addDoc(collection(db, 'orders'), orderData)
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: 'orders',
+          operation: 'create',
+          requestResourceData: orderData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
+  };
+
   const handleDirectWhatsApp = () => {
     const phoneNumber = "22890101392";
     const modeLabel = formData.paymentMode === 'cash' ? 'Paiement Cash' : 'Paiement par tranches';
     
+    // On enregistre l'intention si connecté
+    const totalEstimate = formData.paymentMode === 'cash' ? product.price : (product.installmentPrice || 0);
+    saveOrderToFirestore(totalEstimate);
+
     const message = `Bonjour SAAH Business, je suis intéressé par l'article : *${product.name}*
 Mode de paiement souhaité : *${modeLabel}*
 
@@ -73,6 +110,9 @@ Merci de m'indiquer la marche à suivre pour finaliser mon achat rapidement.`;
     const totalToPay = formData.isDelivery && product.deliveryFees 
       ? (formData.paymentMode === 'installments' ? (product.installmentPrice || 0) + product.deliveryFees : product.price + product.deliveryFees)
       : (formData.paymentMode === 'installments' ? (product.installmentPrice || 0) : product.price);
+
+    // Sauvegarde en base de données
+    saveOrderToFirestore(totalToPay);
 
     const message = `Bonjour SAAH Business, voici ma commande détaillée :
 

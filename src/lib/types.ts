@@ -25,8 +25,18 @@ export type Product = {
   tontineDuration?: string; // ex: "6 mois", "1 an"
 };
 
-export type ProductInput = Omit<Product, 'id' | 'images' | 'imagePublicIds' | 'createdAt' | 'rating' | 'reviews'> & {
-  images: File[];
+export type Order = {
+  id: string;
+  userId: string;
+  userEmail: string;
+  userName: string;
+  productId: string;
+  productName: string;
+  productImage: string;
+  amount: number;
+  paymentMode: 'cash' | 'installments';
+  status: 'pending' | 'validated' | 'completed' | 'cancelled';
+  createdAt: any;
 };
 
 export type UserProfile = {
@@ -61,25 +71,6 @@ export type Slide = {
   createdAt: any;
 };
 
-export type SlideInput = {
-    title: string;
-    subtitle: string;
-    image: File;
-}
-
-export type Review = {
-  id: string;
-  userId?: string;
-  userName: string;
-  userAvatar?: string;
-  rating: number;
-  comment: string;
-  createdAt: any;
-  productName: string;
-}
-
-export type ReviewInput = Omit<Review, 'id' | 'createdAt' | 'userId' | 'userAvatar'>;
-
 export type ContactMessage = {
     id: string;
     name: string;
@@ -89,8 +80,6 @@ export type ContactMessage = {
     createdAt: any;
     isRead: boolean;
 }
-
-export type ContactMessageInput = Omit<ContactMessage, 'id' | 'createdAt' | 'isRead'>;
 
 export type ImportOrder = {
     id: string;
@@ -104,5 +93,3 @@ export type ImportOrder = {
     createdAt: any;
     isRead: boolean;
 }
-
-export type ImportOrderInput = Omit<ImportOrder, 'id' | 'createdAt' | 'isRead'>;
