@@ -5,16 +5,28 @@ import Link from 'next/link';
 import { Logo } from './logo';
 import { useNavigation } from '@/hooks/use-navigation';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export function Footer() {
   const { handleLinkClick } = useNavigation();
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || !pathname) {
+    return null;
+  }
 
   // Masquer le footer sur le dashboard client, l'admin, et les pages d'auth
-  const hiddenRoutes = ['/dashboard', '/admin', '/login', '/signup'];
-  const shouldHide = hiddenRoutes.some(route => pathname.startsWith(route));
+  // Les clients ne doivent pas voir le pied de page dans leur espace de gestion
+  const isDashboard = pathname.startsWith('/dashboard');
+  const isAdmin = pathname.startsWith('/admin');
+  const isAuth = pathname.startsWith('/login') || pathname.startsWith('/signup');
 
-  if (shouldHide) {
+  if (isDashboard || isAdmin || isAuth) {
     return null;
   }
 
