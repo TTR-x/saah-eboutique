@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -27,7 +28,6 @@ export function ProductCard({ product }: ProductCardProps) {
   const { toast } = useToast();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   
-  // Vérifier si l'article est déjà dans le panier
   const isAdded = items.some(item => item.id === product.id);
   
   const timeAgo = product.createdAt 
@@ -39,13 +39,12 @@ export function ProductCard({ product }: ProductCardProps) {
     addItem(product);
     toast({
       title: "Ajouté au panier",
-      description: `${product.name} a été ajouté avec succès.`,
+      description: `${product.name} a été ajouté.`,
     });
   };
 
   return (
     <Card className="flex flex-col h-full border border-gray-200 shadow-sm rounded-xl overflow-hidden bg-white group transition-all hover:shadow-md">
-      {/* Image Style Alibaba */}
       <CardContent className="p-0">
         <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block relative aspect-square w-full overflow-hidden bg-gray-50">
           <Image
@@ -55,7 +54,6 @@ export function ProductCard({ product }: ProductCardProps) {
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
           
-          {/* Badges sur l'image */}
           <div className="absolute top-1 left-1 sm:top-2 sm:left-2 flex flex-col gap-1">
             {isNew && (
               <Badge className="bg-orange-500 text-white border-none text-[8px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-sm">NOUVEAU</Badge>
@@ -71,7 +69,6 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         </Link>
 
-        {/* Contenu textuel */}
         <div className="p-2 sm:p-3 space-y-1.5">
           <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block">
             <h3 className="text-[13px] sm:text-[15px] font-medium text-gray-800 line-clamp-2 leading-tight hover:text-primary transition-colors min-h-[32px] sm:min-h-[40px]">
@@ -86,7 +83,6 @@ export function ProductCard({ product }: ProductCardProps) {
             <span className="text-[9px] sm:text-[11px] font-bold text-gray-600">FCFA</span>
           </div>
 
-          {/* Mention Paiement par tranche style Alibaba */}
           <div className="flex items-center gap-1 py-0.5 px-1.5 bg-orange-50 rounded-md border border-orange-100">
             <div className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
             <span className="text-[8px] sm:text-[10px] font-black text-orange-700 uppercase tracking-tight truncate">
@@ -94,17 +90,14 @@ export function ProductCard({ product }: ProductCardProps) {
             </span>
           </div>
 
-          {/* Info secondaire */}
           <div className="flex items-center justify-between text-[9px] sm:text-[11px] text-gray-400 font-medium">
             <span className="flex items-center gap-1 truncate"><Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> {timeAgo}</span>
           </div>
         </div>
       </CardContent>
 
-      {/* Pied de carte avec Boutons uniquement */}
       <CardFooter className="p-2 sm:p-3 pt-0 flex items-center mt-auto">
         <div className="flex w-full gap-1.5 sm:gap-2">
-          {/* Bouton Panier : Devient vert avec Check si ajouté */}
           <Button 
             variant="outline" 
             size="icon"
@@ -124,7 +117,7 @@ export function ProductCard({ product }: ProductCardProps) {
             className="flex-1 rounded-lg bg-primary text-black font-black h-9 sm:h-10 hover:bg-primary/90 text-[11px] sm:text-[13px] shadow-sm transition-all"
             onClick={() => setIsCheckoutOpen(true)}
           >
-            <span>Payer</span>
+            Payer
           </Button>
         </div>
       </CardFooter>

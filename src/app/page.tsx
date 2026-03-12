@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -196,7 +197,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          {/* Feed Content - Grid 2 colonnes sur mobile style Alibaba */}
+          {/* Feed Content - Grid 2 colonnes style Alibaba */}
           {isLoading ? (
             <div className="flex flex-col items-center py-20 gap-4">
               <LogoSpinner className="h-10 w-10 text-primary" />
@@ -304,7 +305,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Footer Side Links */}
           <div className="px-2 pt-4 text-[10px] text-gray-400 space-x-2 leading-relaxed uppercase tracking-tighter">
             <Link href="/" className="hover:underline">Confidentialité</Link>
             <span>·</span>

@@ -1,3 +1,4 @@
+
 'use client'
 
 import Link from 'next/link';
@@ -7,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
 import { auth } from '@/lib/firebase';
-import { signInWithEmailAndPassword, User } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { LogoSpinner } from '@/components/logo-spinner';
@@ -34,7 +35,6 @@ export default function LoginPage() {
         description: `Bienvenue, ${user.email}`,
       });
       
-      // Redirection directe et inconditionnelle après le succès
       if (user.email === ADMIN_EMAIL) {
         router.push('/admin');
       } else {
@@ -44,11 +44,14 @@ export default function LoginPage() {
     } catch (error: any) {
       console.error("Login Error:", error);
       let description = "Une erreur de connexion est survenue. Veuillez réessayer.";
-      if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+      
+      // Gestion unifiée de invalid-credential pour la sécurité
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
         description = "L'adresse e-mail ou le mot de passe est incorrect.";
       } else if (error.code === 'auth/network-request-failed') {
         description = "La requête a échoué. Veuillez vérifier votre connexion internet.";
       }
+      
       toast({
         title: "Erreur de connexion",
         description: description,
@@ -61,11 +64,11 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center py-12 px-4 min-h-screen bg-muted/40">
-      <Card className="w-full max-w-sm">
+      <Card className="w-full max-w-sm shadow-xl border-none rounded-2xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Connexion Administrateur</CardTitle>
+          <CardTitle className="text-2xl font-black">Administration</CardTitle>
           <CardDescription>
-            Veuillez entrer vos identifiants pour accéder au tableau de bord.
+            Identifiez-vous pour gérer votre boutique.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -80,6 +83,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
+                className="h-12 rounded-xl"
               />
             </div>
             <div className="grid gap-2">
@@ -91,14 +95,15 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
+                className="h-12 rounded-xl"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-12 rounded-xl font-bold bg-primary text-black hover:bg-primary/90" disabled={isSubmitting}>
               {isSubmitting ? <LogoSpinner /> : 'Se connecter'}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm">
-            <Link href="/" className="underline">
+          <div className="mt-6 text-center text-sm">
+            <Link href="/" className="text-muted-foreground hover:text-primary transition-colors">
               Retour au site
             </Link>
           </div>
