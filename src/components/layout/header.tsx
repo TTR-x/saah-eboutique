@@ -67,6 +67,16 @@ export function Header() {
     { name: 'Centre d\'Aide', href: '/support', icon: <LifeBuoy className="h-6 w-6" /> },
   ];
 
+  // Desktop navigation items including Dashboard if user is logged in
+  const desktopNavItems = [...navItems];
+  if (user) {
+    desktopNavItems.push({
+        name: 'Dashboard',
+        href: isAdmin ? '/admin' : '/dashboard',
+        icon: <LayoutGrid className="h-6 w-6" />
+    });
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
       {isLoading && <Progress value={100} className="absolute top-0 h-[3px] animate-pulse duration-1000 bg-primary" />}
@@ -79,7 +89,7 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            {navItems.map((item) => (
+            {desktopNavItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}

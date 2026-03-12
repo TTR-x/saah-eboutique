@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -91,81 +92,52 @@ export default function HomePage() {
       {/* Hero Section with Carousel */}
       <section className="bg-white mb-8 border-b">
         <div className="container mx-auto px-4 py-6">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                {/* Sidebar Navigation */}
-                <aside className="hidden lg:block space-y-1">
-                    <h3 className="font-black text-xs uppercase tracking-widest text-muted-foreground px-3 mb-4">Navigation</h3>
-                    <Link href="/" onClick={handleLinkClick} className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 text-primary font-black text-sm">
-                        <Home className="h-5 w-5" /> Accueil
-                    </Link>
-                    <Link href="/products" onClick={handleLinkClick} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 font-bold text-sm transition-all">
-                        <Package className="h-5 w-5" /> Boutique
-                    </Link>
-                    <Link href="/import" onClick={handleLinkClick} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 font-bold text-sm transition-all">
-                        <Ship className="h-5 w-5" /> Import Chine
-                    </Link>
-                    <Link href="/support" onClick={handleLinkClick} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 font-bold text-sm transition-all">
-                        <LifeBuoy className="h-5 w-5" /> Centre d'Aide
-                    </Link>
-                    <div className="pt-4 mt-4 border-t border-dashed">
-                        {user ? (
-                            <Link href={isAdmin ? "/admin" : "/dashboard"} className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 text-blue-600 font-black text-sm">
-                                <LayoutGrid className="h-5 w-5" /> Dashboard
-                            </Link>
-                        ) : (
-                            <Link href="/login" className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 font-black text-sm">
-                                <User className="h-5 w-5" /> Se connecter
-                            </Link>
-                        )}
-                    </div>
-                </aside>
+            <div className="flex flex-col space-y-6">
+                {/* Search Bar */}
+                <form onSubmit={handleSearchSubmit} className="relative group max-w-2xl">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <Input 
+                        type="search" 
+                        placeholder="Rechercher un article, une marque..." 
+                        className="pl-12 h-14 rounded-2xl border-2 border-primary/20 focus:border-primary shadow-sm bg-white font-medium"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <Button type="submit" className="absolute right-2 top-2 h-10 rounded-xl bg-primary text-black font-black hover:bg-primary/90">
+                        Trouver
+                    </Button>
+                </form>
 
                 {/* Carousel and Hero content */}
-                <div className="lg:col-span-3 space-y-6">
-                    <form onSubmit={handleSearchSubmit} className="relative group max-w-2xl">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                        <Input 
-                            type="search" 
-                            placeholder="Rechercher un article, une marque..." 
-                            className="pl-12 h-14 rounded-2xl border-2 border-primary/20 focus:border-primary shadow-sm bg-white font-medium"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                        <Button type="submit" className="absolute right-2 top-2 h-10 rounded-xl bg-primary text-black font-black hover:bg-primary/90">
-                            Trouver
-                        </Button>
-                    </form>
-
-                    {slides.length > 0 ? (
-                        <Carousel 
-                            className="w-full rounded-[2rem] overflow-hidden shadow-2xl border-none"
-                            plugins={[Autoplay({ delay: 5000 })]}
-                        >
-                            <CarouselContent>
-                                {slides.map((slide) => (
-                                    <CarouselItem key={slide.id}>
-                                        <div className="relative aspect-[21/9] w-full bg-muted">
-                                            <Image src={slide.imageUrl} alt={slide.title} fill className="object-cover" priority />
-                                            <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex flex-col justify-center p-8 md:p-16 text-white">
-                                                <h2 className="text-3xl md:text-5xl font-black mb-4 max-w-xl leading-tight">{slide.title}</h2>
-                                                <p className="text-lg md:text-xl font-medium mb-8 max-w-md opacity-90">{slide.subtitle}</p>
-                                                <Button asChild size="lg" className="w-fit h-14 px-8 rounded-2xl bg-primary text-black font-black text-lg hover:bg-primary/90 shadow-xl shadow-primary/20">
-                                                    <Link href="/products">Découvrir l'offre</Link>
-                                                </Button>
-                                            </div>
+                {slides.length > 0 ? (
+                    <Carousel 
+                        className="w-full rounded-[2rem] overflow-hidden shadow-2xl border-none"
+                        plugins={[Autoplay({ delay: 5000 })]}
+                    >
+                        <CarouselContent>
+                            {slides.map((slide) => (
+                                <CarouselItem key={slide.id}>
+                                    <div className="relative aspect-[21/9] w-full bg-muted">
+                                        <Image src={slide.imageUrl} alt={slide.title} fill className="object-cover" priority />
+                                        <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex flex-col justify-center p-8 md:p-16 text-white">
+                                            <h2 className="text-3xl md:text-5xl font-black mb-4 max-w-xl leading-tight">{slide.title}</h2>
+                                            <p className="text-lg md:text-xl font-medium mb-8 max-w-md opacity-90">{slide.subtitle}</p>
+                                            <Button asChild size="lg" className="w-fit h-14 px-8 rounded-2xl bg-primary text-black font-black text-lg hover:bg-primary/90 shadow-xl shadow-primary/20">
+                                                <Link href="/products">Découvrir l'offre</Link>
+                                            </Button>
                                         </div>
-                                    </CarouselItem>
-                                ))}
-                            </CarouselContent>
-                            <CarouselPrevious className="left-4 bg-white/20 text-white border-none hover:bg-white hover:text-black" />
-                            <CarouselNext className="right-4 bg-white/20 text-white border-none hover:bg-white hover:text-black" />
-                        </Carousel>
-                    ) : (
-                        <div className="w-full aspect-[21/9] rounded-[2rem] bg-gray-100 animate-pulse flex items-center justify-center">
-                            <LogoSpinner className="h-10 w-10 text-primary" />
-                        </div>
-                    )}
-                </div>
+                                    </div>
+                                </CarouselItem>
+                            ))}
+                        </CarouselContent>
+                        <CarouselPrevious className="left-4 bg-white/20 text-white border-none hover:bg-white hover:text-black" />
+                        <CarouselNext className="right-4 bg-white/20 text-white border-none hover:bg-white hover:text-black" />
+                    </Carousel>
+                ) : (
+                    <div className="w-full aspect-[21/9] rounded-[2rem] bg-gray-100 animate-pulse flex items-center justify-center">
+                        <LogoSpinner className="h-10 w-10 text-primary" />
+                    </div>
+                )}
             </div>
         </div>
       </section>
@@ -242,8 +214,8 @@ export default function HomePage() {
         </div>
 
         {/* Right Sidebar Widget (Desktop Only - Sticky) */}
-        <aside className="hidden lg:block lg:col-span-1">
-          <div className="sticky top-24 space-y-8">
+        <aside className="hidden lg:block lg:col-span-1 relative">
+          <div className="sticky top-24 space-y-8 h-fit">
             <section className="relative rounded-[2.5rem] overflow-hidden bg-black text-white p-8 flex flex-col items-center text-center gap-6 shadow-2xl">
                 <div className="relative h-40 w-40 shrink-0">
                     <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
