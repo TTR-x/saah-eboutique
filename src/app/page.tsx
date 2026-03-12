@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { useEffect, useState } from 'react';
 import { getProducts } from '@/lib/products-service';
 import { getTestimonials, addTestimonial } from '@/lib/testimonials-service';
