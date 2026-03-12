@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -111,20 +110,11 @@ export default function HomePage() {
     }
   }
 
-  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      const query = (e.target as HTMLInputElement).value;
-      if (query.trim()) {
-        router.push(`/products?q=${encodeURIComponent(query)}`);
-      }
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#f0f2f5] py-4">
       <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-6">
         
-        {/* Left Sidebar - Navigation Rapide */}
+        {/* Barre latérale gauche - Navigation Rapide */}
         <aside className="hidden lg:block space-y-2 sticky top-20 self-start">
           <Link href="/" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
             <div className="bg-primary/10 p-2 rounded-full text-primary">
@@ -153,7 +143,10 @@ export default function HomePage() {
           <div className="pt-4 mt-4 border-t border-gray-200">
             <h3 className="px-2 mb-2 font-bold text-gray-500 text-xs uppercase tracking-wider">Raccourcis</h3>
             <Link href="/cart" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
-              <CartIcon className="h-5 w-5 text-red-500" /> Mon Panier
+              <div className="bg-red-500/10 p-1.5 rounded-full">
+                <CartIcon className="h-4 w-4 text-red-500" />
+              </div>
+              Mon Panier
             </Link>
             <Link href="/login" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
               <div className="bg-blue-500/10 p-1.5 rounded-full">
@@ -164,47 +157,30 @@ export default function HomePage() {
           </div>
         </aside>
 
-        {/* Center Main Feed - Flux de Publications */}
+        {/* Flux principal - Articles */}
         <main className="lg:col-span-2 space-y-4">
           
-          {/* Barre de recherche intégrée directement dans le flux */}
-          <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-white mb-6">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="relative flex-1 group">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                  <Input 
-                    placeholder="Besoin d'un plan d'épargne ? Recherchez ici..." 
-                    className="pl-12 h-12 bg-gray-50 border-gray-100 rounded-xl text-[15px] focus-visible:ring-1 focus-visible:ring-primary shadow-none"
-                    onKeyDown={handleSearch}
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-1 mt-3 border-t border-gray-50 pt-2">
-                <Button variant="ghost" className="flex-1 h-10 gap-2 font-bold text-gray-500 rounded-lg hover:bg-gray-50">
-                  <ShieldCheck className="h-5 w-5 text-green-500" />
-                  Sécurisé
-                </Button>
-                <Button variant="ghost" className="flex-1 h-10 gap-2 font-bold text-gray-500 rounded-lg hover:bg-gray-50" onClick={() => router.push('/products')}>
-                  <Users className="h-5 w-5 text-blue-500" />
-                  Collectif
-                </Button>
-                <Button variant="ghost" className="flex-1 h-10 gap-2 font-bold text-gray-500 rounded-lg hover:bg-gray-50">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                  Croissance
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Bannière de confiance / Badges rapides */}
+          <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
+            <Badge variant="outline" className="bg-white border-none shadow-sm h-10 px-4 rounded-full font-bold flex items-center gap-2 shrink-0">
+              <ShieldCheck className="h-4 w-4 text-green-500" /> Sécurisé
+            </Badge>
+            <Badge variant="outline" className="bg-white border-none shadow-sm h-10 px-4 rounded-full font-bold flex items-center gap-2 shrink-0">
+              <Users className="h-4 w-4 text-blue-500" /> Collectif
+            </Badge>
+            <Badge variant="outline" className="bg-white border-none shadow-sm h-10 px-4 rounded-full font-bold flex items-center gap-2 shrink-0">
+              <TrendingUp className="h-4 w-4 text-primary" /> Croissance
+            </Badge>
+          </div>
 
-          {/* Feed Content - Grid 2 colonnes style Alibaba */}
+          {/* Grille d'articles Style Alibaba (2 colonnes sur mobile et desktop) */}
           {isLoading ? (
             <div className="flex flex-col items-center py-20 gap-4">
               <LogoSpinner className="h-10 w-10 text-primary" />
-              <p className="text-gray-500 font-bold">Chargement de votre flux...</p>
+              <p className="text-gray-500 font-bold">Mise à jour de vos offres...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-4">
+            <div className="grid grid-cols-2 gap-2 sm:gap-4">
               {products.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -212,48 +188,46 @@ export default function HomePage() {
               {products.length === 0 && (
                 <div className="col-span-full text-center py-20 bg-white rounded-xl border border-gray-200 shadow-sm">
                   <Package className="mx-auto h-12 w-12 text-gray-300 mb-4 opacity-20" />
-                  <p className="text-gray-500 font-bold">Aucune actualité pour le moment.</p>
+                  <p className="text-gray-500 font-bold">Aucun article disponible pour le moment.</p>
                 </div>
               )}
             </div>
           )}
         </main>
 
-        {/* Right Sidebar - Widgets & Témoignages */}
+        {/* Barre latérale droite - Widgets & Témoignages */}
         <aside className="hidden lg:block space-y-6 sticky top-20 self-start">
           
-          {/* Widget Sponsorisé / Import */}
+          {/* Widget Importation */}
           <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-white">
             <CardContent className="p-4">
-              <h3 className="font-bold text-gray-500 text-[11px] mb-3 uppercase tracking-widest">Services SAAH</h3>
-              <div className="space-y-4">
-                <div className="group cursor-pointer">
-                  <div className="relative aspect-video rounded-lg overflow-hidden mb-2 bg-gray-50">
-                    <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-                      <Ship className="h-12 w-12 text-primary opacity-50" />
-                    </div>
+              <h3 className="font-bold text-gray-500 text-[11px] mb-3 uppercase tracking-widest">Service Source Directe</h3>
+              <div className="group cursor-pointer">
+                <div className="relative aspect-video rounded-lg overflow-hidden mb-2 bg-gray-50">
+                  <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                    <Ship className="h-12 w-12 text-primary opacity-50" />
                   </div>
-                  <h4 className="font-bold text-sm group-hover:text-primary transition-colors">Importation Chine Express</h4>
-                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">Trouvez vos produits au meilleur prix directement à la source.</p>
-                  <Button asChild variant="secondary" size="sm" className="w-full mt-3 rounded-lg font-bold bg-gray-100 hover:bg-primary hover:text-black transition-all">
-                    <Link href="/import">En savoir plus</Link>
-                  </Button>
                 </div>
+                <h4 className="font-bold text-sm group-hover:text-primary transition-colors">Importation Chine Express</h4>
+                <p className="text-xs text-gray-500 mt-1 line-clamp-2">Trouvez vos produits au meilleur prix directement à la source.</p>
+                <Button asChild variant="secondary" size="sm" className="w-full mt-3 rounded-lg font-bold bg-gray-100 hover:bg-primary hover:text-black transition-all">
+                  <Link href="/import">Faire une demande</Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Témoignages Style "Suggestions" */}
+          {/* Témoignages */}
           <div>
             <div className="flex items-center justify-between mb-3 px-2">
-              <h3 className="font-bold text-gray-500 text-[11px] uppercase tracking-widest">Communauté</h3>
+              <h3 className="font-bold text-gray-500 text-[11px] uppercase tracking-widest">Avis Clients</h3>
               <Button variant="ghost" size="sm" className="h-7 text-primary font-bold text-xs hover:bg-primary/5" asChild>
-                <Link href="/#testimonials">Tout voir</Link>
+                <Link href="/#testimonials">Tous</Link>
               </Button>
             </div>
             <div className="space-y-3">
               {testimonials.slice(0, 3).map((testimonial) => (
-                <div key={testimonial.id} className="flex gap-3 px-2 group cursor-default">
+                <div key={testimonial.id} className="flex gap-3 px-2">
                   <Avatar className="h-10 w-10 shrink-0 border border-gray-100">
                     <AvatarFallback className="bg-primary/10 text-primary font-bold">{testimonial.name.charAt(0)}</AvatarFallback>
                   </Avatar>
@@ -271,32 +245,32 @@ export default function HomePage() {
                 <DialogTrigger asChild>
                   <Button variant="outline" className="w-full rounded-lg border-gray-200 text-gray-800 font-bold text-sm h-10 mt-2 bg-white hover:bg-gray-50 shadow-sm transition-all">
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    Témoigner
+                    Ajouter un avis
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="rounded-2xl sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="text-xl font-bold">Partagez votre expérience</DialogTitle>
+                        <DialogTitle className="text-xl font-bold">Votre expérience compte</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleReviewSubmit} className="space-y-4 pt-4">
                         <div className="space-y-2">
-                            <Label htmlFor="review-name" className="text-sm font-bold">Votre nom complet</Label>
+                            <Label htmlFor="review-name" className="text-sm font-bold">Nom complet</Label>
                             <Input id="review-name" value={newReview.name} onChange={(e) => setNewReview({...newReview, name: e.target.value})} placeholder="Jean Dupont" className="rounded-lg" required />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-sm font-bold">Votre note</Label>
+                          <Label className="text-sm font-bold">Note</Label>
                           <div className="mt-1">
                             <ReviewStars rating={newReview.rating} onRatingChange={(r) => setNewReview({...newReview, rating: r})} />
                           </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="review-comment" className="text-sm font-bold">Votre témoignage</Label>
-                            <Textarea id="review-comment" value={newReview.comment} onChange={(e) => setNewReview({...newReview, comment: e.target.value})} placeholder="Dites-nous ce que vous pensez de nos plans..." className="rounded-lg min-h-[100px]" required />
+                            <Label htmlFor="review-comment" className="text-sm font-bold">Message</Label>
+                            <Textarea id="review-comment" value={newReview.comment} onChange={(e) => setNewReview({...newReview, comment: e.target.value})} placeholder="Dites-nous ce que vous en pensez..." className="rounded-lg min-h-[100px]" required />
                         </div>
                         <DialogFooter className="pt-2">
                             <Button type="submit" className="w-full bg-primary font-bold rounded-lg text-black" disabled={isSubmittingReview}>
                                 {isSubmittingReview ? <LogoSpinner className="mr-2 h-4 w-4" /> : <Send className="mr-2 h-4 w-4" />}
-                                Publier mon avis
+                                Publier l'avis
                             </Button>
                         </DialogFooter>
                     </form>
