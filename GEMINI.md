@@ -1,13 +1,13 @@
-
 # Règles de Développement pour SAAH Business
 
 Ce document définit les règles strictes que Gemini doit suivre pour ne pas casser le site et maintenir sa cohérence.
 
 ## 🎨 Design & UI
-- **Style "Pro Simpliste"** : Inspiré de Facebook et WhatsApp (fond `#f0f2f5`, cartes blanches arrondies).
+- **Style "Pro Simpliste"** : Inspiré de Facebook et WhatsApp.
+- **Thématisation** : Utiliser TOUJOURS `bg-background` pour les fonds de page et `bg-card` pour les conteneurs blancs/gris. Ne jamais coder de couleurs hexadécimales en dur (ex: pas de `bg-[#f0f2f5]`).
 - **Composants** : Utiliser EXCLUSIVEMENT ShadCN UI et Tailwind CSS.
-- **Couleurs** : Ne jamais utiliser de classes de couleurs fixes (ex: `text-yellow-500`). Utiliser les variables du thème (`text-primary`, `bg-primary`).
-- **Navigation PC** : Les liens principaux doivent rester dans le Header. Ne pas créer de barre latérale redondante sur la page d'accueil pour les liens déjà présents en haut.
+- **Couleurs** : Ne jamais utiliser de classes de couleurs fixes (ex: `text-yellow-500`). Utiliser les variables du thème (`text-primary`, `bg-primary`, `text-foreground`).
+- **Mode Sombre** : S'assurer que chaque nouvelle interface utilise les variables HSL pour que le basculement Clair/Sombre soit automatique et harmonieux.
 
 ## 🖼 Gestion des Images
 - **Source** : Toutes les images de remplacement (placeholders) doivent être définies dans `src/app/lib/placeholder-images.json`.

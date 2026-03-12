@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -44,9 +43,9 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <Card className="flex flex-col h-full border border-gray-200 shadow-sm rounded-xl overflow-hidden bg-white group transition-all hover:shadow-md">
+    <Card className="flex flex-col h-full border border-gray-200 dark:border-zinc-800 shadow-sm rounded-xl overflow-hidden bg-card group transition-all hover:shadow-md">
       <CardContent className="p-0">
-        <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block relative aspect-square w-full overflow-hidden bg-gray-50">
+        <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block relative aspect-square w-full overflow-hidden bg-muted/20">
           <Image
             src={product.images[0]}
             alt={product.name}
@@ -68,19 +67,19 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <div className="p-2 sm:p-3 space-y-1.5">
           <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block">
-            <h3 className="text-[13px] sm:text-[15px] font-medium text-gray-800 line-clamp-2 leading-tight hover:text-primary transition-colors min-h-[32px] sm:min-h-[40px]">
+            <h3 className="text-[13px] sm:text-[15px] font-medium text-foreground line-clamp-2 leading-tight hover:text-primary transition-colors min-h-[32px] sm:min-h-[40px]">
               {product.name}
             </h3>
           </Link>
 
           <div className="flex items-baseline gap-1">
-            <span className="text-base sm:text-xl font-black text-gray-900">
+            <span className="text-base sm:text-xl font-black text-foreground">
               {product.price.toLocaleString('fr-FR')}
             </span>
-            <span className="text-[9px] sm:text-[11px] font-bold text-gray-600">FCFA</span>
+            <span className="text-[9px] sm:text-[11px] font-bold text-muted-foreground">FCFA</span>
           </div>
 
-          <div className="flex items-center justify-between text-[9px] sm:text-[11px] text-gray-400 font-medium">
+          <div className="flex items-center justify-between text-[9px] sm:text-[11px] text-muted-foreground font-medium">
             <span className="flex items-center gap-1 truncate"><Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> {timeAgo}</span>
           </div>
         </div>
@@ -88,13 +87,13 @@ export function ProductCard({ product }: ProductCardProps) {
 
       <CardFooter className="p-2 sm:p-3 pt-0 flex flex-col gap-2 mt-auto">
         {product.allowInstallments && (
-          <div className="w-full bg-blue-50 border border-blue-100 rounded-lg p-1.5 flex items-center gap-2">
+          <div className="w-full bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-lg p-1.5 flex items-center gap-2">
             <div className="bg-blue-600 p-1 rounded-md text-white">
               <CreditCard className="h-3 w-3" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[9px] font-black text-blue-700 uppercase leading-none">Payer par tranche</span>
-              <span className="text-[10px] font-bold text-blue-600 leading-tight">
+              <span className="text-[9px] font-black text-blue-700 dark:text-blue-400 uppercase leading-none">Payer par tranche</span>
+              <span className="text-[10px] font-bold text-blue-600 dark:text-blue-300 leading-tight">
                 {product.installmentPrice?.toLocaleString('fr-FR')} F / mois
               </span>
             </div>
@@ -109,7 +108,7 @@ export function ProductCard({ product }: ProductCardProps) {
               "rounded-lg transition-all h-9 w-9 sm:h-10 sm:w-10 shrink-0",
               isAdded 
                 ? "bg-green-500 border-green-500 text-white hover:bg-green-600" 
-                : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                : "border-gray-200 dark:border-zinc-700 text-foreground hover:bg-muted"
             )}
             onClick={handleAddToCart}
             disabled={isAdded}

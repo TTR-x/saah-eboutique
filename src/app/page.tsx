@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -81,9 +80,9 @@ export default function HomePage() {
   const trendingProducts = products.filter(p => p.reviews > 0).slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-[#f0f2f5] pb-12">
+    <div className="min-h-screen bg-background pb-12">
       {/* Hero Section */}
-      <section className="bg-white mb-8 border-b">
+      <section className="bg-card dark:bg-zinc-950 mb-8 border-b">
         <div className="container mx-auto px-4 py-6">
             <div className="flex flex-col space-y-6">
                 {/* Search Bar - Full Width and Centered */}
@@ -92,7 +91,7 @@ export default function HomePage() {
                     <Input 
                         type="search" 
                         placeholder="Rechercher un article, une marque..." 
-                        className="pl-12 h-14 w-full rounded-2xl border-2 border-primary/20 focus:border-primary shadow-sm bg-white font-medium"
+                        className="pl-12 h-14 w-full rounded-2xl border-2 border-primary/20 focus:border-primary shadow-sm bg-background font-medium"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -127,7 +126,7 @@ export default function HomePage() {
                         <CarouselNext className="right-4 bg-white/20 text-white border-none hover:bg-white hover:text-black" />
                     </Carousel>
                 ) : (
-                    <div className="w-full aspect-[21/9] rounded-[2rem] bg-gray-100 animate-pulse flex items-center justify-center">
+                    <div className="w-full aspect-[21/9] rounded-[2rem] bg-muted animate-pulse flex items-center justify-center">
                         <LogoSpinner className="h-10 w-10 text-primary" />
                     </div>
                 )}
@@ -243,8 +242,8 @@ export default function HomePage() {
             </section>
 
             <div className="px-4 py-6 text-center space-y-2 opacity-50">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">© {new Date().getFullYear()} SAAH Business</p>
-                <p className="text-[10px] text-gray-400">Votre partenaire de confiance.</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">© {new Date().getFullYear()} SAAH Business</p>
+                <p className="text-[10px] text-muted-foreground">Votre partenaire de confiance.</p>
             </div>
           </div>
         </aside>
