@@ -189,14 +189,14 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          {/* Feed Content */}
+          {/* Feed Content - Grid 2 colonnes sur mobile style Alibaba */}
           {isLoading ? (
             <div className="flex flex-col items-center py-20 gap-4">
               <LogoSpinner className="h-10 w-10 text-primary" />
               <p className="text-gray-500 font-bold">Chargement de votre flux...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-4">
               {products.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))}
