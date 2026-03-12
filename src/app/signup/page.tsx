@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,7 @@ import { useAuth, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { LogoSpinner } from '@/components/logo-spinner';
 
-export default function SignupPage() {
+function SignupForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,7 +23,10 @@ export default function SignupPage() {
   const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
+
+  const redirectPath = searchParams.get('redirect') || '/dashboard';
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,14 +48,11 @@ export default function SignupPage() {
 
     setIsSubmitting(true);
     try {
-      // 1. Création du compte dans Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. Mise à jour du nom d'affichage dans Auth pour accès immédiat
       await updateProfile(user, { displayName: name });
 
-      // 3. Sauvegarde du profil dans Firestore avec l'UID
       await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
         email: user.email,
@@ -66,9 +66,7 @@ export default function SignupPage() {
         description: 'Votre compte a été créé avec succès.',
       });
       
-      // 4. Redirection vers le dashboard
-      // On utilise replace pour éviter de pouvoir revenir au formulaire via "Précédent"
-      router.replace('/dashboard');
+      router.replace(redirectPath);
     } catch (error: any) {
       console.error(error);
       let message = 'Impossible de créer le compte.';
@@ -88,72 +86,80 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex items-center justify-center py-12 px-4 min-h-screen bg-[#f0f2f5]">
+    <form onSubmit={handleSignup} className="grid gap-5">
+      <div className="grid gap-2">
+        <Label htmlFor="name" className="font-bold text-gray-700 ml-1">Votre nom complet</Label>
+        <Input
+          id="name"
+          placeholder="Ex: Jean Dupont"
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="h-12 rounded-lg bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all placeholder:text-gray-400"
+        />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="email" className="font-bold text-gray-700 ml-1">Adresse Email</Label>
+        <Input
+          id="email"
+          type="email"
+          placeholder="nom@exemple.com"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+          className="h-12 rounded-lg bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all placeholder:text-gray-400"
+        />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="password" title="Mot de passe" className="font-bold text-gray-700 ml-1">Mot de passe</Label>
+        <Input
+          id="password"
+          type="password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="h-12 rounded-lg bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all"
+        />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="confirmPassword" title="Confirmer le mot de passe" className="font-bold text-gray-700 ml-1">Confirmer votre mot de passe</Label>
+        <Input
+          id="confirmPassword"
+          type="password"
+          required
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          className="h-12 rounded-lg bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all"
+        />
+      </div>
+      <Button 
+        type="submit" 
+        className="w-full h-14 rounded-lg font-black text-lg bg-primary text-black hover:bg-primary/90 shadow-lg shadow-yellow-100 mt-2" 
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? <LogoSpinner className="mr-2" /> : "S'inscrire gratuitement"}
+      </Button>
+    </form>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <div className="flex items-center justify-center py-12 px-4 min-h-screen bg-background">
       <Card className="w-full max-w-md shadow-xl border-none rounded-xl overflow-hidden">
-        <CardHeader className="text-center bg-white pb-8">
-          <CardTitle className="text-3xl font-black text-gray-900">Rejoindre SAAH</CardTitle>
-          <CardDescription className="text-gray-500 font-medium">
+        <CardHeader className="text-center bg-card pb-8">
+          <CardTitle className="text-3xl font-black">Rejoindre SAAH</CardTitle>
+          <CardDescription className="font-medium text-muted-foreground">
             Créez votre compte pour gérer vos achats et vos paiements par tranches.
           </CardDescription>
         </CardHeader>
-        <CardContent className="bg-white">
-          <form onSubmit={handleSignup} className="grid gap-5">
-            <div className="grid gap-2">
-              <Label htmlFor="name" className="font-bold text-gray-700 ml-1">Votre nom complet</Label>
-              <Input
-                id="name"
-                placeholder="Ex: Jean Dupont"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="h-12 rounded-lg bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all placeholder:text-gray-400"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email" className="font-bold text-gray-700 ml-1">Adresse Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="nom@exemple.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                className="h-12 rounded-lg bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all placeholder:text-gray-400"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password" title="Mot de passe" className="font-bold text-gray-700 ml-1">Mot de passe</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="h-12 rounded-lg bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="confirmPassword" title="Confirmer le mot de passe" className="font-bold text-gray-700 ml-1">Confirmer votre mot de passe</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="h-12 rounded-lg bg-white border border-black/30 focus:border-primary focus:ring-primary/20 transition-all"
-              />
-            </div>
-            <Button 
-              type="submit" 
-              className="w-full h-14 rounded-lg font-black text-lg bg-primary text-black hover:bg-primary/90 shadow-lg shadow-yellow-100 mt-2" 
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? <LogoSpinner className="mr-2" /> : "S'inscrire gratuitement"}
-            </Button>
-          </form>
+        <CardContent className="bg-card">
+          <Suspense fallback={<div className="flex justify-center p-8"><LogoSpinner /></div>}>
+            <SignupForm />
+          </Suspense>
           <div className="mt-8 text-center text-sm">
-            <span className="text-gray-500">Déjà inscrit ? </span>
+            <span className="text-muted-foreground">Déjà inscrit ? </span>
             <Link href="/login" className="text-primary font-black hover:underline underline-offset-4">
               Se connecter
             </Link>

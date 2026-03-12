@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -30,7 +29,6 @@ export default function HomePage() {
   const { user } = useUser();
   const [products, setProducts] = useState<Product[]>([]);
   const [slides, setSlides] = useState<Slide[]>([]);
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -41,13 +39,11 @@ export default function HomePage() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const [fetchedProducts, fetchedTestimonials, fetchedSlides] = await Promise.all([
+        const [fetchedProducts, fetchedSlides] = await Promise.all([
           getProducts(),
-          getTestimonials(),
           getSlides()
         ]);
         setProducts(fetchedProducts);
-        setTestimonials(fetchedTestimonials);
         setSlides(fetchedSlides);
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -64,6 +60,14 @@ export default function HomePage() {
     router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
   };
 
+  const handleClaimGift = () => {
+    if (user) {
+      router.push('/dashboard/gifts');
+    } else {
+      router.push('/signup?redirect=/dashboard/gifts');
+    }
+  };
+
   const newArrivals = products.slice(0, 4);
   const trendingProducts = products.filter(p => p.reviews > 0).slice(0, 4);
 
@@ -73,7 +77,7 @@ export default function HomePage() {
       <section className="bg-card dark:bg-zinc-950 mb-8 border-b">
         <div className="container mx-auto px-4 py-6">
             <div className="flex flex-col space-y-6">
-                {/* Search Bar - Full Width and Centered */}
+                {/* Search Bar */}
                 <form onSubmit={handleSearchSubmit} className="relative group w-full mx-auto">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input 
@@ -124,7 +128,6 @@ export default function HomePage() {
         {/* Main Flux */}
         <div className="lg:col-span-3 space-y-12">
           
-          {/* Section: Nouveautés */}
           <section>
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
@@ -144,7 +147,7 @@ export default function HomePage() {
             )}
           </section>
 
-          {/* Banner: Surprise (Visible on Mobile/Tablet only as Horizontal) */}
+          {/* Banner: Surprise Mobile */}
           <section className="lg:hidden relative rounded-xl overflow-hidden bg-black text-white p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
             <div className="relative h-48 w-48 shrink-0">
                 <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
@@ -162,14 +165,13 @@ export default function HomePage() {
                 <h2 className="text-3xl md:text-4xl font-black tracking-tight">Gagnez un cadeau incroyable !</h2>
                 <p className="text-gray-400 font-medium max-w-xl text-lg">Cliquez ci-dessous pour découvrir votre surprise et la réclamer dès maintenant.</p>
                 <div className="flex wrap gap-4 justify-center md:justify-start pt-4">
-                    <Button asChild size="lg" className="rounded-xl h-14 bg-white text-black font-black hover:bg-gray-100">
-                        <Link href="/support">Réclamer mon cadeau</Link>
+                    <Button onClick={handleClaimGift} size="lg" className="rounded-xl h-14 bg-white text-black font-black hover:bg-gray-100">
+                        Réclamer mon cadeau
                     </Button>
                 </div>
             </div>
           </section>
 
-          {/* Section: Tendances */}
           <section>
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
@@ -216,8 +218,8 @@ export default function HomePage() {
                     C'est votre jour de chance. Cliquez ici pour obtenir votre récompense spéciale SAAH Business.
                     </p>
                     <div className="flex flex-col gap-3 pt-4">
-                        <Button asChild size="lg" className="rounded-xl h-12 bg-white text-black font-black hover:bg-gray-100 w-full">
-                            <Link href="/support">Réclamer mon cadeau</Link>
+                        <Button onClick={handleClaimGift} size="lg" className="rounded-xl h-12 bg-white text-black font-black hover:bg-gray-100 w-full">
+                            Réclamer mon cadeau
                         </Button>
                     </div>
                 </div>

@@ -4,7 +4,7 @@ import { useUser, useDoc, useFirestore, useCollection } from '@/firebase';
 import { doc, collection, query, where, orderBy } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogoSpinner } from '@/components/logo-spinner';
-import { User, Package, Clock, CreditCard, ShoppingBag, ChevronRight } from 'lucide-react';
+import { User, Package, Clock, CreditCard, ShoppingBag, ChevronRight, Gift } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
@@ -69,13 +69,16 @@ export default function DashboardPage() {
             <p className="text-muted-foreground text-sm font-medium">UID: <span className="font-mono text-xs opacity-50">{user.uid.slice(0, 8)}...</span></p>
           </div>
         </div>
-        <div className="flex items-center gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-            <Badge variant="outline" className="border-none font-bold text-green-600 bg-green-50 px-3">Compte Actif</Badge>
+        <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 p-2 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800">
+            <Badge variant="outline" className="border-none font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-3">Compte Actif</Badge>
+            <Button asChild variant="ghost" size="sm" className="rounded-lg text-primary font-black">
+                <Link href="/dashboard/gifts"><Gift className="h-4 w-4 mr-2" /> Mes Cadeaux</Link>
+            </Button>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3 mb-10">
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
+        <Card className="border-none shadow-sm rounded-2xl bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
               <ShoppingBag className="h-3 w-3 text-primary" /> Commandes
@@ -87,7 +90,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
+        <Card className="border-none shadow-sm rounded-2xl bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
               <CreditCard className="h-3 w-3 text-blue-500" /> Total Engagé
@@ -99,7 +102,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
+        <Card className="border-none shadow-sm rounded-2xl bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
               <Clock className="h-3 w-3 text-orange-500" /> Tranches
@@ -123,9 +126,9 @@ export default function DashboardPage() {
       ) : orders && orders.length > 0 ? (
         <div className="grid gap-4">
           {orders.map((order: any) => (
-            <Card key={order.id} className="border-none shadow-sm rounded-2xl bg-white overflow-hidden hover:shadow-md transition-all group">
+            <Card key={order.id} className="border-none shadow-sm rounded-2xl bg-card overflow-hidden hover:shadow-md transition-all group">
               <CardContent className="p-4 flex items-center gap-4">
-                <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-gray-50 border shrink-0">
+                <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-gray-50 dark:bg-zinc-800 border shrink-0">
                   {order.productImage ? (
                     <Image src={order.productImage} alt={order.productName} fill className="object-cover" />
                   ) : (
@@ -161,8 +164,8 @@ export default function DashboardPage() {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl p-12 text-center border-2 border-dashed border-gray-100">
-          <div className="h-20 w-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="bg-card rounded-2xl p-12 text-center border-2 border-dashed border-gray-100 dark:border-zinc-800">
+          <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
             <Package className="h-10 w-10 text-gray-300" />
           </div>
           <h3 className="font-black text-xl">Aucun achat enregistré</h3>
