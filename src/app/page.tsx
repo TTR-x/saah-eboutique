@@ -112,11 +112,8 @@ export default function HomePage() {
                                     <div className="relative aspect-[21/9] w-full bg-muted">
                                         <Image src={slide.imageUrl} alt={slide.title} fill className="object-cover" priority />
                                         <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex flex-col justify-center p-8 md:p-16 text-white">
-                                            <h2 className="text-3xl md:text-5xl font-black mb-4 max-w-xl leading-tight">{slide.title}</h2>
-                                            <p className="text-lg md:text-xl font-medium mb-8 max-w-md opacity-90">{slide.subtitle}</p>
-                                            <Button asChild size="lg" className="w-fit h-14 px-8 rounded-xl bg-primary text-black font-black text-lg hover:bg-primary/90 shadow-xl shadow-primary/20">
-                                                <Link href="/products">Découvrir l'offre</Link>
-                                            </Button>
+                                            <h2 className="text-3xl md:text-5xl font-black mb-2 max-w-xl leading-tight">{slide.title}</h2>
+                                            <p className="text-lg md:text-xl font-medium max-w-md opacity-90">{slide.subtitle}</p>
                                         </div>
                                     </div>
                                 </CarouselItem>
