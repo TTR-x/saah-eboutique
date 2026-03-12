@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -24,6 +23,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { ThemeToggle } from '../theme-toggle';
 
 const ADMIN_EMAIL = "saahbusiness2026@gmail.com";
 
@@ -67,7 +67,6 @@ export function Header() {
     { name: 'Centre d\'Aide', href: '/support', icon: <LifeBuoy className="h-6 w-6" /> },
   ];
 
-  // Desktop navigation items including Dashboard if user is logged in
   const desktopNavItems = [...navItems];
   if (user) {
     desktopNavItems.push({
@@ -78,8 +77,8 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
-      {isLoading && <Progress value={100} className="absolute top-0 h-[3px] animate-pulse duration-1000 bg-primary" />}
+    <header className="sticky top-0 z-50 w-full border-b bg-white dark:bg-zinc-950 shadow-sm">
+      {isLoading && <Progress value={100} className="absolute top-0 left-0 right-0 h-[3px] animate-pulse duration-1000 bg-primary" />}
       
       <div className="container flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-8">
@@ -87,7 +86,6 @@ export function Header() {
             <Logo />
           </Link>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
             {desktopNavItems.map((item) => (
               <Link
@@ -96,7 +94,7 @@ export function Header() {
                 onClick={handleLinkClick}
                 className={cn(
                   "text-sm font-bold transition-colors hover:text-primary",
-                  pathname === item.href ? "text-primary" : "text-gray-600"
+                  pathname === item.href ? "text-primary" : "text-gray-600 dark:text-gray-400"
                 )}
               >
                 {item.name}
@@ -106,9 +104,13 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-2">
+          <div className="hidden md:block">
+            <ThemeToggle />
+          </div>
+
           <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800">
+              <Button variant="ghost" size="icon" className="relative rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-zinc-800 dark:text-zinc-200">
                 <ShoppingCart className="h-5 w-5" />
                 {itemCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white shadow-sm">
@@ -118,7 +120,7 @@ export function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0 border-none rounded-l-3xl shadow-2xl">
-              <SheetHeader className="p-6 border-b bg-white">
+              <SheetHeader className="p-6 border-b bg-white dark:bg-zinc-950">
                 <SheetTitle className="text-xl font-black flex items-center gap-2">
                   <ShoppingCart className="h-6 w-6 text-primary" />
                   Mon Panier ({itemCount})
@@ -185,7 +187,7 @@ export function Header() {
               </div>
 
               {items.length > 0 && (
-                <div className="p-6 border-t bg-gray-50 space-y-4">
+                <div className="p-6 border-t bg-gray-50 dark:bg-zinc-900 space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-500 font-bold text-sm uppercase">Total</span>
                     <span className="text-2xl font-black text-primary">{total.toLocaleString('fr-FR')} FCFA</span>
@@ -205,7 +207,7 @@ export function Header() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800" disabled={loading}>
+                <Button variant="ghost" size="icon" className="rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-zinc-800 dark:text-zinc-200" disabled={loading}>
                      {user ? <UserAvatar /> : <User className="h-5 w-5" />}
                 </Button>
             </DropdownMenuTrigger>
@@ -216,14 +218,14 @@ export function Header() {
                            <Link href={isAdmin ? "/admin" : "/dashboard"} onClick={handleLinkClick} className="flex items-center w-full p-2 cursor-pointer gap-3">
                               <UserAvatar />
                               <div className="flex flex-col items-start overflow-hidden">
-                                  <p className="font-bold text-gray-900 truncate w-full">{user.displayName || user.email?.split('@')[0]}</p>
+                                  <p className="font-bold text-gray-900 dark:text-gray-100 truncate w-full">{user.displayName || user.email?.split('@')[0]}</p>
                                   <p className="text-xs text-gray-500">Mon Tableau de bord {isAdmin && '(Admin)'}</p>
                               </div>
                            </Link>
                         </DropdownMenuItem>
                          <DropdownMenuSeparator className="my-2" />
                         <SignOutButton>
-                            <DropdownMenuItem className="p-2 text-red-500 font-bold focus:text-red-500 focus:bg-red-50 cursor-pointer rounded-xl">
+                            <DropdownMenuItem className="p-2 text-red-500 font-bold focus:text-red-500 focus:bg-red-50 dark:focus:bg-red-900/20 cursor-pointer rounded-xl">
                                 <LogOut className="mr-2 h-4 w-4" />
                                 Déconnexion
                             </DropdownMenuItem>
@@ -232,13 +234,13 @@ export function Header() {
                 ) : (
                   <>
                     <DropdownMenuItem asChild className="rounded-xl">
-                      <Link href="/login" onClick={handleLinkClick} className="flex items-center w-full p-3 font-bold text-gray-900 cursor-pointer gap-2">
+                      <Link href="/login" onClick={handleLinkClick} className="flex items-center w-full p-3 font-bold text-gray-900 dark:text-gray-100 cursor-pointer gap-2">
                         <LogIn className="h-5 w-5 text-primary" />
                         Se connecter
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="rounded-xl">
-                      <Link href="/signup" onClick={handleLinkClick} className="flex items-center w-full p-3 font-bold text-gray-900 cursor-pointer gap-2">
+                      <Link href="/signup" onClick={handleLinkClick} className="flex items-center w-full p-3 font-bold text-gray-900 dark:text-gray-100 cursor-pointer gap-2">
                         <User className="h-5 w-5 text-blue-500" />
                         Créer un compte
                       </Link>
@@ -250,14 +252,15 @@ export function Header() {
 
           <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden rounded-full bg-gray-100 text-gray-800">
+                <Button variant="ghost" size="icon" className="md:hidden rounded-full bg-gray-100 text-gray-800 dark:bg-zinc-800 dark:text-zinc-200">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] p-0 border-none bg-gray-50">
-                <SheetHeader className="p-4 bg-white border-b text-left">
-                  <SheetTitle>
+              <SheetContent side="left" className="w-[300px] p-0 border-none bg-gray-50 dark:bg-zinc-900">
+                <SheetHeader className="p-4 bg-white dark:bg-zinc-950 border-b text-left">
+                  <SheetTitle className="flex items-center justify-between">
                     <Logo />
+                    <ThemeToggle />
                   </SheetTitle>
                 </SheetHeader>
                 <div className="p-4 space-y-4">
@@ -268,8 +271,8 @@ export function Header() {
                         href={item.href}
                         onClick={handleLinkClick}
                         className={cn(
-                          "flex items-center gap-3 px-3 py-3 text-sm font-bold rounded-xl transition-all shadow-sm border border-transparent hover:bg-white hover:border-gray-200",
-                          pathname === item.href ? "bg-primary/10 text-primary" : "text-gray-800"
+                          "flex items-center gap-3 px-3 py-3 text-sm font-bold rounded-xl transition-all shadow-sm border border-transparent hover:bg-white dark:hover:bg-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700",
+                          pathname === item.href ? "bg-primary/10 text-primary" : "text-gray-800 dark:text-gray-200"
                         )}
                       >
                         <div className={cn(
@@ -285,9 +288,9 @@ export function Header() {
                       <Link
                         href={isAdmin ? "/admin" : "/dashboard"}
                         onClick={handleLinkClick}
-                        className="flex items-center gap-3 px-3 py-3 text-sm font-bold text-blue-600 rounded-xl hover:bg-white transition-all shadow-sm border border-transparent"
+                        className="flex items-center gap-3 px-3 py-3 text-sm font-bold text-blue-600 rounded-xl hover:bg-white dark:hover:bg-zinc-800 transition-all shadow-sm border border-transparent"
                       >
-                        <div className="p-2 rounded-full bg-blue-50">
+                        <div className="p-2 rounded-full bg-blue-50 dark:bg-blue-900/20">
                           <LayoutGrid className="h-6 w-6" />
                         </div>
                         Tableau de bord
