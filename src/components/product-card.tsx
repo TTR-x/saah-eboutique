@@ -9,7 +9,6 @@ import type { Product } from '@/lib/types';
 import { ShoppingCart, CreditCard, MoreHorizontal } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNavigation } from '@/hooks/use-navigation';
-import { LogoIcon } from './layout/logo-icon';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useCart } from '@/hooks/use-cart';
@@ -41,12 +40,9 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Card className="flex flex-col h-full border border-[#dddfe2] shadow-sm rounded-xl overflow-hidden bg-white mb-4">
-      {/* Post Header - Product Title as header */}
+      {/* En-tête simplifié - Nom de l'article en titre */}
       <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center border border-[#dddfe2]">
-            <LogoIcon className="h-6 w-6 text-primary" />
-          </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-1">
                 <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="font-bold text-sm text-[#1c1e21] hover:underline">
@@ -63,14 +59,14 @@ export function ProductCard({ product }: ProductCardProps) {
       </CardHeader>
 
       <CardContent className="p-0">
-        {/* Post Text */}
+        {/* Texte du Post */}
         <div className="px-4 pb-3">
             <p className="text-[15px] font-normal text-[#1c1e21] leading-normal line-clamp-2">
                 {product.description}
             </p>
         </div>
 
-        {/* Post Image - Clicking image still leads to details */}
+        {/* Image du Post */}
         <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block relative aspect-video w-full overflow-hidden bg-[#f0f2f5] border-y border-[#dddfe2]">
           <Image
             src={product.images[0]}
@@ -91,7 +87,7 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </Link>
 
-        {/* Post Info Bar */}
+        {/* Barre d'info sous l'image */}
         <div className="px-4 py-2 border-b border-[#f0f2f5] flex items-center justify-end">
             <div className="text-sm text-primary font-black">
                 {product.price.toLocaleString('fr-FR')} FCFA
@@ -99,7 +95,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </CardContent>
 
-      {/* Post Actions - Panier and Payer only */}
+      {/* Actions simples : Panier et Payer */}
       <CardFooter className="p-1 flex items-center justify-between gap-1">
         <Button 
           variant="ghost" 

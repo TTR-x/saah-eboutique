@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -15,7 +14,8 @@ import {
   LifeBuoy, 
   ArrowRight, 
   MessageSquare,
-  Package
+  Package,
+  Search
 } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -32,6 +32,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { LogoIcon } from '@/components/layout/logo-icon';
 import { Card, CardContent } from '@/components/ui/card';
+import { useRouter } from 'next/navigation';
 
 function ReviewStars({ rating, onRatingChange, readOnly = false }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean }) {
   const [hoverRating, setHoverRating] = useState(0);
@@ -65,6 +66,7 @@ export default function HomePage() {
   
   const { handleLinkClick } = useNavigation();
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -107,6 +109,15 @@ export default function HomePage() {
     }
   }
 
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const query = (e.target as HTMLInputElement).value;
+      if (query.trim()) {
+        router.push(`/products?q=${encodeURIComponent(query)}`);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f0f2f5] py-4">
       <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -148,23 +159,25 @@ export default function HomePage() {
         {/* Center Main Feed - Flux de Publications */}
         <main className="lg:col-span-2 space-y-4">
           
-          {/* Create Post Style Box */}
+          {/* Box de Recherche / Création Style Facebook */}
           <Card className="border border-[#dddfe2] shadow-sm rounded-xl overflow-hidden bg-white">
             <CardContent className="p-4">
               <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center border border-[#dddfe2]">
-                  <LogoIcon className="h-6 w-6 text-primary" />
+                <div className="relative flex-1 group">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#65676b] group-focus-within:text-primary transition-colors" />
+                  <Input 
+                    placeholder="Besoin d'un plan d'épargne ? Recherchez ici..." 
+                    className="pl-12 h-11 bg-[#f0f2f5] border-none rounded-full text-[15px] focus-visible:ring-1 focus-visible:ring-primary shadow-none"
+                    onKeyDown={handleSearch}
+                  />
                 </div>
-                <Button variant="ghost" className="flex-1 justify-start rounded-full bg-[#f0f2f5] hover:bg-[#e4e6eb] text-[#65676b] font-normal px-4 h-10">
-                  Besoin d'un plan d'épargne ?
-                </Button>
               </div>
               <div className="flex items-center gap-1 border-t border-[#f0f2f5] pt-2">
                 <Button variant="ghost" className="flex-1 h-10 gap-2 font-bold text-[#65676b] rounded-lg">
                   <ShieldCheck className="h-5 w-5 text-green-500" />
                   Sécurisé
                 </Button>
-                <Button variant="ghost" className="flex-1 h-10 gap-2 font-bold text-[#65676b] rounded-lg">
+                <Button variant="ghost" className="flex-1 h-10 gap-2 font-bold text-[#65676b] rounded-lg" onClick={() => router.push('/products')}>
                   <Users className="h-5 w-5 text-[#1877f2]" />
                   Collectif
                 </Button>
