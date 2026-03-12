@@ -2,9 +2,8 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
-import { Menu, Search, ShoppingCart, User, LogOut, LogIn, Home, Package, Ship, LifeBuoy, Trash2, Plus, Minus } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Menu, ShoppingCart, User, LogOut, LogIn, Home, Package, Ship, LifeBuoy, Trash2, Plus, Minus } from 'lucide-react';
 import { Logo } from './logo';
 import {
   DropdownMenu,
@@ -23,7 +22,6 @@ import { useNavigation } from '@/hooks/use-navigation';
 import { useState } from 'react';
 import Image from 'next/image';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 
 const ADMIN_EMAIL = "saahbusiness2026@gmail.com";
 
@@ -37,18 +35,10 @@ export function Header() {
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const isAdmin = user?.email === ADMIN_EMAIL;
   const pathname = usePathname();
-  const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
 
   if (pathname.startsWith('/admin')) {
     return null;
   }
-  
-  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      if (!searchQuery.trim()) return;
-      router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
-  };
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     originalHandleLinkClick(e);
@@ -79,36 +69,12 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
       {isLoading && <Progress value={100} className="absolute top-0 h-[3px] animate-pulse duration-1000 bg-primary" />}
       
-      {/* Barre supérieure : Logo, Recherche, Actions */}
-      <div className="container flex h-16 items-center gap-4 px-4">
-        {/* Logo */}
+      <div className="container flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center shrink-0" onClick={handleLinkClick}>
           <Logo />
         </Link>
 
-        {/* Barre de Recherche Style Alibaba */}
-        <form onSubmit={handleSearchSubmit} className="flex-1 max-w-3xl hidden md:block group">
-          <div className="relative flex items-center bg-gray-100 rounded-full border-2 border-primary overflow-hidden transition-all focus-within:ring-4 focus-within:ring-primary/10">
-            <Search className="absolute left-4 h-5 w-5 text-gray-400" />
-            <Input 
-              type="search" 
-              placeholder="Que recherchez-vous aujourd'hui ?" 
-              className="pl-12 pr-32 h-11 border-none bg-transparent focus-visible:ring-0 text-[15px] placeholder:text-gray-500" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <Button 
-              type="submit" 
-              className="absolute right-0 h-11 px-6 rounded-l-none rounded-r-full bg-primary text-black font-black hover:bg-primary/90 text-sm uppercase tracking-wider"
-            >
-              Rechercher
-            </Button>
-          </div>
-        </form>
-
-        {/* Actions utilisateur */}
-        <div className="flex items-center justify-end gap-2 shrink-0">
-          {/* Panier */}
+        <div className="flex items-center gap-2">
           <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="relative rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800">
@@ -206,7 +172,6 @@ export function Header() {
             </SheetContent>
           </Sheet>
 
-          {/* Profil / Login */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800" disabled={loading}>
@@ -236,7 +201,7 @@ export function Header() {
                 ) : (
                   <DropdownMenuItem className="p-3 font-bold text-gray-900 cursor-default rounded-xl">
                      <div className="flex items-center w-full gap-2">
-                      <LogIn className="h-5 w-5" />
+                      <User className="h-5 w-5" />
                        Visiteur
                     </div>
                   </DropdownMenuItem>
@@ -244,7 +209,6 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Menu Mobile */}
           <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="md:hidden rounded-full bg-gray-100 text-gray-800">
@@ -258,17 +222,6 @@ export function Header() {
                   </SheetTitle>
                 </SheetHeader>
                 <div className="p-4 space-y-4">
-                  {/* Recherche mobile intégrée dans le menu */}
-                  <form onSubmit={handleSearchSubmit} className="relative group">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input 
-                      type="search" 
-                      placeholder="Rechercher..." 
-                      className="pl-10 h-10 bg-white border-gray-200 rounded-xl"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </form>
                   <nav className="space-y-1">
                     {navItems.map(item => (
                       <Link
@@ -288,28 +241,6 @@ export function Header() {
               </SheetContent>
             </Sheet>
         </div>
-      </div>
-
-      {/* Barre de Recherche Mobile (Visible uniquement sur mobile sous le logo) */}
-      <div className="md:hidden px-4 pb-3">
-        <form onSubmit={handleSearchSubmit} className="relative group">
-          <div className="relative flex items-center bg-gray-100 rounded-full border-2 border-primary overflow-hidden">
-            <Search className="absolute left-4 h-4 w-4 text-gray-400" />
-            <Input 
-              type="search" 
-              placeholder="Chercher un article..." 
-              className="pl-10 pr-20 h-10 border-none bg-transparent focus-visible:ring-0 text-sm" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <Button 
-              type="submit" 
-              className="absolute right-0 h-10 px-4 rounded-l-none rounded-r-full bg-primary text-black font-black text-xs"
-            >
-              Go
-            </Button>
-          </div>
-        </form>
       </div>
     </header>
   );
