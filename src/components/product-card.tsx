@@ -40,7 +40,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Card className="flex flex-col h-full border border-[#dddfe2] shadow-sm rounded-xl overflow-hidden bg-white mb-4">
-      {/* En-tête simplifié - Nom de l'article en titre */}
+      {/* En-tête : Titre et Badge */}
       <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
         <div className="flex items-center gap-3">
           <div className="flex flex-col">
@@ -59,13 +59,6 @@ export function ProductCard({ product }: ProductCardProps) {
       </CardHeader>
 
       <CardContent className="p-0">
-        {/* Texte du Post */}
-        <div className="px-4 pb-3">
-            <p className="text-[15px] font-normal text-[#1c1e21] leading-normal line-clamp-2">
-                {product.description}
-            </p>
-        </div>
-
         {/* Image du Post */}
         <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block relative aspect-video w-full overflow-hidden bg-[#f0f2f5] border-y border-[#dddfe2]">
           <Image
@@ -95,24 +88,29 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </CardContent>
 
-      {/* Actions simples : Panier et Payer */}
-      <CardFooter className="p-1 flex items-center justify-between gap-1">
-        <Button 
-          variant="ghost" 
-          className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5] text-[13px]"
-          onClick={handleAddToCart}
-        >
-            <ShoppingCart className="h-4 w-4" />
-            <span>Panier</span>
-        </Button>
-        <Button 
-          variant="ghost" 
-          className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5] text-[13px]"
-          onClick={() => setIsCheckoutOpen(true)}
-        >
-            <CreditCard className="h-4 w-4" />
-            <span>Payer</span>
-        </Button>
+      {/* Mention Paiement par tranche et Actions */}
+      <CardFooter className="p-1 flex flex-col gap-1">
+        <div className="w-full px-3 py-2 text-[12px] font-bold text-[#1877f2] bg-blue-50/50 rounded-lg text-center mb-1">
+            payer par tranche 200f par jour et 1000f par semaine
+        </div>
+        <div className="flex w-full items-center justify-between gap-1">
+            <Button 
+              variant="ghost" 
+              className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5] text-[13px]"
+              onClick={handleAddToCart}
+            >
+                <ShoppingCart className="h-4 w-4" />
+                <span>Panier</span>
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="flex-1 rounded-md text-[#65676b] font-bold h-10 gap-2 hover:bg-[#f2f3f5] text-[13px]"
+              onClick={() => setIsCheckoutOpen(true)}
+            >
+                <CreditCard className="h-4 w-4" />
+                <span>Payer</span>
+            </Button>
+        </div>
       </CardFooter>
 
       <CheckoutDialog 
