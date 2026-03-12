@@ -23,7 +23,7 @@ import {
   Package,
   MessageSquare,
   Shield,
-  BadgeEuro,
+  Clock,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Logo } from '@/components/layout/logo';
@@ -37,6 +37,7 @@ import { useNavigation } from '@/hooks/use-navigation';
 import { Progress } from '@/components/ui/progress';
 import { getUnreadMessagesCount } from '@/lib/messages-service';
 import { getUnreadImportOrdersCount } from '@/lib/import-orders-service';
+import { getAllOrders } from '@/lib/orders-service';
 
 
 const ADMIN_EMAIL = "saahbusiness2026@gmail.com";
@@ -64,6 +65,7 @@ export default function AdminLayout({
     const [isAuthCheckComplete, setIsAuthCheckComplete] = useState(false);
     const [unreadMessages, setUnreadMessages] = useState(0);
     const [unreadOrders, setUnreadOrders] = useState(0);
+    const [pendingSales, setPendingSales] = useState(0);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
@@ -81,12 +83,14 @@ export default function AdminLayout({
     useEffect(() => {
         if(isAuthCheckComplete) {
             const fetchUnreadCounts = async () => {
-                const [messagesCount, ordersCount] = await Promise.all([
+                const [messagesCount, ordersCount, salesData] = await Promise.all([
                     getUnreadMessagesCount(),
-                    getUnreadImportOrdersCount()
+                    getUnreadImportOrdersCount(),
+                    getAllOrders()
                 ]);
                 setUnreadMessages(messagesCount);
                 setUnreadOrders(ordersCount);
+                setPendingSales(salesData.filter(s => s.status === 'pending').length);
             };
             fetchUnreadCounts();
             
@@ -129,8 +133,9 @@ export default function AdminLayout({
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={pathname === '/admin/sales'}>
                     <Link href="/admin/sales">
-                      <BadgeEuro />
-                      Ventes Directes
+                      <Clock />
+                      Ventes en Attente
+                      {pendingSales > 0 && <SidebarMenuBadge className="bg-orange-500 text-white">{pendingSales}</SidebarMenuBadge>}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

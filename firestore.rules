@@ -23,7 +23,8 @@ service cloud.firestore {
 
     // --- Commandes ---
     match /orders/{orderId} {
-      allow create: if request.auth != null;
+      // Autoriser la création même sans authentification (Visiteurs)
+      allow create: if true; 
       allow read: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
       allow update, delete: if isAdmin();
     }

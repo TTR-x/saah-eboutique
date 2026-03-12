@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Product } from '@/lib/types';
-import { Wallet, Truck, User, CheckCircle2, ChevronLeft, ArrowRight, MessageSquare, FileEdit, Mail } from 'lucide-react';
+import { Wallet, Truck, User, CheckCircle2, ChevronLeft, ArrowRight, MessageSquare, FileEdit } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useUser, useFirestore } from '@/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -54,12 +54,12 @@ export function CheckoutDialog({ product, open, onOpenChange }: CheckoutDialogPr
   };
 
   const saveOrderToFirestore = (totalToPay: number) => {
-    if (!user) return;
-
+    // Même sans compte (user === null), on enregistre l'intention d'achat
     const orderData = {
-      userId: user.uid,
-      userEmail: user.email,
-      userName: formData.name || user.displayName || 'Client SAAH',
+      userId: user?.uid || 'guest',
+      userEmail: formData.email || user?.email || 'non-renseigné',
+      userName: formData.name || user?.displayName || 'Visiteur SAAH',
+      userPhone: formData.phone || '',
       productId: product.id,
       productName: product.name,
       productImage: product.images[0],
@@ -84,7 +84,6 @@ export function CheckoutDialog({ product, open, onOpenChange }: CheckoutDialogPr
     const phoneNumber = "22890101392";
     const modeLabel = formData.paymentMode === 'cash' ? 'Paiement Cash' : 'Paiement par tranches';
     
-    // On enregistre l'intention si connecté
     const totalEstimate = formData.paymentMode === 'cash' ? product.price : (product.installmentPrice || 0);
     saveOrderToFirestore(totalEstimate);
 
@@ -111,7 +110,6 @@ Merci de m'indiquer la marche à suivre pour finaliser mon achat rapidement.`;
       ? (formData.paymentMode === 'installments' ? (product.installmentPrice || 0) + product.deliveryFees : product.price + product.deliveryFees)
       : (formData.paymentMode === 'installments' ? (product.installmentPrice || 0) : product.price);
 
-    // Sauvegarde en base de données
     saveOrderToFirestore(totalToPay);
 
     const message = `Bonjour SAAH Business, voici ma commande détaillée :
@@ -158,7 +156,6 @@ Merci de valider ma commande.`;
         </DialogHeader>
 
         <div className="p-6">
-          {/* STEP 1: PAYMENT */}
           {step === 'payment' && (
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="grid gap-4">
@@ -200,7 +197,6 @@ Merci de valider ma commande.`;
             </div>
           )}
 
-          {/* STEP 2: CHOICE */}
           {step === 'choice' && (
             <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                 <div className="grid gap-4">
@@ -234,7 +230,6 @@ Merci de valider ma commande.`;
             </div>
           )}
 
-          {/* STEP 3: DETAILS */}
           {step === 'details' && (
             <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="space-y-4">
@@ -289,7 +284,6 @@ Merci de valider ma commande.`;
             </div>
           )}
 
-          {/* STEP 4: SUMMARY */}
           {step === 'summary' && (
             <div className="space-y-6 animate-in zoom-in-95 duration-300">
               <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100 space-y-4">
