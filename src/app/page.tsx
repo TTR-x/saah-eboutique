@@ -242,8 +242,8 @@ export default function HomePage() {
             )}
           </section>
 
-          {/* Banner: Tontine */}
-          <section className="relative rounded-[2.5rem] overflow-hidden bg-black text-white p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
+          {/* Banner: Tontine (Mobile Only Version) */}
+          <section className="lg:hidden relative rounded-[2.5rem] overflow-hidden bg-black text-white p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
             <div className="relative h-48 w-48 shrink-0">
                 <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
                 <Image src="/cadeaux.png" alt="Tontine" fill className="object-contain relative z-10" />
@@ -288,97 +288,29 @@ export default function HomePage() {
           </section>
         </div>
 
-        {/* Right Sidebar Widgets */}
-        <aside className="space-y-8">
-          
-          {/* Trust Badges */}
-          <div className="space-y-3">
-            <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
-                <CardContent className="p-4 flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-full bg-green-50 flex items-center justify-center text-green-600 shrink-0">
-                        <ShieldCheck className="h-5 w-5" />
-                    </div>
-                    <div>
-                        <p className="font-black text-sm leading-tight">Paiement Sécurisé</p>
-                        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Certifié SAAH Security</p>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
-                <CardContent className="p-4 flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
-                        <Users className="h-5 w-5" />
-                    </div>
-                    <div>
-                        <p className="font-black text-sm leading-tight">Accompagnement</p>
-                        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Service client 7j/7</p>
-                    </div>
-                </CardContent>
-            </Card>
-          </div>
-
-          {/* Testimonials */}
-          <div>
-            <div className="flex items-center justify-between mb-4 px-2">
-              <h3 className="font-black text-xs uppercase tracking-widest text-muted-foreground">Avis de nos clients</h3>
-              <Button variant="ghost" size="sm" className="h-7 text-primary font-black text-[10px] hover:bg-primary/5 uppercase" asChild>
-                <Link href="/#testimonials">Tout voir</Link>
-              </Button>
+        {/* Right Sidebar Widgets (Desktop Only) */}
+        <aside className="hidden lg:block space-y-8 sticky top-24">
+          <section className="relative rounded-[2.5rem] overflow-hidden bg-black text-white p-8 flex flex-col items-center text-center gap-6 shadow-2xl">
+            <div className="relative h-40 w-40 shrink-0">
+                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
+                <Image src="/cadeaux.png" alt="Tontine" fill className="object-contain relative z-10" />
             </div>
             <div className="space-y-4">
-              {testimonials.slice(0, 3).map((testimonial) => (
-                <Card key={testimonial.id} className="border-none shadow-sm rounded-2xl bg-white hover:shadow-md transition-shadow">
-                    <CardContent className="p-5">
-                        <div className="flex gap-3 mb-3">
-                            <Avatar className="h-10 w-10 border border-gray-100 shadow-sm">
-                                <AvatarFallback className="bg-primary/10 text-primary font-black">{testimonial.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <p className="font-black text-sm">{testimonial.name}</p>
-                                <ReviewStars rating={testimonial.rating || 5} readOnly />
-                            </div>
-                        </div>
-                        <p className="text-xs text-muted-foreground font-medium leading-relaxed italic line-clamp-3">"{testimonial.comment}"</p>
-                    </CardContent>
-                </Card>
-              ))}
-              
-              <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="w-full rounded-2xl border-2 border-primary/20 text-gray-800 font-black text-sm h-12 bg-white hover:bg-primary/5 shadow-sm transition-all">
-                    Laisser un avis
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="rounded-[2rem] sm:max-w-[425px] border-none shadow-2xl">
-                    <DialogHeader>
-                        <DialogTitle className="text-2xl font-black">Votre expérience</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleReviewSubmit} className="space-y-5 pt-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="review-name" className="font-bold ml-1">Votre nom</Label>
-                            <Input id="review-name" value={newReview.name} onChange={(e) => setNewReview({...newReview, name: e.target.value})} placeholder="Jean Dupont" className="rounded-xl h-12 bg-gray-50 border-none" required />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="font-bold ml-1">Note</Label>
-                          <div className="mt-1">
-                            <ReviewStars rating={newReview.rating} onRatingChange={(r) => setNewReview({...newReview, rating: r})} />
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="review-comment" className="font-bold ml-1">Message</Label>
-                            <Textarea id="review-comment" value={newReview.comment} onChange={(e) => setNewReview({...newReview, comment: e.target.value})} placeholder="Dites-nous ce que vous avez aimé..." className="rounded-xl bg-gray-50 border-none" rows={4} required />
-                        </div>
-                        <DialogFooter className="pt-2">
-                            <Button type="submit" className="w-full h-14 bg-primary font-black rounded-2xl text-black shadow-lg hover:bg-primary/90" disabled={isSubmittingReview}>
-                                {isSubmittingReview ? <LogoSpinner className="mr-2 h-5 w-5" /> : <Send className="mr-2 h-5 w-5" />}
-                                Publier l'avis
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-              </Dialog>
+                <Badge className="bg-primary text-black font-black border-none px-4 py-1">ÉPARGNE COLLABORATIVE</Badge>
+                <h2 className="text-2xl font-black tracking-tight leading-tight">Le Plan Tontine SAAH Business</h2>
+                <p className="text-gray-400 font-medium text-sm leading-relaxed">
+                  Acquérez vos articles préférés en douceur grâce à notre système d'épargne en groupe.
+                </p>
+                <div className="flex flex-col gap-3 pt-4">
+                    <Button asChild size="lg" className="rounded-2xl h-12 bg-white text-black font-black hover:bg-gray-100 w-full">
+                        <Link href="/products">Voir les articles</Link>
+                    </Button>
+                    <Button asChild variant="outline" size="lg" className="rounded-2xl h-12 border-white/20 text-white font-black hover:bg-white/10 w-full">
+                        <Link href="/support">En savoir plus</Link>
+                    </Button>
+                </div>
             </div>
-          </div>
+          </section>
 
           <div className="px-4 py-6 bg-gray-100 rounded-3xl text-center space-y-2">
             <p className="font-black text-[10px] uppercase tracking-widest text-gray-400">Suivez SAAH Business</p>
