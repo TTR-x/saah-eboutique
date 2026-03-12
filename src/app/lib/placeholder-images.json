@@ -1,0 +1,15 @@
+
+{
+  "tontine_gift": {
+    "url": "https://picsum.photos/seed/saah-gift-2025/400/400",
+    "width": 400,
+    "height": 400,
+    "hint": "gift box"
+  },
+  "hero_placeholder": {
+    "url": "https://picsum.photos/seed/saah-hero/1200/600",
+    "width": 1200,
+    "height": 600,
+    "hint": "online shopping"
+  }
+}

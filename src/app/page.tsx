@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { 
-  Star, 
   PlusCircle, 
   Send, 
   ShieldCheck, 
@@ -23,25 +22,21 @@ import {
   Zap
 } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useEffect, useState } from 'react';
 import { getProducts } from '@/lib/products-service';
-import { getTestimonials, addTestimonial } from '@/lib/testimonials-service';
+import { getTestimonials } from '@/lib/testimonials-service';
 import { getSlides } from '@/lib/slides-service';
 import type { Product, Testimonial, Slide } from '@/lib/types';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { useNavigation } from '@/hooks/use-navigation';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
+import placeholders from '@/app/lib/placeholder-images.json';
 
 export default function HomePage() {
   const { user } = useUser();
@@ -54,8 +49,6 @@ export default function HomePage() {
   const { handleLinkClick } = useNavigation();
   const { toast } = useToast();
   const router = useRouter();
-
-  const isAdmin = user?.email === "saahbusiness2026@gmail.com";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -89,7 +82,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#f0f2f5] pb-12">
-      {/* Hero Section with Carousel */}
+      {/* Hero Section */}
       <section className="bg-white mb-8 border-b">
         <div className="container mx-auto px-4 py-6">
             <div className="flex flex-col space-y-6">
@@ -108,7 +101,7 @@ export default function HomePage() {
                     </Button>
                 </form>
 
-                {/* Carousel and Hero content */}
+                {/* Carousel */}
                 {slides.length > 0 ? (
                     <Carousel 
                         className="w-full rounded-[2rem] overflow-hidden shadow-2xl border-none"
@@ -167,22 +160,26 @@ export default function HomePage() {
             )}
           </section>
 
-          {/* Banner: Tontine (Mobile Only Version) */}
+          {/* Banner: Tontine (Visible on Mobile/Tablet only as Horizontal) */}
           <section className="lg:hidden relative rounded-[2.5rem] overflow-hidden bg-black text-white p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
             <div className="relative h-48 w-48 shrink-0">
                 <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
-                <Image src="https://picsum.photos/seed/gift/400/400" data-ai-hint="gift box" alt="Tontine" fill className="object-contain relative z-10" />
+                <Image 
+                  src={placeholders.tontine_gift.url} 
+                  data-ai-hint={placeholders.tontine_gift.hint} 
+                  alt="Tontine" 
+                  width={placeholders.tontine_gift.width} 
+                  height={placeholders.tontine_gift.height} 
+                  className="object-contain relative z-10" 
+                />
             </div>
             <div className="text-center md:text-left space-y-4">
                 <Badge className="bg-primary text-black font-black border-none px-4 py-1">ÉPARGNE COLLABORATIVE</Badge>
                 <h2 className="text-3xl md:text-4xl font-black tracking-tight">Le Plan Tontine SAAH</h2>
-                <p className="text-gray-400 font-medium max-w-xl text-lg">Acquérez vos articles préférés en douceur grâce à notre système d'épargne en groupe. Pas de stress, juste de la croissance.</p>
+                <p className="text-gray-400 font-medium max-w-xl text-lg">Acquérez vos articles préférés en douceur grâce à notre système d'épargne en groupe.</p>
                 <div className="flex flex-wrap gap-4 justify-center md:justify-start pt-4">
                     <Button asChild size="lg" className="rounded-2xl h-14 bg-white text-black font-black hover:bg-gray-100">
                         <Link href="/products">Voir les articles éligibles</Link>
-                    </Button>
-                    <Button asChild variant="outline" size="lg" className="rounded-2xl h-14 border-white/20 text-white font-black hover:bg-white/10">
-                        <Link href="/support">Comment ça marche ?</Link>
                     </Button>
                 </div>
             </div>
@@ -213,13 +210,20 @@ export default function HomePage() {
           </section>
         </div>
 
-        {/* Right Sidebar Widget (Desktop Only - Sticky) */}
+        {/* Right Sidebar Sticky (Desktop Only) */}
         <aside className="hidden lg:block lg:col-span-1 relative">
           <div className="sticky top-24 space-y-8 h-fit">
             <section className="relative rounded-[2.5rem] overflow-hidden bg-black text-white p-8 flex flex-col items-center text-center gap-6 shadow-2xl">
                 <div className="relative h-40 w-40 shrink-0">
                     <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
-                    <Image src="https://picsum.photos/seed/gift/400/400" data-ai-hint="gift box" alt="Tontine" fill className="object-contain relative z-10" />
+                    <Image 
+                      src={placeholders.tontine_gift.url} 
+                      data-ai-hint={placeholders.tontine_gift.hint} 
+                      alt="Tontine" 
+                      width={placeholders.tontine_gift.width} 
+                      height={placeholders.tontine_gift.height} 
+                      className="object-contain relative z-10" 
+                    />
                 </div>
                 <div className="space-y-4">
                     <Badge className="bg-primary text-black font-black border-none px-4 py-1">ÉPARGNE COLLABORATIVE</Badge>
