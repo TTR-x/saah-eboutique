@@ -30,6 +30,7 @@ const faqFlow = ai.defineFlow(
   },
   async (input) => {
     const response = await ai.generate({
+      model: 'googleai/gemini-1.5-flash',
       system: `Tu es l'assistant intelligent de SAAH Business, une plateforme d'épargne collaborative (tontine) et de vente d'articles (high-tech, mode, maison).
       Ton but est d'aider les utilisateurs en répondant à leurs questions de manière polie, concise et professionnelle.
       

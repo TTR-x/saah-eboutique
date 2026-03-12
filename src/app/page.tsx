@@ -42,37 +42,12 @@ import { useUser } from '@/firebase';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
 
-function ReviewStars({ rating, onRatingChange, readOnly = false }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean }) {
-  const [hoverRating, setHoverRating] = useState(0);
-
-  return (
-    <div className="flex items-center">
-      {[...Array(5)].map((_, i) => {
-        const starValue = i + 1;
-        const isFilled = starValue <= (hoverRating || rating);
-        return (
-          <Star
-            key={i}
-            className={`h-4 w-4 ${isFilled ? 'text-primary fill-primary' : 'text-gray-300'} ${!readOnly ? 'cursor-pointer' : ''}`}
-            onClick={() => !readOnly && onRatingChange?.(starValue)}
-            onMouseEnter={() => !readOnly && setHoverRating(starValue)}
-            onMouseLeave={() => !readOnly && setHoverRating(0)}
-          />
-        )
-      })}
-    </div>
-  )
-}
-
 export default function HomePage() {
   const { user } = useUser();
   const [products, setProducts] = useState<Product[]>([]);
   const [slides, setSlides] = useState<Slide[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
-  const [newReview, setNewReview] = useState({ name: '', role: '', comment: '', rating: 0 });
-  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
   const { handleLinkClick } = useNavigation();
@@ -101,28 +76,6 @@ export default function HomePage() {
     }
     fetchData();
   }, []);
-  
-  const handleReviewSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newReview.name || !newReview.comment || newReview.rating === 0) {
-      toast({ title: 'Erreur', description: 'Veuillez remplir tous les champs.', variant: 'destructive'});
-      return;
-    }
-    setIsSubmittingReview(true);
-
-    try {
-       await addTestimonial(newReview);
-       toast({ title: 'Avis ajouté !', description: 'Merci pour votre retour.' });
-       const updatedTestimonials = await getTestimonials();
-       setTestimonials(updatedTestimonials);
-       setIsReviewDialogOpen(false);
-       setNewReview({ name: '', role: '', comment: '', rating: 0 });
-    } catch (error) {
-        toast({ title: 'Erreur', description: 'Impossible d\'ajouter l\'avis.', variant: 'destructive'});
-    } finally {
-        setIsSubmittingReview(false);
-    }
-  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -222,7 +175,7 @@ export default function HomePage() {
         {/* Main Flux */}
         <div className="lg:col-span-3 space-y-12">
           
-          {/* Section: Ventes Flash / Nouveautés */}
+          {/* Section: Nouveautés */}
           <section>
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
@@ -246,7 +199,7 @@ export default function HomePage() {
           <section className="lg:hidden relative rounded-[2.5rem] overflow-hidden bg-black text-white p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
             <div className="relative h-48 w-48 shrink-0">
                 <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
-                <Image src="/cadeaux.png" alt="Tontine" fill className="object-contain relative z-10" />
+                <Image src="https://picsum.photos/seed/gift/400/400" data-ai-hint="gift box" alt="Tontine" fill className="object-contain relative z-10" />
             </div>
             <div className="text-center md:text-left space-y-4">
                 <Badge className="bg-primary text-black font-black border-none px-4 py-1">ÉPARGNE COLLABORATIVE</Badge>
@@ -288,38 +241,35 @@ export default function HomePage() {
           </section>
         </div>
 
-        {/* Right Sidebar Widgets (Desktop Only) */}
-        <aside className="hidden lg:block space-y-8 sticky top-24">
-          <section className="relative rounded-[2.5rem] overflow-hidden bg-black text-white p-8 flex flex-col items-center text-center gap-6 shadow-2xl">
-            <div className="relative h-40 w-40 shrink-0">
-                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
-                <Image src="/cadeaux.png" alt="Tontine" fill className="object-contain relative z-10" />
-            </div>
-            <div className="space-y-4">
-                <Badge className="bg-primary text-black font-black border-none px-4 py-1">ÉPARGNE COLLABORATIVE</Badge>
-                <h2 className="text-2xl font-black tracking-tight leading-tight">Le Plan Tontine SAAH Business</h2>
-                <p className="text-gray-400 font-medium text-sm leading-relaxed">
-                  Acquérez vos articles préférés en douceur grâce à notre système d'épargne en groupe.
-                </p>
-                <div className="flex flex-col gap-3 pt-4">
-                    <Button asChild size="lg" className="rounded-2xl h-12 bg-white text-black font-black hover:bg-gray-100 w-full">
-                        <Link href="/products">Voir les articles</Link>
-                    </Button>
-                    <Button asChild variant="outline" size="lg" className="rounded-2xl h-12 border-white/20 text-white font-black hover:bg-white/10 w-full">
-                        <Link href="/support">En savoir plus</Link>
-                    </Button>
+        {/* Right Sidebar Widget (Desktop Only - Sticky) */}
+        <aside className="hidden lg:block lg:col-span-1">
+          <div className="sticky top-24 space-y-8">
+            <section className="relative rounded-[2.5rem] overflow-hidden bg-black text-white p-8 flex flex-col items-center text-center gap-6 shadow-2xl">
+                <div className="relative h-40 w-40 shrink-0">
+                    <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
+                    <Image src="https://picsum.photos/seed/gift/400/400" data-ai-hint="gift box" alt="Tontine" fill className="object-contain relative z-10" />
                 </div>
-            </div>
-          </section>
+                <div className="space-y-4">
+                    <Badge className="bg-primary text-black font-black border-none px-4 py-1">ÉPARGNE COLLABORATIVE</Badge>
+                    <h2 className="text-2xl font-black tracking-tight leading-tight">Le Plan Tontine SAAH Business</h2>
+                    <p className="text-gray-400 font-medium text-sm leading-relaxed">
+                    Acquérez vos articles préférés en douceur grâce à notre système d'épargne en groupe.
+                    </p>
+                    <div className="flex flex-col gap-3 pt-4">
+                        <Button asChild size="lg" className="rounded-2xl h-12 bg-white text-black font-black hover:bg-gray-100 w-full">
+                            <Link href="/products">Voir les articles</Link>
+                        </Button>
+                        <Button asChild variant="outline" size="lg" className="rounded-2xl h-12 border-white/20 text-white font-black hover:bg-white/10 w-full">
+                            <Link href="/support">En savoir plus</Link>
+                        </Button>
+                    </div>
+                </div>
+            </section>
 
-          <div className="px-4 py-6 bg-gray-100 rounded-3xl text-center space-y-2">
-            <p className="font-black text-[10px] uppercase tracking-widest text-gray-400">Suivez SAAH Business</p>
-            <div className="flex justify-center gap-4 text-gray-400">
-                <Link href="#" className="hover:text-primary transition-colors"><LayoutGrid className="h-5 w-5" /></Link>
-                <Link href="#" className="hover:text-primary transition-colors"><Users className="h-5 w-5" /></Link>
-                <Link href="#" className="hover:text-primary transition-colors"><Star className="h-5 w-5" /></Link>
+            <div className="px-4 py-6 text-center space-y-2 opacity-50">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">© {new Date().getFullYear()} SAAH Business</p>
+                <p className="text-[10px] text-gray-400">Votre partenaire de confiance.</p>
             </div>
-            <p className="text-[10px] text-gray-400 pt-2">© {new Date().getFullYear()} SAAH. Tous droits réservés.</p>
           </div>
         </aside>
 
