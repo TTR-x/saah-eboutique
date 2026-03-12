@@ -86,13 +86,13 @@ export default function HomePage() {
       <section className="bg-white mb-8 border-b">
         <div className="container mx-auto px-4 py-6">
             <div className="flex flex-col space-y-6">
-                {/* Search Bar */}
-                <form onSubmit={handleSearchSubmit} className="relative group max-w-2xl">
+                {/* Search Bar - Full Width and Centered */}
+                <form onSubmit={handleSearchSubmit} className="relative group w-full mx-auto">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input 
                         type="search" 
                         placeholder="Rechercher un article, une marque..." 
-                        className="pl-12 h-14 rounded-2xl border-2 border-primary/20 focus:border-primary shadow-sm bg-white font-medium"
+                        className="pl-12 h-14 w-full rounded-2xl border-2 border-primary/20 focus:border-primary shadow-sm bg-white font-medium"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -177,7 +177,7 @@ export default function HomePage() {
                 <Badge className="bg-primary text-black font-black border-none px-4 py-1">ÉPARGNE COLLABORATIVE</Badge>
                 <h2 className="text-3xl md:text-4xl font-black tracking-tight">Le Plan Tontine SAAH</h2>
                 <p className="text-gray-400 font-medium max-w-xl text-lg">Acquérez vos articles préférés en douceur grâce à notre système d'épargne en groupe.</p>
-                <div className="flex flex-wrap gap-4 justify-center md:justify-start pt-4">
+                <div className="flex wrap gap-4 justify-center md:justify-start pt-4">
                     <Button asChild size="lg" className="rounded-2xl h-14 bg-white text-black font-black hover:bg-gray-100">
                         <Link href="/products">Voir les articles éligibles</Link>
                     </Button>
