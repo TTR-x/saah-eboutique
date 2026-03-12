@@ -25,7 +25,9 @@
         "price": { "type": "number" },
         "category": { "type": "string" },
         "images": { "type": "array", "items": { "type": "string" } },
-        "status": { "type": "string", "enum": ["active", "inactive"] }
+        "status": { "type": "string", "enum": ["active", "inactive"] },
+        "isTontine": { "type": "boolean" },
+        "allowInstallments": { "type": "boolean" }
       }
     },
     "Order": {
@@ -36,13 +38,16 @@
         "userId": { "type": "string" },
         "userEmail": { "type": "string" },
         "userName": { "type": "string" },
+        "userPhone": { "type": "string" },
         "productId": { "type": "string" },
         "productName": { "type": "string" },
         "productImage": { "type": "string" },
         "amount": { "type": "number" },
         "paymentMode": { "type": "string", "enum": ["cash", "installments"] },
         "status": { "type": "string", "enum": ["pending", "validated", "completed", "cancelled"] },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "createdAt": { "type": "string", "format": "date-time" },
+        "isDelivery": { "type": "boolean" },
+        "address": { "type": "string" }
       }
     }
   },

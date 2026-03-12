@@ -13,6 +13,7 @@ import { LogoSpinner } from "@/components/logo-spinner";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 function StatCard({ title, value, icon, isLoading, subtext, colorClass = "text-primary" }: { title: string, value: string | number, icon: React.ReactNode, isLoading: boolean, subtext?: string, colorClass?: string }) {
     return (
@@ -61,7 +62,7 @@ export default function AdminDashboardPage() {
         fetchData();
     }, []);
 
-    const recentMessages = messages.slice(0, 3);
+    const recentMessages = messages.slice(0, 5);
     const recentSales = sales.slice(0, 5);
     const pendingSalesCount = sales.filter(s => s.status === 'pending').length;
     const totalPotentialRevenue = sales.reduce((acc, sale) => acc + (sale.status !== 'cancelled' ? sale.amount : 0), 0);
@@ -92,10 +93,14 @@ export default function AdminDashboardPage() {
             </Button>
           </CardHeader>
           <CardContent className="p-0">
-            {isLoading ? <div className="p-10 flex justify-center"><LogoSpinner /></div> : recentSales.length > 0 ? (
+            {isLoading ? (
+                <div className="p-10 flex justify-center"><LogoSpinner /></div>
+            ) : recentSales.length > 0 ? (
                 <div className="divide-y">
                     {recentSales.map(sale => {
-                        const userPhone = (sale as any).userPhone;
+                        const userPhone = sale.userPhone;
+                        const whatsappUrl = userPhone ? `https://wa.me/${userPhone.replace(/\s+/g, '')}` : null;
+                        
                         return (
                             <div key={sale.id} className="flex justify-between items-center p-4 hover:bg-muted/30">
                                 <div className="flex items-center gap-3 min-w-0">
@@ -119,12 +124,14 @@ export default function AdminDashboardPage() {
                                             sale.status === 'cancelled' ? 'text-red-600 bg-red-50' :
                                             'text-green-600 bg-green-50'
                                         }`}>
-                                            {sale.status === 'pending' ? 'Attente' : sale.status}
+                                            {sale.status === 'pending' ? 'En attente' : 
+                                             sale.status === 'validated' ? 'Validé' : 
+                                             sale.status === 'completed' ? 'Terminé' : 'Annulé'}
                                         </Badge>
                                     </div>
-                                    {userPhone && (
+                                    {whatsappUrl && (
                                         <Button asChild size="icon" variant="ghost" className="h-8 w-8 rounded-full text-green-600">
-                                            <Link href={`https://wa.me/${userPhone.replace(/\s+/g, '')}`} target="_blank">
+                                            <Link href={whatsappUrl} target="_blank">
                                                 <MessageCircle className="h-4 w-4" />
                                             </Link>
                                         </Button>
@@ -134,7 +141,11 @@ export default function AdminDashboardPage() {
                         );
                     })}
                 </div>
-            ) : <p className="p-10 text-center text-muted-foreground italic text-sm">Aucune vente récente.</p>}
+            ) : (
+                <div className="p-10 text-center text-muted-foreground italic text-sm">
+                    Aucune vente enregistrée pour le moment.
+                </div>
+            )}
           </CardContent>
         </Card>
 
@@ -148,7 +159,9 @@ export default function AdminDashboardPage() {
             </Button>
           </CardHeader>
           <CardContent className="p-0">
-            {isLoading ? <div className="p-10 flex justify-center"><LogoSpinner /></div> : recentMessages.length > 0 ? (
+            {isLoading ? (
+                <div className="p-10 flex justify-center"><LogoSpinner /></div>
+            ) : recentMessages.length > 0 ? (
                 <div className="divide-y">
                     {recentMessages.map(msg => (
                         <div key={msg.id} className="flex justify-between items-center p-4 hover:bg-muted/30">
@@ -160,7 +173,11 @@ export default function AdminDashboardPage() {
                         </div>
                     ))}
                 </div>
-            ) : <p className="p-10 text-center text-muted-foreground italic text-sm">Aucun message récent.</p>}
+            ) : (
+                <div className="p-10 text-center text-muted-foreground italic text-sm">
+                    Aucun message récent.
+                </div>
+            )}
           </CardContent>
         </Card>
       </div>

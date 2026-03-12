@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -18,7 +17,9 @@ import {
   Search,
   ShoppingCart as CartIcon,
   User,
-  LayoutGrid
+  LayoutGrid,
+  ChevronRight,
+  Zap
 } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -26,7 +27,8 @@ import { Badge } from '@/components/ui/badge';
 import { useEffect, useState } from 'react';
 import { getProducts } from '@/lib/products-service';
 import { getTestimonials, addTestimonial } from '@/lib/testimonials-service';
-import type { Product, Testimonial } from '@/lib/types';
+import { getSlides } from '@/lib/slides-service';
+import type { Product, Testimonial, Slide } from '@/lib/types';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { useNavigation } from '@/hooks/use-navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
@@ -37,6 +39,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import Autoplay from 'embla-carousel-autoplay';
 
 function ReviewStars({ rating, onRatingChange, readOnly = false }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean }) {
   const [hoverRating, setHoverRating] = useState(0);
@@ -63,6 +67,7 @@ function ReviewStars({ rating, onRatingChange, readOnly = false }: { rating: num
 export default function HomePage() {
   const { user } = useUser();
   const [products, setProducts] = useState<Product[]>([]);
+  const [slides, setSlides] = useState<Slide[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
@@ -80,12 +85,14 @@ export default function HomePage() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const [fetchedProducts, fetchedTestimonials] = await Promise.all([
+        const [fetchedProducts, fetchedTestimonials, fetchedSlides] = await Promise.all([
           getProducts(),
-          getTestimonials()
+          getTestimonials(),
+          getSlides()
         ]);
         setProducts(fetchedProducts);
         setTestimonials(fetchedTestimonials);
+        setSlides(fetchedSlides);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
@@ -123,211 +130,247 @@ export default function HomePage() {
     router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
   };
 
+  const newArrivals = products.slice(0, 4);
+  const trendingProducts = products.filter(p => p.reviews > 0).slice(0, 4);
+
   return (
-    <div className="min-h-screen bg-[#f0f2f5] py-4">
-      {/* Bouton Cadeau Flottant (Petit comme WhatsApp) */}
-      <div className="fixed top-20 right-4 z-40 md:right-8">
-        <div className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden shadow-lg border-2 border-primary bg-white animate-bounce hover:animate-none transition-transform cursor-pointer">
-          <Image 
-            src="/cadeaux.png" 
-            alt="Offres Spéciales" 
-            fill 
-            className="object-contain p-1.5" 
-          />
+    <div className="min-h-screen bg-[#f0f2f5] pb-12">
+      {/* Hero Section with Carousel */}
+      <section className="bg-white mb-8 border-b">
+        <div className="container mx-auto px-4 py-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                {/* Sidebar Navigation */}
+                <aside className="hidden lg:block space-y-1">
+                    <h3 className="font-black text-xs uppercase tracking-widest text-muted-foreground px-3 mb-4">Navigation</h3>
+                    <Link href="/" onClick={handleLinkClick} className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 text-primary font-black text-sm">
+                        <Home className="h-5 w-5" /> Accueil
+                    </Link>
+                    <Link href="/products" onClick={handleLinkClick} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 font-bold text-sm transition-all">
+                        <Package className="h-5 w-5" /> Boutique
+                    </Link>
+                    <Link href="/import" onClick={handleLinkClick} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 font-bold text-sm transition-all">
+                        <Ship className="h-5 w-5" /> Import Chine
+                    </Link>
+                    <Link href="/support" onClick={handleLinkClick} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 font-bold text-sm transition-all">
+                        <LifeBuoy className="h-5 w-5" /> Centre d'Aide
+                    </Link>
+                    <div className="pt-4 mt-4 border-t border-dashed">
+                        {user ? (
+                            <Link href={isAdmin ? "/admin" : "/dashboard"} className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 text-blue-600 font-black text-sm">
+                                <LayoutGrid className="h-5 w-5" /> Dashboard
+                            </Link>
+                        ) : (
+                            <Link href="/login" className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 font-black text-sm">
+                                <User className="h-5 w-5" /> Se connecter
+                            </Link>
+                        )}
+                    </div>
+                </aside>
+
+                {/* Carousel and Hero content */}
+                <div className="lg:col-span-3 space-y-6">
+                    <form onSubmit={handleSearchSubmit} className="relative group max-w-2xl">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <Input 
+                            type="search" 
+                            placeholder="Rechercher un article, une marque..." 
+                            className="pl-12 h-14 rounded-2xl border-2 border-primary/20 focus:border-primary shadow-sm bg-white font-medium"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        <Button type="submit" className="absolute right-2 top-2 h-10 rounded-xl bg-primary text-black font-black hover:bg-primary/90">
+                            Trouver
+                        </Button>
+                    </form>
+
+                    {slides.length > 0 ? (
+                        <Carousel 
+                            className="w-full rounded-[2rem] overflow-hidden shadow-2xl border-none"
+                            plugins={[Autoplay({ delay: 5000 })]}
+                        >
+                            <CarouselContent>
+                                {slides.map((slide) => (
+                                    <CarouselItem key={slide.id}>
+                                        <div className="relative aspect-[21/9] w-full bg-muted">
+                                            <Image src={slide.imageUrl} alt={slide.title} fill className="object-cover" priority />
+                                            <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex flex-col justify-center p-8 md:p-16 text-white">
+                                                <h2 className="text-3xl md:text-5xl font-black mb-4 max-w-xl leading-tight">{slide.title}</h2>
+                                                <p className="text-lg md:text-xl font-medium mb-8 max-w-md opacity-90">{slide.subtitle}</p>
+                                                <Button asChild size="lg" className="w-fit h-14 px-8 rounded-2xl bg-primary text-black font-black text-lg hover:bg-primary/90 shadow-xl shadow-primary/20">
+                                                    <Link href="/products">Découvrir l'offre</Link>
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                            <CarouselPrevious className="left-4 bg-white/20 text-white border-none hover:bg-white hover:text-black" />
+                            <CarouselNext className="right-4 bg-white/20 text-white border-none hover:bg-white hover:text-black" />
+                        </Carousel>
+                    ) : (
+                        <div className="w-full aspect-[21/9] rounded-[2rem] bg-gray-100 animate-pulse flex items-center justify-center">
+                            <LogoSpinner className="h-10 w-10 text-primary" />
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
-      </div>
+      </section>
 
-      <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-8">
         
-        {/* Barre latérale gauche - Navigation Rapide */}
-        <aside className="hidden lg:flex flex-col space-y-2 sticky top-20 self-start h-[calc(100vh-100px)]">
-          <div className="flex-1 space-y-2">
-            <Link href="/" onClick={handleLinkClick} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
-              <div className="bg-primary/10 p-2 rounded-full text-primary">
-                <Home className="h-5 w-5" />
-              </div>
-              Accueil
-            </Link>
-
-            {user && (
-              <Link href={isAdmin ? "/admin" : "/dashboard"} onClick={handleLinkClick} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-blue-600">
-                <div className="bg-blue-500/10 p-2 rounded-full text-blue-500">
-                  <LayoutGrid className="h-5 w-5" />
+        {/* Main Flux */}
+        <div className="lg:col-span-3 space-y-12">
+          
+          {/* Section: Ventes Flash / Nouveautés */}
+          <section>
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg bg-orange-500 flex items-center justify-center text-white"><Zap className="h-5 w-5" /></div>
+                    <h2 className="text-2xl font-black">Nouveautés</h2>
                 </div>
-                Tableau de bord
-              </Link>
+                <Link href="/products" className="text-primary font-black text-sm hover:underline flex items-center gap-1">Tout voir <ChevronRight className="h-4 w-4" /></Link>
+            </div>
+            {isLoading ? (
+                <div className="flex justify-center py-12"><LogoSpinner /></div>
+            ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {newArrivals.map(product => (
+                        <ProductCard key={product.id} product={product} />
+                    ))}
+                </div>
             )}
+          </section>
 
-            <Link href="/products" onClick={handleLinkClick} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
-              <div className="bg-blue-500/10 p-2 rounded-full text-blue-500">
-                <Package className="h-5 w-5" />
-              </div>
-              Catalogue Articles
-            </Link>
-            <Link href="/import" onClick={handleLinkClick} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
-              <div className="bg-green-500/10 p-2 rounded-full text-green-500">
-                <Ship className="h-5 w-5" />
-              </div>
-              Service Import
-            </Link>
-            <Link href="/support" onClick={handleLinkClick} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
-              <div className="bg-yellow-500/10 p-2 rounded-full text-yellow-500">
-                <LifeBuoy className="h-5 w-5" />
-              </div>
-              Centre d'Aide
-            </Link>
-            <div className="pt-4 mt-4 border-t border-gray-200">
-              <h3 className="px-2 mb-2 font-bold text-gray-500 text-xs uppercase tracking-wider">Raccourcis</h3>
-              <Link href="/cart" onClick={handleLinkClick} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
-                <div className="bg-red-500/10 p-1.5 rounded-full">
-                  <CartIcon className="h-4 w-4 text-red-500" />
+          {/* Banner: Tontine */}
+          <section className="relative rounded-[2.5rem] overflow-hidden bg-black text-white p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
+            <div className="relative h-48 w-48 shrink-0">
+                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
+                <Image src="/cadeaux.png" alt="Tontine" fill className="object-contain relative z-10" />
+            </div>
+            <div className="text-center md:text-left space-y-4">
+                <Badge className="bg-primary text-black font-black border-none px-4 py-1">ÉPARGNE COLLABORATIVE</Badge>
+                <h2 className="text-3xl md:text-4xl font-black tracking-tight">Le Plan Tontine SAAH</h2>
+                <p className="text-gray-400 font-medium max-w-xl text-lg">Acquérez vos articles préférés en douceur grâce à notre système d'épargne en groupe. Pas de stress, juste de la croissance.</p>
+                <div className="flex flex-wrap gap-4 justify-center md:justify-start pt-4">
+                    <Button asChild size="lg" className="rounded-2xl h-14 bg-white text-black font-black hover:bg-gray-100">
+                        <Link href="/products">Voir les articles éligibles</Link>
+                    </Button>
+                    <Button asChild variant="outline" size="lg" className="rounded-2xl h-14 border-white/20 text-white font-black hover:bg-white/10">
+                        <Link href="/support">Comment ça marche ?</Link>
+                    </Button>
                 </div>
-                Mon Panier
-              </Link>
             </div>
-          </div>
+          </section>
 
-          {/* Profil tout en bas */}
-          <div className="pt-4 mt-auto border-t border-gray-200">
-            <Link href={user ? (isAdmin ? "/admin" : "/dashboard") : "/login"} onClick={handleLinkClick} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
-              <div className="bg-blue-50/10 p-1.5 rounded-full">
-                <User className="h-4 w-4 text-blue-500" />
-              </div>
-              {user ? "Mon Profil" : "Se connecter"}
-            </Link>
-            <div className="px-2 mt-2 text-[10px] text-gray-400">
-              SAAH Business © {new Date().getFullYear()}
+          {/* Section: Tendances */}
+          <section>
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg bg-blue-500 flex items-center justify-center text-white"><TrendingUp className="h-5 w-5" /></div>
+                    <h2 className="text-2xl font-black">Articles Tendances</h2>
+                </div>
+                <Link href="/products" className="text-primary font-black text-sm hover:underline flex items-center gap-1">Découvrir <ChevronRight className="h-4 w-4" /></Link>
             </div>
-          </div>
-        </aside>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {isLoading ? (
+                    <div className="col-span-full flex justify-center py-12"><LogoSpinner /></div>
+                ) : trendingProducts.length > 0 ? (
+                    trendingProducts.map(product => (
+                        <ProductCard key={product.id} product={product} />
+                    ))
+                ) : (
+                    products.slice(4, 8).map(product => (
+                        <ProductCard key={product.id} product={product} />
+                    ))
+                )}
+            </div>
+          </section>
+        </div>
 
-        {/* Flux principal - Articles */}
-        <main className="lg:col-span-2 space-y-4">
+        {/* Right Sidebar Widgets */}
+        <aside className="space-y-8">
           
-          {/* Barre de recherche compacte */}
-          <form onSubmit={handleSearchSubmit} className="relative group mb-6 max-w-sm mx-auto">
-            <div className="relative flex items-center bg-white rounded-full border-2 border-primary/50 overflow-hidden shadow-sm transition-all focus-within:border-primary focus-within:shadow-md">
-              <Search className="absolute left-4 h-4 w-4 text-gray-400" />
-              <Input 
-                type="search" 
-                placeholder="Rechercher..." 
-                className="pl-10 pr-4 h-10 border-none bg-transparent focus-visible:ring-0 text-sm" 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </form>
-
-          {/* Bannière de confiance / Badges rapides */}
-          <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
-            <Badge variant="outline" className="bg-white border-none shadow-sm h-10 px-4 rounded-full font-bold flex items-center gap-2 shrink-0">
-              <ShieldCheck className="h-4 w-4 text-green-500" /> Sécurisé
-            </Badge>
-            <Badge variant="outline" className="bg-white border-none shadow-sm h-10 px-4 rounded-full font-bold flex items-center gap-2 shrink-0">
-              <Users className="h-4 w-4 text-blue-500" /> Collectif
-            </Badge>
-            <Badge variant="outline" className="bg-white border-none shadow-sm h-10 px-4 rounded-full font-bold flex items-center gap-2 shrink-0">
-              <TrendingUp className="h-4 w-4 text-primary" /> Croissance
-            </Badge>
+          {/* Trust Badges */}
+          <div className="space-y-3">
+            <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
+                <CardContent className="p-4 flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-full bg-green-50 flex items-center justify-center text-green-600 shrink-0">
+                        <ShieldCheck className="h-5 w-5" />
+                    </div>
+                    <div>
+                        <p className="font-black text-sm leading-tight">Paiement Sécurisé</p>
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Certifié SAAH Security</p>
+                    </div>
+                </CardContent>
+            </Card>
+            <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
+                <CardContent className="p-4 flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                        <Users className="h-5 w-5" />
+                    </div>
+                    <div>
+                        <p className="font-black text-sm leading-tight">Accompagnement</p>
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Service client 7j/7</p>
+                    </div>
+                </CardContent>
+            </Card>
           </div>
 
-          {/* Grille d'articles Style Alibaba */}
-          {isLoading ? (
-            <div className="flex flex-col items-center py-20 gap-4">
-              <LogoSpinner className="h-10 w-10 text-primary" />
-              <p className="text-gray-500 font-bold">Mise à jour des offres...</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-2 sm:gap-4">
-              {products.length > 0 ? (
-                products.map(product => (
-                  <ProductCard key={product.id} product={product} />
-                ))
-              ) : (
-                <div className="col-span-full text-center py-20 bg-white rounded-xl border border-gray-200 shadow-sm mt-4">
-                  <Package className="mx-auto h-12 w-12 text-gray-300 mb-4 opacity-20" />
-                  <p className="text-gray-500 font-bold">Aucun article disponible.</p>
-                </div>
-              )}
-            </div>
-          )}
-        </main>
-
-        {/* Barre latérale droite - Widgets & Témoignages */}
-        <aside className="hidden lg:block space-y-6 sticky top-20 self-start">
-          
-          {/* Widget Importation */}
-          <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-white">
-            <CardContent className="p-4">
-              <h3 className="font-bold text-gray-500 text-[11px] mb-3 uppercase tracking-widest">Service Source Directe</h3>
-              <div className="group cursor-pointer">
-                <div className="relative aspect-video rounded-lg overflow-hidden mb-2 bg-gray-50">
-                  <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-                    <Ship className="h-12 w-12 text-primary opacity-50" />
-                  </div>
-                </div>
-                <h4 className="font-bold text-sm group-hover:text-primary transition-colors">Importation Chine Express</h4>
-                <p className="text-xs text-gray-500 mt-1 line-clamp-2">Trouvez vos produits au meilleur prix directement à la source.</p>
-                <Button asChild variant="secondary" size="sm" className="w-full mt-3 rounded-lg font-bold bg-gray-100 hover:bg-primary hover:text-black transition-all">
-                  <Link href="/import" onClick={handleLinkClick}>Faire une demande</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Témoignages */}
+          {/* Testimonials */}
           <div>
-            <div className="flex items-center justify-between mb-3 px-2">
-              <h3 className="font-bold text-gray-500 text-[11px] uppercase tracking-widest">Avis Clients</h3>
-              <Button variant="ghost" size="sm" className="h-7 text-primary font-bold text-xs hover:bg-primary/5" asChild>
-                <Link href="/#testimonials">Tous</Link>
+            <div className="flex items-center justify-between mb-4 px-2">
+              <h3 className="font-black text-xs uppercase tracking-widest text-muted-foreground">Avis de nos clients</h3>
+              <Button variant="ghost" size="sm" className="h-7 text-primary font-black text-[10px] hover:bg-primary/5 uppercase" asChild>
+                <Link href="/#testimonials">Tout voir</Link>
               </Button>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {testimonials.slice(0, 3).map((testimonial) => (
-                <div key={testimonial.id} className="flex gap-3 px-2">
-                  <Avatar className="h-10 w-10 shrink-0 border border-gray-100">
-                    <AvatarFallback className="bg-primary/10 text-primary font-bold">{testimonial.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 overflow-hidden">
-                    <p className="font-bold text-sm text-gray-800 truncate">{testimonial.name}</p>
-                    <p className="text-[11px] text-gray-500 line-clamp-2 italic">"{testimonial.comment}"</p>
-                    <div className="mt-1">
-                      <ReviewStars rating={testimonial.rating || 5} readOnly />
-                    </div>
-                  </div>
-                </div>
+                <Card key={testimonial.id} className="border-none shadow-sm rounded-2xl bg-white hover:shadow-md transition-shadow">
+                    <CardContent className="p-5">
+                        <div className="flex gap-3 mb-3">
+                            <Avatar className="h-10 w-10 border border-gray-100 shadow-sm">
+                                <AvatarFallback className="bg-primary/10 text-primary font-black">{testimonial.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className="font-black text-sm">{testimonial.name}</p>
+                                <ReviewStars rating={testimonial.rating || 5} readOnly />
+                            </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground font-medium leading-relaxed italic line-clamp-3">"{testimonial.comment}"</p>
+                    </CardContent>
+                </Card>
               ))}
               
               <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="w-full rounded-lg border-gray-200 text-gray-800 font-bold text-sm h-10 mt-2 bg-white hover:bg-gray-50 shadow-sm transition-all">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Ajouter un avis
+                  <Button variant="outline" className="w-full rounded-2xl border-2 border-primary/20 text-gray-800 font-black text-sm h-12 bg-white hover:bg-primary/5 shadow-sm transition-all">
+                    Laisser un avis
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="rounded-2xl sm:max-w-[425px]">
+                <DialogContent className="rounded-[2rem] sm:max-w-[425px] border-none shadow-2xl">
                     <DialogHeader>
-                        <DialogTitle className="text-xl font-bold">Votre expérience compte</DialogTitle>
+                        <DialogTitle className="text-2xl font-black">Votre expérience</DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleReviewSubmit} className="space-y-4 pt-4">
+                    <form onSubmit={handleReviewSubmit} className="space-y-5 pt-4">
                         <div className="space-y-2">
-                            <Label htmlFor="review-name" className="text-sm font-bold">Nom complet</Label>
-                            <Input id="review-name" value={newReview.name} onChange={(e) => setNewReview({...newReview, name: e.target.value})} placeholder="Jean Dupont" className="rounded-lg" required />
+                            <Label htmlFor="review-name" className="font-bold ml-1">Votre nom</Label>
+                            <Input id="review-name" value={newReview.name} onChange={(e) => setNewReview({...newReview, name: e.target.value})} placeholder="Jean Dupont" className="rounded-xl h-12 bg-gray-50 border-none" required />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-sm font-bold">Note</Label>
+                          <Label className="font-bold ml-1">Note</Label>
                           <div className="mt-1">
                             <ReviewStars rating={newReview.rating} onRatingChange={(r) => setNewReview({...newReview, rating: r})} />
                           </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="review-comment" className="text-sm font-bold">Message</Label>
-                            <Textarea id="review-comment" value={newReview.comment} onChange={(e) => setNewReview({...newReview, comment: e.target.value})} placeholder="Dites-nous ce que vous en pensez..." className="rounded-lg min-h-[100px]" required />
+                            <Label htmlFor="review-comment" className="font-bold ml-1">Message</Label>
+                            <Textarea id="review-comment" value={newReview.comment} onChange={(e) => setNewReview({...newReview, comment: e.target.value})} placeholder="Dites-nous ce que vous avez aimé..." className="rounded-xl bg-gray-50 border-none" rows={4} required />
                         </div>
                         <DialogFooter className="pt-2">
-                            <Button type="submit" className="w-full bg-primary font-bold rounded-lg text-black" disabled={isSubmittingReview}>
-                                {isSubmittingReview ? <LogoSpinner className="mr-2 h-4 w-4" /> : <Send className="mr-2 h-4 w-4" />}
+                            <Button type="submit" className="w-full h-14 bg-primary font-black rounded-2xl text-black shadow-lg hover:bg-primary/90" disabled={isSubmittingReview}>
+                                {isSubmittingReview ? <LogoSpinner className="mr-2 h-5 w-5" /> : <Send className="mr-2 h-5 w-5" />}
                                 Publier l'avis
                             </Button>
                         </DialogFooter>
@@ -337,13 +380,14 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="px-2 pt-4 text-[10px] text-gray-400 space-x-2 leading-relaxed uppercase tracking-tighter">
-            <Link href="/" className="hover:underline">Confidentialité</Link>
-            <span>·</span>
-            <Link href="/" className="hover:underline">Conditions</Link>
-            <span>·</span>
-            <Link href="/" className="hover:underline">Publicité</Link>
-            <div className="mt-1">SAAH Business © {new Date().getFullYear()}</div>
+          <div className="px-4 py-6 bg-gray-100 rounded-3xl text-center space-y-2">
+            <p className="font-black text-[10px] uppercase tracking-widest text-gray-400">Suivez SAAH Business</p>
+            <div className="flex justify-center gap-4 text-gray-400">
+                <Link href="#" className="hover:text-primary transition-colors"><LayoutGrid className="h-5 w-5" /></Link>
+                <Link href="#" className="hover:text-primary transition-colors"><Users className="h-5 w-5" /></Link>
+                <Link href="#" className="hover:text-primary transition-colors"><Star className="h-5 w-5" /></Link>
+            </div>
+            <p className="text-[10px] text-gray-400 pt-2">© {new Date().getFullYear()} SAAH. Tous droits réservés.</p>
           </div>
         </aside>
 

@@ -30,6 +30,7 @@ export type Order = {
   userId: string;
   userEmail: string;
   userName: string;
+  userPhone?: string;
   productId: string;
   productName: string;
   productImage: string;
@@ -37,6 +38,8 @@ export type Order = {
   paymentMode: 'cash' | 'installments';
   status: 'pending' | 'validated' | 'completed' | 'cancelled';
   createdAt: any;
+  isDelivery?: boolean;
+  address?: string;
 };
 
 export type UserProfile = {
