@@ -1,22 +1,12 @@
+
 'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { 
-  PlusCircle, 
-  Send, 
-  ShieldCheck, 
-  Users, 
   TrendingUp, 
-  Home, 
-  Ship, 
-  LifeBuoy, 
-  Package,
   Search,
-  ShoppingCart as CartIcon,
-  User,
-  LayoutGrid,
   ChevronRight,
   Zap
 } from 'lucide-react';
@@ -30,7 +20,6 @@ import type { Product, Testimonial, Slide } from '@/lib/types';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { useNavigation } from '@/hooks/use-navigation';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -46,7 +35,6 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   
   const { handleLinkClick } = useNavigation();
-  const { toast } = useToast();
   const router = useRouter();
 
   useEffect(() => {
@@ -111,8 +99,8 @@ export default function HomePage() {
                                 <CarouselItem key={slide.id}>
                                     <div className="relative aspect-[21/9] w-full bg-muted">
                                         <Image src={slide.imageUrl} alt={slide.title} fill className="object-cover" priority />
-                                        <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex flex-col justify-center p-8 md:p-16 text-white">
-                                            <h2 className="text-3xl md:text-5xl font-black mb-2 max-w-xl leading-tight">{slide.title}</h2>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 md:p-12 text-white">
+                                            <h2 className="text-3xl md:text-5xl font-black mb-1 max-w-xl leading-tight uppercase">{slide.title}</h2>
                                             <p className="text-lg md:text-xl font-medium max-w-md opacity-90">{slide.subtitle}</p>
                                         </div>
                                     </div>
