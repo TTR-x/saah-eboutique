@@ -15,9 +15,10 @@ import { useToast } from '@/hooks/use-toast';
 import { LogoSpinner } from '@/components/logo-spinner';
 
 export default function SignupPage() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const auth = useAuth();
@@ -27,15 +28,31 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !password) return;
+    
+    if (!name || !email || !password || !confirmPassword) {
+      toast({ title: 'Erreur', description: 'Veuillez remplir tous les champs.', variant: 'destructive' });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast({ title: 'Erreur', description: 'Les mots de passe ne correspondent pas.', variant: 'destructive' });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({ title: 'Erreur', description: 'Le mot de passe doit faire au moins 6 caractères.', variant: 'destructive' });
+      return;
+    }
 
     setIsSubmitting(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // Mettre à jour le profil Firebase Auth
       await updateProfile(user, { displayName: name });
 
+      // Créer le profil dans Firestore
       await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
         email: user.email,
@@ -48,9 +65,16 @@ export default function SignupPage() {
       router.push('/dashboard');
     } catch (error: any) {
       console.error(error);
+      let message = 'Impossible de créer le compte.';
+      if (error.code === 'auth/email-already-in-use') {
+        message = 'Cet email est déjà utilisé.';
+      } else if (error.code === 'auth/invalid-email') {
+        message = 'Format d\'email invalide.';
+      }
+      
       toast({
-        title: 'Erreur',
-        description: 'Impossible de créer le compte. Vérifiez vos informations.',
+        title: 'Erreur d\'inscription',
+        description: message,
         variant: 'destructive',
       });
     } finally {
@@ -59,57 +83,73 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex items-center justify-center py-12 px-4 min-h-screen bg-muted/40">
-      <Card className="w-full max-w-sm shadow-xl border-none rounded-2xl">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-black">Créer un compte</CardTitle>
-          <CardDescription>
-            Rejoignez SAAH Business pour gérer vos achats et plans.
+    <div className="flex items-center justify-center py-12 px-4 min-h-screen bg-[#f0f2f5]">
+      <Card className="w-full max-w-md shadow-xl border-none rounded-3xl overflow-hidden">
+        <CardHeader className="text-center bg-white pb-8">
+          <CardTitle className="text-3xl font-black text-gray-900">Rejoindre SAAH</CardTitle>
+          <CardDescription className="text-gray-500 font-medium">
+            Créez votre compte pour gérer vos achats et vos paiements par tranches.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSignup} className="grid gap-4">
+        <CardContent className="bg-white">
+          <form onSubmit={handleSignup} className="grid gap-5">
             <div className="grid gap-2">
-              <Label htmlFor="name">Nom complet</Label>
+              <Label htmlFor="name" className="font-bold text-gray-700 ml-1">Votre nom complet</Label>
               <Input
                 id="name"
-                placeholder="Jean Dupont"
+                placeholder="Ex: Jean Dupont"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="h-12 rounded-xl"
+                className="h-12 rounded-2xl bg-gray-50 border-gray-100 focus:ring-primary"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="font-bold text-gray-700 ml-1">Adresse Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="votre@email.com"
+                placeholder="nom@exemple.com"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-12 rounded-xl"
+                autoComplete="email"
+                className="h-12 rounded-2xl bg-gray-50 border-gray-100 focus:ring-primary"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="password">Mot de passe</Label>
+              <Label htmlFor="password" title="Mot de passe" className="font-bold text-gray-700 ml-1">Mot de passe</Label>
               <Input
                 id="password"
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-12 rounded-xl"
+                className="h-12 rounded-2xl bg-gray-50 border-gray-100 focus:ring-primary"
               />
             </div>
-            <Button type="submit" className="w-full h-12 rounded-xl font-bold bg-primary text-black" disabled={isSubmitting}>
-              {isSubmitting ? <LogoSpinner /> : "S'inscrire"}
+            <div className="grid gap-2">
+              <Label htmlFor="confirmPassword" title="Confirmer le mot de passe" className="font-bold text-gray-700 ml-1">Confirmer votre mot de passe</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="h-12 rounded-2xl bg-gray-50 border-gray-100 focus:ring-primary"
+              />
+            </div>
+            <Button 
+              type="submit" 
+              className="w-full h-14 rounded-2xl font-black text-lg bg-primary text-black hover:bg-primary/90 shadow-lg shadow-yellow-100 mt-2" 
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? <LogoSpinner className="mr-2" /> : "S'inscrire gratuitement"}
             </Button>
           </form>
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            Déjà un compte ?{' '}
-            <Link href="/login" className="text-primary font-bold hover:underline">
+          <div className="mt-8 text-center text-sm">
+            <span className="text-gray-500">Déjà inscrit ? </span>
+            <Link href="/login" className="text-primary font-black hover:underline underline-offset-4">
               Se connecter
             </Link>
           </div>
