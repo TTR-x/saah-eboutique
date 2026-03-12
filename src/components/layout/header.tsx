@@ -42,7 +42,7 @@ export function Header() {
   }
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    originalHandleHandleLinkClick(e);
+    originalHandleLinkClick(e);
     setIsMenuOpen(false);
   };
 

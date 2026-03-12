@@ -38,14 +38,13 @@ export default function LoginPage() {
       if (user.email === ADMIN_EMAIL) {
         router.push('/admin');
       } else {
-        router.push('/');
+        router.push('/dashboard');
       }
 
     } catch (error: any) {
       console.error("Login Error:", error);
       let description = "Une erreur de connexion est survenue. Veuillez réessayer.";
       
-      // Gestion unifiée de invalid-credential pour la sécurité
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
         description = "L'adresse e-mail ou le mot de passe est incorrect.";
       } else if (error.code === 'auth/network-request-failed') {
