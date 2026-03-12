@@ -50,7 +50,7 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. Mise à jour du nom d'affichage
+      // 2. Mise à jour du nom d'affichage dans Auth pour accès immédiat
       await updateProfile(user, { displayName: name });
 
       // 3. Sauvegarde du profil dans Firestore avec l'UID
@@ -67,8 +67,9 @@ export default function SignupPage() {
         description: 'Votre compte a été créé avec succès.',
       });
       
-      // 4. Redirection directe vers le tableau de bord
-      router.push('/dashboard');
+      // 4. Redirection vers le dashboard
+      // On utilise replace pour éviter de pouvoir revenir au formulaire via "Précédent"
+      router.replace('/dashboard');
     } catch (error: any) {
       console.error(error);
       let message = 'Impossible de créer le compte.';
@@ -83,7 +84,6 @@ export default function SignupPage() {
         description: message,
         variant: 'destructive',
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
