@@ -2,7 +2,7 @@
 'use client'
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { MessageSquare, Package, ShoppingBag, Users, BadgeEuro, TrendingUp } from "lucide-react";
+import { MessageSquare, Package, ShoppingBag, Users, BadgeEuro, TrendingUp, Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getProducts } from "@/lib/products-service";
 import { getMessages } from "@/lib/messages-service";
@@ -14,12 +14,12 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-function StatCard({ title, value, icon, isLoading, subtext }: { title: string, value: string | number, icon: React.ReactNode, isLoading: boolean, subtext?: string }) {
+function StatCard({ title, value, icon, isLoading, subtext, colorClass = "text-primary" }: { title: string, value: string | number, icon: React.ReactNode, isLoading: boolean, subtext?: string, colorClass?: string }) {
     return (
         <Card className="border-none shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">{title}</CardTitle>
-                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <div className={`h-8 w-8 rounded-lg bg-muted flex items-center justify-center ${colorClass}`}>
                     {icon}
                 </div>
             </CardHeader>
@@ -63,6 +63,7 @@ export default function AdminDashboardPage() {
 
     const recentMessages = messages.slice(0, 3);
     const recentSales = sales.slice(0, 3);
+    const pendingSalesCount = sales.filter(s => s.status === 'pending').length;
     const totalPotentialRevenue = sales.reduce((acc, sale) => acc + (sale.status !== 'cancelled' ? sale.amount : 0), 0);
 
   return (
@@ -72,11 +73,12 @@ export default function AdminDashboardPage() {
         <p className="text-muted-foreground">Vue d'ensemble de l'activité de SAAH Business.</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Ventes" value={sales.length} icon={<BadgeEuro className="h-4 w-4" />} isLoading={isLoading} subtext="Intentions d'achat directes" />
-        <StatCard title="Revenu Potentiel" value={`${totalPotentialRevenue.toLocaleString('fr-FR')} F`} icon={<TrendingUp className="h-4 w-4 text-green-500" />} isLoading={isLoading} subtext="Total des ventes engagées" />
-        <StatCard title="Demandes Import" value={importOrders.length} icon={<Package className="h-4 w-4" />} isLoading={isLoading} subtext="Projets d'importation Chine" />
-        <StatCard title="Messages" value={messages.length} icon={<MessageSquare className="h-4 w-4" />} isLoading={isLoading} subtext="Support & Contacts" />
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <StatCard title="Ventes Totales" value={sales.length} icon={<BadgeEuro className="h-4 w-4" />} isLoading={isLoading} subtext="Total historique" />
+        <StatCard title="En Attente" value={pendingSalesCount} icon={<Clock className="h-4 w-4" />} isLoading={isLoading} subtext="À traiter" colorClass="text-orange-500" />
+        <StatCard title="Revenu Potentiel" value={`${totalPotentialRevenue.toLocaleString('fr-FR')} F`} icon={<TrendingUp className="h-4 w-4" />} isLoading={isLoading} subtext="Engagé (Hors annulé)" colorClass="text-green-500" />
+        <StatCard title="Demandes Import" value={importOrders.length} icon={<Package className="h-4 w-4" />} isLoading={isLoading} subtext="Projets Chine" colorClass="text-blue-500" />
+        <StatCard title="Messages" value={messages.length} icon={<MessageSquare className="h-4 w-4" />} isLoading={isLoading} subtext="Support" colorClass="text-purple-500" />
       </div>
       
       <div className="mt-8 grid gap-8 md:grid-cols-2">
@@ -100,7 +102,9 @@ export default function AdminDashboardPage() {
                             </div>
                             <div className="text-right shrink-0">
                                 <p className="font-black text-xs text-primary">{sale.amount.toLocaleString('fr-FR')} F</p>
-                                <Badge variant="outline" className="text-[8px] h-4 mt-1">{sale.status === 'pending' ? 'Attente' : sale.status}</Badge>
+                                <Badge variant="outline" className={`text-[8px] h-4 mt-1 ${sale.status === 'pending' ? 'border-orange-200 text-orange-600 bg-orange-50' : ''}`}>
+                                    {sale.status === 'pending' ? 'Attente' : sale.status}
+                                </Badge>
                             </div>
                         </div>
                     ))}
