@@ -87,7 +87,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <span className="text-[11px] font-bold text-gray-600">FCFA</span>
           </div>
 
-          {/* Mention Paiement par tranche */}
+          {/* Mention Paiement par tranche style Alibaba */}
           <div className="flex items-center gap-1.5 py-1 px-2 bg-orange-50 rounded-md border border-orange-100">
             <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
             <span className="text-[11px] font-black text-orange-700 uppercase tracking-tight">
@@ -105,12 +105,13 @@ export function ProductCard({ product }: ProductCardProps) {
 
       {/* Pied de carte avec Avatar et Boutons */}
       <CardFooter className="p-3 pt-0 flex items-center gap-3">
-        {/* Logo de l'utilisateur (vendeur) ramené en bas à gauche */}
+        {/* Logo de l'utilisateur (vendeur) en bas à gauche */}
         <Avatar className="h-8 w-8 shrink-0 border border-gray-100 shadow-sm">
           <AvatarFallback className="bg-primary/10 text-primary font-bold text-[10px]">SAAH</AvatarFallback>
         </Avatar>
         
         <div className="flex flex-1 gap-2">
+          {/* Bouton Panier : Icône seule, se transforme en Check si ajouté */}
           <Button 
             variant="outline" 
             size="icon"
@@ -123,6 +124,7 @@ export function ProductCard({ product }: ProductCardProps) {
           >
             {isAdded ? <Check className="h-5 w-5" /> : <ShoppingCart className="h-5 w-5" />}
           </Button>
+          
           <Button 
             className="flex-1 rounded-lg bg-primary text-black font-black h-10 gap-2 hover:bg-primary/90 text-[13px] shadow-sm transition-all"
             onClick={() => setIsCheckoutOpen(true)}
