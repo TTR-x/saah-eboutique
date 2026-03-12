@@ -29,6 +29,15 @@ export type ProductInput = Omit<Product, 'id' | 'images' | 'imagePublicIds' | 'c
   images: File[];
 };
 
+export type UserProfile = {
+  uid: string;
+  email: string;
+  displayName?: string;
+  photoURL?: string;
+  role: 'client' | 'admin';
+  createdAt: any;
+};
+
 export type Testimonial = {
   id: string;
   name: string;

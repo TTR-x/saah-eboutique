@@ -1,3 +1,4 @@
+
 'use client'
 
 import {
@@ -141,6 +142,14 @@ export default function AdminLayout({
                       <Package />
                       Commandes
                       {unreadOrders > 0 && <SidebarMenuBadge>{unreadOrders}</SidebarMenuBadge>}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/admin/clients">
+                      <Users />
+                      Clients
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
