@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -7,7 +6,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
-import { ShoppingCart, Clock, Zap, Check } from 'lucide-react';
+import { ShoppingCart, Clock, Check } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNavigation } from '@/hooks/use-navigation';
 import { formatDistanceToNow } from 'date-fns';
@@ -58,9 +57,6 @@ export function ProductCard({ product }: ProductCardProps) {
             {isNew && (
               <Badge className="bg-orange-500 text-white border-none text-[8px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-sm">NOUVEAU</Badge>
             )}
-            <Badge className="bg-primary text-black border-none text-[8px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-sm flex items-center gap-1">
-              <Zap className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-black" /> OFFICIEL
-            </Badge>
           </div>
 
           <div className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 flex gap-1">

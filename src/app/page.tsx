@@ -12,8 +12,6 @@ import {
   Home, 
   Ship, 
   LifeBuoy, 
-  ArrowRight, 
-  MessageSquare,
   Package,
   Search,
   ShoppingCart as CartIcon,
@@ -168,20 +166,20 @@ export default function HomePage() {
         {/* Flux principal - Articles */}
         <main className="lg:col-span-2 space-y-4">
           
-          {/* Barre de recherche style Alibaba */}
-          <form onSubmit={handleSearchSubmit} className="relative group mb-6">
+          {/* Barre de recherche style Alibaba (réduite) */}
+          <form onSubmit={handleSearchSubmit} className="relative group mb-6 max-w-xl mx-auto">
             <div className="relative flex items-center bg-white rounded-full border-2 border-primary overflow-hidden shadow-sm transition-all focus-within:ring-4 focus-within:ring-primary/10">
-              <Search className="absolute left-4 h-5 w-5 text-gray-400" />
+              <Search className="absolute left-3 h-4 w-4 text-gray-400" />
               <Input 
                 type="search" 
                 placeholder="Chercher un article ou un plan..." 
-                className="pl-12 pr-32 h-12 border-none bg-transparent focus-visible:ring-0 text-base" 
+                className="pl-10 pr-24 h-10 border-none bg-transparent focus-visible:ring-0 text-sm" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               <Button 
                 type="submit" 
-                className="absolute right-0 h-12 px-8 rounded-l-none rounded-r-full bg-primary text-black font-black hover:bg-primary/90"
+                className="absolute right-0 h-10 px-6 rounded-l-none rounded-r-full bg-primary text-black font-black hover:bg-primary/90 text-xs"
               >
                 Rechercher
               </Button>
