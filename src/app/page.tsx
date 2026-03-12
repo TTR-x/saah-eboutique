@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -16,7 +17,8 @@ import {
   Package,
   Search,
   ShoppingCart as CartIcon,
-  User
+  User,
+  LayoutGrid
 } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -34,6 +36,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@/firebase';
 
 function ReviewStars({ rating, onRatingChange, readOnly = false }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean }) {
   const [hoverRating, setHoverRating] = useState(0);
@@ -58,6 +61,7 @@ function ReviewStars({ rating, onRatingChange, readOnly = false }: { rating: num
 }
 
 export default function HomePage() {
+  const { user } = useUser();
   const [products, setProducts] = useState<Product[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,6 +73,8 @@ export default function HomePage() {
   const { handleLinkClick } = useNavigation();
   const { toast } = useToast();
   const router = useRouter();
+
+  const isAdmin = user?.email === "saahbusiness2026@gmail.com";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -136,25 +142,35 @@ export default function HomePage() {
         {/* Barre latérale gauche - Navigation Rapide */}
         <aside className="hidden lg:flex flex-col space-y-2 sticky top-20 self-start h-[calc(100vh-100px)]">
           <div className="flex-1 space-y-2">
-            <Link href="/" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
+            <Link href="/" onClick={handleLinkClick} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
               <div className="bg-primary/10 p-2 rounded-full text-primary">
                 <Home className="h-5 w-5" />
               </div>
               Accueil
             </Link>
-            <Link href="/products" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
+
+            {user && (
+              <Link href={isAdmin ? "/admin" : "/dashboard"} onClick={handleLinkClick} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-blue-600">
+                <div className="bg-blue-500/10 p-2 rounded-full text-blue-500">
+                  <LayoutGrid className="h-5 w-5" />
+                </div>
+                Tableau de bord
+              </Link>
+            )}
+
+            <Link href="/products" onClick={handleLinkClick} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
               <div className="bg-blue-500/10 p-2 rounded-full text-blue-500">
                 <Package className="h-5 w-5" />
               </div>
               Catalogue Articles
             </Link>
-            <Link href="/import" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
+            <Link href="/import" onClick={handleLinkClick} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
               <div className="bg-green-500/10 p-2 rounded-full text-green-500">
                 <Ship className="h-5 w-5" />
               </div>
               Service Import
             </Link>
-            <Link href="/support" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
+            <Link href="/support" onClick={handleLinkClick} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
               <div className="bg-yellow-500/10 p-2 rounded-full text-yellow-500">
                 <LifeBuoy className="h-5 w-5" />
               </div>
@@ -162,7 +178,7 @@ export default function HomePage() {
             </Link>
             <div className="pt-4 mt-4 border-t border-gray-200">
               <h3 className="px-2 mb-2 font-bold text-gray-500 text-xs uppercase tracking-wider">Raccourcis</h3>
-              <Link href="/cart" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
+              <Link href="/cart" onClick={handleLinkClick} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
                 <div className="bg-red-500/10 p-1.5 rounded-full">
                   <CartIcon className="h-4 w-4 text-red-500" />
                 </div>
@@ -173,11 +189,11 @@ export default function HomePage() {
 
           {/* Profil tout en bas */}
           <div className="pt-4 mt-auto border-t border-gray-200">
-            <Link href="/login" className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
-              <div className="bg-blue-500/10 p-1.5 rounded-full">
+            <Link href={user ? (isAdmin ? "/admin" : "/dashboard") : "/login"} onClick={handleLinkClick} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all font-bold text-sm text-gray-800">
+              <div className="bg-blue-50/10 p-1.5 rounded-full">
                 <User className="h-4 w-4 text-blue-500" />
               </div>
-              Mon Profil
+              {user ? "Mon Profil" : "Se connecter"}
             </Link>
             <div className="px-2 mt-2 text-[10px] text-gray-400">
               SAAH Business © {new Date().getFullYear()}
@@ -253,7 +269,7 @@ export default function HomePage() {
                 <h4 className="font-bold text-sm group-hover:text-primary transition-colors">Importation Chine Express</h4>
                 <p className="text-xs text-gray-500 mt-1 line-clamp-2">Trouvez vos produits au meilleur prix directement à la source.</p>
                 <Button asChild variant="secondary" size="sm" className="w-full mt-3 rounded-lg font-bold bg-gray-100 hover:bg-primary hover:text-black transition-all">
-                  <Link href="/import">Faire une demande</Link>
+                  <Link href="/import" onClick={handleLinkClick}>Faire une demande</Link>
                 </Button>
               </div>
             </CardContent>
