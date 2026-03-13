@@ -24,6 +24,7 @@ import {
   MessageSquare,
   Shield,
   Clock,
+  Gift,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Logo } from '@/components/layout/logo';
@@ -38,6 +39,7 @@ import { Progress } from '@/components/ui/progress';
 import { getUnreadMessagesCount } from '@/lib/messages-service';
 import { getUnreadImportOrdersCount } from '@/lib/import-orders-service';
 import { getAllOrders } from '@/lib/orders-service';
+import { getGiftRequests } from '@/lib/gifts-service';
 
 
 const ADMIN_EMAIL = "saahbusiness2026@gmail.com";
@@ -66,6 +68,7 @@ export default function AdminLayout({
     const [unreadMessages, setUnreadMessages] = useState(0);
     const [unreadOrders, setUnreadOrders] = useState(0);
     const [pendingSales, setPendingSales] = useState(0);
+    const [pendingGifts, setPendingGifts] = useState(0);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
@@ -83,14 +86,16 @@ export default function AdminLayout({
     useEffect(() => {
         if(isAuthCheckComplete) {
             const fetchUnreadCounts = async () => {
-                const [messagesCount, ordersCount, salesData] = await Promise.all([
+                const [messagesCount, ordersCount, salesData, giftsData] = await Promise.all([
                     getUnreadMessagesCount(),
                     getUnreadImportOrdersCount(),
-                    getAllOrders()
+                    getAllOrders(),
+                    getGiftRequests()
                 ]);
                 setUnreadMessages(messagesCount);
                 setUnreadOrders(ordersCount);
                 setPendingSales(salesData.filter(s => s.status === 'pending').length);
+                setPendingGifts(giftsData.filter((g: any) => g.status === 'pending').length);
             };
             fetchUnreadCounts();
             
@@ -127,6 +132,15 @@ export default function AdminLayout({
                     <Link href="/admin">
                       <LayoutGrid />
                       Tableau de bord
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={pathname === '/admin/gifts'}>
+                    <Link href="/admin/gifts">
+                      <Gift />
+                      Gestion Cadeaux
+                      {pendingGifts > 0 && <SidebarMenuBadge className="bg-primary text-black">{pendingGifts}</SidebarMenuBadge>}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

@@ -49,6 +49,28 @@
         "isDelivery": { "type": "boolean" },
         "address": { "type": "string" }
       }
+    },
+    "GiftRequest": {
+      "title": "GiftRequest",
+      "description": "Demande de cadeau effectuée par un client.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "processed"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Gift": {
+      "title": "Gift",
+      "description": "Cadeau envoyé par l'administrateur à un client.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "auth": {
@@ -59,6 +81,10 @@
       "schema": "#/backend/entities/UserProfile",
       "description": "Données privées de l'utilisateur."
     },
+    "/users/{userId}/gifts/{giftId}": {
+      "schema": "#/backend/entities/Gift",
+      "description": "Cadeaux reçus par l'utilisateur."
+    },
     "/products/{productId}": {
       "schema": "#/backend/entities/Product",
       "description": "Catalogue des articles."
@@ -66,6 +92,10 @@
     "/orders/{orderId}": {
       "schema": "#/backend/entities/Order",
       "description": "Historique des commandes et intentions d'achat."
+    },
+    "/gift-requests/{requestId}": {
+      "schema": "#/backend/entities/GiftRequest",
+      "description": "Demandes de cadeaux en attente."
     },
     "/contact-messages/{messageId}": {
       "schema": "object",

@@ -4,57 +4,57 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Fonction pour vérifier si l'utilisateur est l'admin officiel
     function isAdmin() {
       return request.auth != null && request.auth.token.email == "saahbusiness2026@gmail.com";
     }
 
-    // --- Profils Utilisateurs ---
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
       allow read: if isAdmin();
+      
+      match /gifts/{giftId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if isAdmin();
+      }
     }
 
-    // --- Produits ---
     match /products/{productId} {
-      allow read: if true; // Tout le monde peut voir les plans
-      allow write: if isAdmin(); // Seul l'admin peut modifier
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
-    // --- Commandes ---
     match /orders/{orderId} {
-      // Autoriser la création même sans authentification (Visiteurs)
       allow create: if true; 
       allow read: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
       allow update, delete: if isAdmin();
     }
 
-    // --- Slides (Carousel) ---
+    match /gift-requests/{requestId} {
+      allow create: if request.auth != null;
+      allow read, write: if isAdmin();
+    }
+
     match /slides/{slideId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // --- Témoignages ---
     match /testimonials/{testimonialId} {
       allow read: if true;
-      allow create: if true; // N'importe qui peut laisser un avis
+      allow create: if true;
       allow update, delete: if isAdmin();
     }
 
-    // --- Messages de Contact ---
     match /contact-messages/{messageId} {
-      allow create: if true; // Public pour le formulaire
-      allow read, update, delete: if isAdmin(); // Seul l'admin peut gérer
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
     }
 
-    // --- Demandes d'Importation ---
     match /import-orders/{orderId} {
-      allow create: if true; // Public pour le formulaire
-      allow read, update, delete: if isAdmin(); // Seul l'admin peut gérer
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
     }
 
-    // --- Règle par défaut ---
     match /{document=**} {
       allow read, write: if isAdmin();
     }

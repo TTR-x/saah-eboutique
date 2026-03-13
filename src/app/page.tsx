@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -13,9 +14,8 @@ import { ProductCard } from '@/components/product-card';
 import { Badge } from '@/components/ui/badge';
 import { useEffect, useState } from 'react';
 import { getProducts } from '@/lib/products-service';
-import { getTestimonials } from '@/lib/testimonials-service';
 import { getSlides } from '@/lib/slides-service';
-import type { Product, Testimonial, Slide } from '@/lib/types';
+import type { Product, Slide } from '@/lib/types';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { useNavigation } from '@/hooks/use-navigation';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,8 @@ import { useUser } from '@/firebase';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
 import placeholders from '@/app/lib/placeholder-images.json';
+import { requestGift } from '@/lib/gifts-service';
+import { useToast } from '@/hooks/use-toast';
 
 export default function HomePage() {
   const { user } = useUser();
@@ -31,6 +33,7 @@ export default function HomePage() {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const { toast } = useToast();
   
   const { handleLinkClick } = useNavigation();
   const router = useRouter();
@@ -60,9 +63,22 @@ export default function HomePage() {
     router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
   };
 
-  const handleClaimGift = () => {
+  const handleClaimGift = async () => {
     if (user) {
-      router.push('/dashboard/gifts');
+      try {
+        await requestGift(user.uid, user.displayName || 'Client', user.email || '');
+        toast({
+          title: "Demande envoyée !",
+          description: "L'administrateur a été notifié. Vérifiez votre page cadeaux bientôt.",
+        });
+        router.push('/dashboard/gifts');
+      } catch (error) {
+        toast({
+          title: "Erreur",
+          description: "Impossible d'envoyer la demande.",
+          variant: "destructive"
+        });
+      }
     } else {
       router.push('/signup?redirect=/dashboard/gifts');
     }
