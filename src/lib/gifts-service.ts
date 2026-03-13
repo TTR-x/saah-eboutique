@@ -11,12 +11,11 @@ import {
   orderBy, 
   serverTimestamp, 
   doc, 
-  setDoc,
   getCountFromServer,
   updateDoc
 } from 'firebase/firestore';
 
-export async function requestGift(userId: string, userName: string, userEmail: string) {
+export async function requestGift(userId: string, userName: string, userEmail: string, chosenGift?: string) {
   const requestsRef = collection(db, 'gift-requests');
   // Vérifier si une demande existe déjà pour éviter les doublons
   const q = query(requestsRef, where('userId', '==', userId), where('status', '==', 'pending'));
@@ -27,6 +26,7 @@ export async function requestGift(userId: string, userName: string, userEmail: s
       userId,
       userName,
       userEmail,
+      chosenGift: chosenGift || 'Cadeau Surprise',
       status: 'pending',
       createdAt: serverTimestamp()
     });
@@ -67,4 +67,11 @@ export async function getUserGifts(userId: string) {
   const q = query(giftsRef, orderBy('createdAt', 'desc'));
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
+export async function hasPendingRequest(userId: string) {
+  const requestsRef = collection(db, 'gift-requests');
+  const q = query(requestsRef, where('userId', '==', userId), where('status', '==', 'pending'));
+  const snapshot = await getDocs(q);
+  return !snapshot.empty;
 }

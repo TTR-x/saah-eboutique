@@ -58,6 +58,7 @@
         "userId": { "type": "string" },
         "userName": { "type": "string" },
         "userEmail": { "type": "string" },
+        "chosenGift": { "type": "string" },
         "status": { "type": "string", "enum": ["pending", "processed"] },
         "createdAt": { "type": "string", "format": "date-time" }
       }

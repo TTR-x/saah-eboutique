@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Gift, User, Mail, Calendar, Send, CheckCircle2, Clock } from "lucide-react";
+import { Gift, User, Mail, Send, CheckCircle2, Clock, Sparkles } from "lucide-react";
 import { getGiftRequests, sendGift } from "@/lib/gifts-service";
 import { LogoSpinner } from "@/components/logo-spinner";
 import { Badge } from "@/components/ui/badge";
@@ -55,7 +55,11 @@ export default function AdminGiftsPage() {
 
   const handleOpenSend = (request: any) => {
     setSelectedRequest(request);
-    setGiftForm({ title: '', description: '' });
+    // Pré-remplir avec le choix du client pour aider l'admin
+    setGiftForm({ 
+        title: request.chosenGift || '', 
+        description: `Bonjour ${request.userName}, voici le cadeau que vous avez choisi !` 
+    });
     setIsDialogOpen(true);
   };
 
@@ -90,7 +94,7 @@ export default function AdminGiftsPage() {
       <div className="flex justify-between items-center">
         <div>
             <h2 className="text-3xl font-extrabold tracking-tight">Gestion des Cadeaux</h2>
-            <p className="text-muted-foreground">Envoyez des récompenses aux clients qui ont réclamé leur surprise.</p>
+            <p className="text-muted-foreground">Validez les choix des clients et envoyez leurs récompenses.</p>
         </div>
         <div className="h-12 px-6 rounded-xl bg-white border flex items-center gap-3 shadow-sm">
             <Gift className="h-5 w-5 text-primary" />
@@ -103,7 +107,7 @@ export default function AdminGiftsPage() {
         <CardHeader className="bg-white border-b">
           <CardTitle className="text-lg flex items-center gap-2">
             <User className="h-5 w-5 text-primary" />
-            Demandes de Cadeaux
+            Demandes de Cadeaux (Choix Clients)
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -117,7 +121,7 @@ export default function AdminGiftsPage() {
               <TableHeader>
                 <TableRow className="bg-muted/50">
                   <TableHead className="font-bold">Client</TableHead>
-                  <TableHead className="font-bold">Email</TableHead>
+                  <TableHead className="font-bold">Cadeau Choisi</TableHead>
                   <TableHead className="font-bold">Date Demande</TableHead>
                   <TableHead className="font-bold text-center">Statut</TableHead>
                   <TableHead className="font-bold text-right">Actions</TableHead>
@@ -126,11 +130,16 @@ export default function AdminGiftsPage() {
               <TableBody>
                 {requests.map((r) => (
                   <TableRow key={r.id} className="hover:bg-muted/20 transition-colors">
-                    <TableCell className="font-bold py-4">{r.userName}</TableCell>
+                    <TableCell className="font-bold py-4">
+                        <div className="flex flex-col">
+                            <span>{r.userName}</span>
+                            <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Mail className="h-2 w-2" /> {r.userEmail}</span>
+                        </div>
+                    </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2 text-muted-foreground text-xs">
-                        <Mail className="h-3 w-3" /> {r.userEmail}
-                      </div>
+                        <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary font-bold">
+                            <Sparkles className="h-3 w-3 mr-1" /> {r.chosenGift || "Cadeau Surprise"}
+                        </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2 text-muted-foreground text-xs">
@@ -139,14 +148,14 @@ export default function AdminGiftsPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge variant={r.status === 'pending' ? "default" : "outline"} className={r.status === 'pending' ? "bg-orange-500 text-white" : "bg-green-50 text-green-600 border-none"}>
-                        {r.status === 'pending' ? "En attente" : "Traité"}
+                      <Badge variant={r.status === 'pending' ? "default" : "outline"} className={r.status === 'pending' ? "bg-orange-500 text-white border-none" : "bg-green-50 text-green-600 border-none"}>
+                        {r.status === 'pending' ? "En attente" : "Validé"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       {r.status === 'pending' ? (
                         <Button onClick={() => handleOpenSend(r)} size="sm" className="bg-primary text-black font-bold h-8 rounded-lg">
-                          <Send className="h-3 w-3 mr-1" /> Envoyer
+                          <Send className="h-3 w-3 mr-1" /> Valider
                         </Button>
                       ) : (
                         <CheckCircle2 className="h-5 w-5 text-green-500 ml-auto" />
@@ -168,11 +177,11 @@ export default function AdminGiftsPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[450px] rounded-2xl border-none shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black">Offrir un Cadeau</DialogTitle>
+            <DialogTitle className="text-2xl font-black">Valider le Cadeau</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSendGift} className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label className="font-bold">Titre du cadeau *</Label>
+              <Label className="font-bold">Titre du cadeau (Confirmation) *</Label>
               <Input 
                 placeholder="Ex: Bon de réduction 10%" 
                 value={giftForm.title} 
@@ -182,22 +191,19 @@ export default function AdminGiftsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="font-bold">Description / Code *</Label>
+              <Label className="font-bold">Message pour le client *</Label>
               <Textarea 
-                placeholder="Expliquez comment utiliser le cadeau ou donnez un code promo..." 
+                placeholder="Expliquez comment utiliser le cadeau ou donnez un code..." 
                 value={giftForm.description} 
                 onChange={e => setGiftForm({...giftForm, description: e.target.value})}
                 className="min-h-[100px] rounded-xl bg-muted/30 border-none"
                 required
               />
             </div>
-            <p className="text-[10px] text-muted-foreground italic">
-              Note : Vous pouvez envoyer jusqu'à 3 cadeaux par client.
-            </p>
             <DialogFooter className="pt-4">
               <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)} disabled={isSubmitting}>Annuler</Button>
               <Button type="submit" disabled={isSubmitting} className="bg-primary text-black font-black px-8 rounded-xl h-12">
-                {isSubmitting ? <LogoSpinner /> : "Valider et envoyer"}
+                {isSubmitting ? <LogoSpinner /> : "Confirmer l'envoi"}
               </Button>
             </DialogFooter>
           </form>
