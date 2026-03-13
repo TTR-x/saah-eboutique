@@ -108,7 +108,7 @@ export default function GiftsPage() {
                 </div>
                 <h3 className="font-black text-2xl mb-4">Votre demande est en cours</h3>
                 <p className="text-muted-foreground mb-8 leading-relaxed font-medium">
-                    Nous avons bien reçu votre demande de cadeau. Notre administrateur est en train de préparer une surprise spécialement pour vous !
+                    Nous avons bien reçu votre demande de cadeau. Nous sommes en train de préparer une surprise spécialement pour vous !
                 </p>
                 <div className="space-y-3 mb-8 w-full text-left">
                     <div className="flex items-center gap-2 text-sm font-bold">
@@ -117,7 +117,7 @@ export default function GiftsPage() {
                     </div>
                     <div className="flex items-center gap-2 text-sm font-bold">
                         <Clock className="h-4 w-4 text-orange-500" />
-                        Validation par l'administrateur
+                        Validation par nous
                     </div>
                 </div>
                 <Button variant="outline" asChild className="w-full h-12 rounded-xl font-bold border-2">
