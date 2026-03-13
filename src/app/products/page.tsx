@@ -18,88 +18,68 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter
 
 const FiltersSidebar = ({
   filters,
-  searchQuery,
   allCategories,
   allBrands,
   maxPrice,
   handleCategoryChange,
   handleBrandChange,
   handlePriceChange,
-  setSearchQuery,
   resetFilters,
-  isLoading,
 }: {
   filters: any;
-  searchQuery: string;
   allCategories: string[];
   allBrands: string[];
   maxPrice: number;
   handleCategoryChange: (value: string) => void;
   handleBrandChange: (value: string) => void;
   handlePriceChange: (value: number[]) => void;
-  setSearchQuery: (value: string) => void;
   resetFilters: () => void;
   isLoading: boolean;
 }) => (
   <div className="space-y-6">
     <div>
-      <Label htmlFor="search-input" className="text-base">Recherche</Label>
-      <div className="relative mt-2">
-        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          id="search-input"
-          type="search"
-          placeholder="Rechercher par mot-clé..."
-          className="pl-8"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
-    </div>
-
-    <div>
-      <Label htmlFor="category-select" className="text-base">Catégorie</Label>
+      <Label htmlFor="category-select" className="text-base font-bold">Catégorie</Label>
       <Select value={filters.category} onValueChange={handleCategoryChange}>
-        <SelectTrigger id="category-select" className="w-full mt-2">
+        <SelectTrigger id="category-select" className="w-full mt-2 h-11 rounded-xl">
           <SelectValue placeholder="Choisir une catégorie" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="rounded-xl border-none shadow-xl">
           {allCategories.map(cat => (
-            <SelectItem key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</SelectItem>
+            <SelectItem key={cat} value={cat} className="rounded-lg">{cat.charAt(0).toUpperCase() + cat.slice(1)}</SelectItem>
           ))}
         </SelectContent>
       </Select>
     </div>
     
     <div>
-      <Label className="text-base">Marque</Label>
-      <RadioGroup value={filters.brand} onValueChange={handleBrandChange} className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+      <Label className="text-base font-bold">Marque</Label>
+      <RadioGroup value={filters.brand} onValueChange={handleBrandChange} className="mt-3 space-y-2 max-h-40 overflow-y-auto pr-2">
          {allBrands.map(brand => (
           <div key={brand} className="flex items-center space-x-2">
               <RadioGroupItem value={brand!} id={`brand-desktop-${brand}`} />
-              <Label htmlFor={`brand-desktop-${brand}`} className="font-normal">{brand}</Label>
+              <Label htmlFor={`brand-desktop-${brand}`} className="font-medium cursor-pointer">{brand}</Label>
           </div>
         ))}
       </RadioGroup>
     </div>
 
     <div>
-      <Label className="text-base">Gamme de Prix</Label>
+      <Label className="text-base font-bold">Budget (FCFA)</Label>
       <Slider
         min={0}
         max={maxPrice > 0 ? maxPrice : 100000}
-        step={1000}
+        step={5000}
         value={filters.priceRange}
         onValueChange={handlePriceChange}
-        className="mt-4"
+        className="mt-6"
         disabled={maxPrice === 0}
       />
-      <div className="flex justify-between text-sm text-muted-foreground mt-2">
-        <span>{filters.priceRange[0].toLocaleString('fr-FR')} FCFA</span>
-        <span>{filters.priceRange[1].toLocaleString('fr-FR')} FCFA</span>
+      <div className="flex justify-between text-[10px] font-black text-primary mt-3 uppercase tracking-widest">
+        <span>{filters.priceRange[0].toLocaleString('fr-FR')} F</span>
+        <span>{filters.priceRange[1].toLocaleString('fr-FR')} F</span>
       </div>
     </div>
-    <Button onClick={resetFilters} variant="ghost" className="w-full mt-6">Réinitialiser les filtres</Button>
+    <Button onClick={resetFilters} variant="ghost" className="w-full mt-6 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-primary">Réinitialiser</Button>
   </div>
 );
 
@@ -120,22 +100,27 @@ export default function ProductsPage() {
   const [filters, setFilters] = useState({
     category: 'tous',
     brand: 'tous',
-    priceRange: [0, 100000],
-    sort: searchParams.get('sort') || 'rating-desc',
+    priceRange: [0, 1000000],
+    sort: searchParams.get('sort') || 'newest',
   });
   
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true);
-      const fetchedProducts = await getProducts();
-      setProducts(fetchedProducts);
-      const newMaxPrice = Math.max(...fetchedProducts.map(p => p.price), 0)
-      setFilters(prev => ({
-        ...prev,
-        priceRange: [0, newMaxPrice > 0 ? newMaxPrice : 100000]
-      }));
-      setIsLoading(false);
-    }
+      try {
+        const fetchedProducts = await getProducts();
+        setProducts(fetchedProducts);
+        const newMaxPrice = Math.max(...fetchedProducts.map(p => p.price), 0);
+        setFilters(prev => ({
+          ...prev,
+          priceRange: [0, newMaxPrice > 0 ? newMaxPrice : 1000000]
+        }));
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     fetchProducts();
   }, []);
   
@@ -169,8 +154,8 @@ export default function ProductsPage() {
     setFilters({
       category: 'tous',
       brand: 'tous',
-      priceRange: [0, maxPrice > 0 ? maxPrice : 100000],
-      sort: 'rating-desc',
+      priceRange: [0, maxPrice > 0 ? maxPrice : 1000000],
+      sort: 'newest',
     });
     setSearchQuery('');
   };
@@ -205,98 +190,129 @@ export default function ProductsPage() {
   return (
     <div className="container mx-auto px-4 md:px-6 py-12">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">Notre Catalogue</h1>
-        <p className="mt-4 text-lg text-muted-foreground">Trouvez le produit parfait pour vous.</p>
+        <h1 className="text-4xl font-black tracking-tight lg:text-5xl uppercase">Catalogue Articles</h1>
+        <p className="mt-4 text-lg text-muted-foreground font-medium">Explorez notre sélection premium et trouvez votre bonheur.</p>
       </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* FILTERS DESKTOP */}
         <aside className="hidden lg:block lg:col-span-1">
-            <div className="p-6 border rounded-lg bg-card sticky top-24">
-                <h3 className="text-lg font-semibold mb-4">Filtres</h3>
+            <div className="p-8 border border-gray-100 dark:border-zinc-800 rounded-2xl bg-card sticky top-24 shadow-sm">
+                <h3 className="text-xl font-black mb-6 uppercase tracking-tight flex items-center gap-2">
+                    <Filter className="h-5 w-5 text-primary" /> Filtres
+                </h3>
                 {isLoading ? (
-                <LogoSpinner className="h-6 w-6" />
+                    <div className="flex justify-center py-10"><LogoSpinner className="h-8 w-8 text-primary" /></div>
                 ) : (
-                <FiltersSidebar
-                    filters={filters}
-                    searchQuery={searchQuery}
-                    allCategories={allCategories}
-                    allBrands={allBrands}
-                    maxPrice={maxPrice}
-                    handleCategoryChange={handleCategoryChange}
-                    handleBrandChange={handleBrandChange}
-                    handlePriceChange={handlePriceChange}
-                    setSearchQuery={setSearchQuery}
-                    resetFilters={resetFilters}
-                    isLoading={isLoading}
-                />
+                    <FiltersSidebar
+                        filters={filters}
+                        allCategories={allCategories}
+                        allBrands={allBrands}
+                        maxPrice={maxPrice}
+                        handleCategoryChange={handleCategoryChange}
+                        handleBrandChange={handleBrandChange}
+                        handlePriceChange={handlePriceChange}
+                        resetFilters={resetFilters}
+                        isLoading={isLoading}
+                    />
                 )}
             </div>
         </aside>
 
-        <main className="lg:col-span-3">
-          <div className="flex justify-between items-center mb-6">
-            <p className="text-sm text-muted-foreground">{filteredAndSortedProducts.length} produits trouvés</p>
+        {/* MAIN CONTENT */}
+        <main className="lg:col-span-3 space-y-8">
+          {/* SEARCH BAR (Like Home Page) */}
+          <section className="bg-card dark:bg-zinc-900 p-1 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-800">
+            <form onSubmit={(e) => e.preventDefault()} className="relative group w-full">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Input 
+                    type="search" 
+                    placeholder="Rechercher un article, une marque..." 
+                    className="pl-12 h-14 w-full rounded-xl border-none focus:ring-0 shadow-none bg-transparent font-medium text-lg"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <Button type="button" className="absolute right-2 top-2 h-10 rounded-lg bg-primary text-black font-black hover:bg-primary/90 hidden sm:block">
+                    Trouver
+                </Button>
+            </form>
+          </section>
+
+          <div className="flex justify-between items-center bg-muted/30 p-3 rounded-xl">
+            <p className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-2">
+                {filteredAndSortedProducts.length} articles disponibles
+            </p>
             
             <div className="flex items-center gap-2">
                 <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                     <SheetTrigger asChild>
-                        <Button variant="outline" className="lg:hidden">
+                        <Button variant="outline" size="sm" className="lg:hidden rounded-lg font-bold">
                             <Filter className="mr-2 h-4 w-4" />
                             Filtrer
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-                        <SheetHeader>
-                            <SheetTitle>Filtres</SheetTitle>
+                    <SheetContent side="left" className="w-[300px] p-0 border-none rounded-r-2xl overflow-hidden">
+                        <SheetHeader className="p-6 border-b">
+                            <SheetTitle className="text-left font-black uppercase">Filtrer les articles</SheetTitle>
                         </SheetHeader>
-                        <div className="p-4 overflow-y-auto">
-                        <FiltersSidebar
-                            filters={filters}
-                            searchQuery={searchQuery}
-                            allCategories={allCategories}
-                            allBrands={allBrands}
-                            maxPrice={maxPrice}
-                            handleCategoryChange={handleCategoryChange}
-                            handleBrandChange={handleBrandChange}
-                            handlePriceChange={handlePriceChange}
-                            setSearchQuery={setSearchQuery}
-                            resetFilters={resetFilters}
-                            isLoading={isLoading}
-                        />
+                        <div className="p-6 overflow-y-auto">
+                            <FiltersSidebar
+                                filters={filters}
+                                allCategories={allCategories}
+                                allBrands={allBrands}
+                                maxPrice={maxPrice}
+                                handleCategoryChange={handleCategoryChange}
+                                handleBrandChange={handleBrandChange}
+                                handlePriceChange={handlePriceChange}
+                                resetFilters={resetFilters}
+                                isLoading={isLoading}
+                            />
                         </div>
-                        <SheetFooter className="p-4 border-t">
-                            <Button onClick={() => setIsSheetOpen(false)} className="w-full">
-                                Appliquer les filtres
+                        <SheetFooter className="p-6 border-t mt-auto">
+                            <Button onClick={() => setIsSheetOpen(false)} className="w-full h-12 rounded-xl font-black bg-primary text-black">
+                                Appliquer
                             </Button>
                         </SheetFooter>
                     </SheetContent>
                 </Sheet>
 
                 <Select value={filters.sort} onValueChange={handleSortChange}>
-                <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Trier par" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="rating-desc">Meilleures notes</SelectItem>
-                    <SelectItem value="price-asc">Prix: croissant</SelectItem>
-                    <SelectItem value="price-desc">Prix: décroissant</SelectItem>
-                    <SelectItem value="newest">Nouveautés</SelectItem>
-                    <SelectItem value="trending">Tendance</SelectItem>
-                </SelectContent>
+                    <SelectTrigger className="w-[160px] h-9 rounded-lg font-bold border-none bg-background shadow-sm text-xs">
+                        <SelectValue placeholder="Trier par" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-none shadow-xl">
+                        <SelectItem value="newest" className="text-xs font-medium">Nouveautés</SelectItem>
+                        <SelectItem value="rating-desc" className="text-xs font-medium">Mieux notés</SelectItem>
+                        <SelectItem value="price-asc" className="text-xs font-medium">Prix croissant</SelectItem>
+                        <SelectItem value="price-desc" className="text-xs font-medium">Prix décroissant</SelectItem>
+                        <SelectItem value="trending" className="text-xs font-medium">Tendances</SelectItem>
+                    </SelectContent>
                 </Select>
             </div>
           </div>
+
            {isLoading ? (
-             <div className="flex justify-center items-center h-96">
-                <LogoSpinner className="h-12 w-12"/>
+             <div className="flex flex-col justify-center items-center h-96 gap-4">
+                <LogoSpinner className="h-12 w-12 text-primary"/>
+                <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest animate-pulse">Chargement du catalogue...</p>
             </div>
            ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 {filteredAndSortedProducts.length > 0 ? (
                     filteredAndSortedProducts.map(product => (
                         <ProductCard key={product.id} product={product} />
                     ))
                 ) : (
-                    <p className="text-muted-foreground col-span-full text-center py-10">Aucun produit ne correspond à vos critères de recherche.</p>
+                    <div className="col-span-full py-20 text-center space-y-4 bg-muted/10 rounded-3xl border-2 border-dashed border-gray-100 dark:border-zinc-800">
+                        <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center mx-auto">
+                            <Search className="h-8 w-8 text-muted-foreground opacity-20" />
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-lg font-black uppercase">Aucun résultat</p>
+                            <p className="text-muted-foreground text-sm">Réessayez avec d'autres mots-clés ou modifiez vos filtres.</p>
+                        </div>
+                        <Button onClick={resetFilters} variant="link" className="text-primary font-black uppercase tracking-widest text-xs">Tout afficher</Button>
+                    </div>
                 )}
             </div>
            )}
