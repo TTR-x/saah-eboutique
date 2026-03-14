@@ -32,6 +32,7 @@
         "deliveryFees": { "type": "number" },
         "isTontine": { "type": "boolean" },
         "tontineDuration": { "type": "string" },
+        "tontineDailyRate": { "type": "number", "description": "Somme minimum par jour pour la tontine." },
         "allowInstallments": { "type": "boolean" },
         "installmentPrice": { "type": "number" },
         "installmentMonths": { "type": "number" },

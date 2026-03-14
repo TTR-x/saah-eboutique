@@ -22,6 +22,7 @@ export type Product = {
   installmentMonths?: number;
   isTontine?: boolean;
   tontineDuration?: string; // ex: "6 mois", "1 an"
+  tontineDailyRate?: number; // Somme par jour
 };
 
 export type Order = {

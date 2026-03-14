@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { PlusCircle, MoreHorizontal, Pencil, Trash2, X, Copy, Tag as TagIcon, LayoutGrid, Package, Info, CreditCard, Users } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Pencil, Trash2, X, Copy, Tag as TagIcon, LayoutGrid, Package, CreditCard, Users } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { getProducts } from "@/lib/products-service";
@@ -47,6 +47,7 @@ type ProductFormData = {
   installmentMonths: number | '';
   isTontine: boolean;
   tontineDuration: string;
+  tontineDailyRate: number | '';
 };
 
 export default function AdminProductsPage() {
@@ -76,6 +77,7 @@ export default function AdminProductsPage() {
     installmentMonths: '',
     isTontine: false,
     tontineDuration: "",
+    tontineDailyRate: '',
   });
   const { toast } = useToast();
 
@@ -115,6 +117,7 @@ export default function AdminProductsPage() {
             installmentMonths: editingProduct.installmentMonths || '',
             isTontine: editingProduct.isTontine || false,
             tontineDuration: editingProduct.tontineDuration || "",
+            tontineDailyRate: editingProduct.tontineDailyRate || '',
         });
     } else if (!isDialogOpen) {
         resetForm();
@@ -187,6 +190,7 @@ export default function AdminProductsPage() {
       installmentMonths: '',
       isTontine: false,
       tontineDuration: "",
+      tontineDailyRate: '',
     });
     setImagesToDelete([]);
     setSubmissionStatus('');
@@ -293,6 +297,7 @@ export default function AdminProductsPage() {
             installmentMonths: productForm.installmentMonths ? Number(productForm.installmentMonths) : 0,
             isTontine: productForm.isTontine,
             tontineDuration: productForm.tontineDuration || "",
+            tontineDailyRate: productForm.tontineDailyRate ? Number(productForm.tontineDailyRate) : 0,
         };
 
         if (editingProduct && editingProduct.id) {
@@ -549,9 +554,15 @@ export default function AdminProductsPage() {
                         </div>
 
                         {productForm.isTontine && (
-                            <div className="space-y-2 pl-4 border-l-2 border-green-500 animate-in zoom-in-95 duration-200">
-                                <Label className="text-xs font-bold">Durée du cycle (ex: 10 mois)</Label>
-                                <Input name="tontineDuration" value={productForm.tontineDuration} onChange={handleInputChange} placeholder="Ex: 6 mois" className="h-10 rounded-lg font-bold" />
+                            <div className="space-y-4 pl-4 border-l-2 border-green-500 animate-in zoom-in-95 duration-200">
+                                <div className="space-y-2">
+                                    <Label className="text-xs font-bold">Durée du cycle (ex: 10 mois)</Label>
+                                    <Input name="tontineDuration" value={productForm.tontineDuration} onChange={handleInputChange} placeholder="Ex: 6 mois" className="h-10 rounded-lg font-bold" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-xs font-bold">Somme par jour (FCFA)</Label>
+                                    <Input name="tontineDailyRate" type="number" value={productForm.tontineDailyRate} onChange={handleNumberInputChange} placeholder="Ex: 500" className="h-10 rounded-lg font-bold" />
+                                </div>
                             </div>
                         )}
                     </Card>
