@@ -28,7 +28,6 @@
         "images": { "type": "array", "items": { "type": "string" } },
         "imagePublicIds": { "type": "array", "items": { "type": "string" } },
         "status": { "type": "string", "enum": ["active", "inactive"] },
-        "stock": { "type": "number" },
         "allowDelivery": { "type": "boolean" },
         "deliveryFees": { "type": "number" },
         "isTontine": { "type": "boolean" },

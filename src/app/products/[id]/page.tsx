@@ -57,7 +57,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
       "priceCurrency": "XOF",
       "price": product.price,
       "itemCondition": "https://schema.org/NewCondition",
-      "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "availability": product.status === 'active' ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       "seller": {
         "@type": "Organization",
         "name": "SAAH Business"
@@ -108,5 +108,3 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
     </>
   );
 }
-
-    

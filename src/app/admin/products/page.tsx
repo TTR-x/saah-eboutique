@@ -36,7 +36,6 @@ type ProductFormData = {
   category: Product['category'];
   brand: string;
   tags: string;
-  stock: number | '';
   status: 'active' | 'inactive';
   allowDelivery: boolean;
   deliveryFees: number | '';
@@ -66,7 +65,6 @@ export default function AdminProductsPage() {
     category: "divers",
     brand: "",
     tags: "",
-    stock: 100,
     status: 'active',
     allowDelivery: true,
     deliveryFees: '',
@@ -106,7 +104,6 @@ export default function AdminProductsPage() {
             category: editingProduct.category,
             brand: editingProduct.brand || "",
             tags: editingProduct.tags?.join(', ') || "",
-            stock: editingProduct.stock || 0,
             status: editingProduct.status || 'active',
             allowDelivery: editingProduct.allowDelivery ?? true,
             deliveryFees: editingProduct.deliveryFees || '',
@@ -179,7 +176,6 @@ export default function AdminProductsPage() {
       category: "divers",
       brand: "",
       tags: "",
-      stock: 100,
       status: 'active',
       allowDelivery: true,
       deliveryFees: '',
@@ -286,7 +282,6 @@ export default function AdminProductsPage() {
             imagePublicIds: finalPublicIds,
             brand: productForm.brand || '',
             tags: productForm.tags ? productForm.tags.split(',').map(t => t.trim()).filter(t => t !== "") : [],
-            stock: productForm.stock === '' ? 0 : Number(productForm.stock),
             status: productForm.status,
             allowDelivery: productForm.allowDelivery,
             deliveryFees: productForm.deliveryFees === '' ? 0 : Number(productForm.deliveryFees),
@@ -341,7 +336,7 @@ export default function AdminProductsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
             <h2 className="text-3xl font-extrabold tracking-tight">Catalogue Articles</h2>
-            <p className="text-muted-foreground">Gérez vos produits, stocks et options de paiement.</p>
+            <p className="text-muted-foreground">Gérez vos produits et options de paiement.</p>
         </div>
         <Button onClick={handleOpenNew} className="shadow-lg h-12 px-6 rounded-xl font-bold bg-primary text-black hover:bg-primary/90">
           <PlusCircle className="mr-2 h-5 w-5" /> Nouvel Article
@@ -380,8 +375,6 @@ export default function AdminProductsPage() {
                       </div>
                       <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground mt-1">
                         <span className="text-primary font-bold">{product.price.toLocaleString('fr-FR')} FCFA</span>
-                        <span>•</span>
-                        <span>Stock: {product.stock}</span>
                         <span>•</span>
                         <span className="capitalize">{product.category}</span>
                       </div>
@@ -471,24 +464,20 @@ export default function AdminProductsPage() {
                 </Card>
               </div>
 
-              {/* SECTION 2: PRIX, STOCK ET STATUT */}
+              {/* SECTION 2: PRIX ET STATUT */}
               <div className="space-y-4">
                 <h3 className="font-black text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <Package className="h-4 w-4" /> Stock & Visibilité
+                    <Package className="h-4 w-4" /> Prix & Visibilité
                 </h3>
                 <Card className="p-6 border shadow-sm rounded-xl space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="price" className="font-bold text-primary">Prix Cash (FCFA) *</Label>
                             <Input id="price" name="price" type="number" value={productForm.price} onChange={handleNumberInputChange} className="h-12 rounded-lg bg-primary/5 border-primary/20 font-black text-lg text-primary" required />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="stock" className="font-bold">Quantité en stock</Label>
-                            <Input id="stock" name="stock" type="number" value={productForm.stock} onChange={handleNumberInputChange} className="h-12 rounded-lg font-bold" />
-                        </div>
                         <div className="flex flex-col justify-end">
                             <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 h-12">
-                                <Label className="font-bold text-xs">Statut Visible</Label>
+                                <Label className="font-bold text-xs">Statut Visible sur le site</Label>
                                 <Switch checked={productForm.status === 'active'} onCheckedChange={(val) => setProductForm(p => ({...p, status: val ? 'active' : 'inactive'}))} />
                             </div>
                         </div>

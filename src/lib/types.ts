@@ -8,7 +8,6 @@ export type Product = {
   price: number;
   category: 'high-tech' | 'beauté' | 'maison' | 'artisanat' | 'mode' | 'divers';
   brand?: string;
-  stock: number;
   status: 'active' | 'inactive';
   allowDelivery: boolean;
   deliveryFees?: number;
