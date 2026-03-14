@@ -24,10 +24,21 @@
         "description": { "type": "string" },
         "price": { "type": "number" },
         "category": { "type": "string" },
+        "brand": { "type": "string" },
         "images": { "type": "array", "items": { "type": "string" } },
+        "imagePublicIds": { "type": "array", "items": { "type": "string" } },
         "status": { "type": "string", "enum": ["active", "inactive"] },
+        "stock": { "type": "number" },
+        "allowDelivery": { "type": "boolean" },
+        "deliveryFees": { "type": "number" },
         "isTontine": { "type": "boolean" },
-        "allowInstallments": { "type": "boolean" }
+        "tontineDuration": { "type": "string" },
+        "allowInstallments": { "type": "boolean" },
+        "installmentPrice": { "type": "number" },
+        "installmentMonths": { "type": "number" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "rating": { "type": "number" },
+        "reviews": { "type": "number" }
       }
     },
     "Order": {

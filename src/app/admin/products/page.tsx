@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState, useEffect } from "react";
@@ -9,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { PlusCircle, MoreHorizontal, Pencil, Trash2, X, Copy, Tag as TagIcon, LayoutGrid, Package } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Pencil, Trash2, X, Copy, Tag as TagIcon, LayoutGrid, Package, Info, CreditCard, Users } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { getProducts } from "@/lib/products-service";
@@ -419,7 +420,7 @@ export default function AdminProductsPage() {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={(isOpen) => !isSubmitting && setIsDialogOpen(isOpen)}>
-        <DialogContent className="sm:max-w-[850px] max-h-[90vh] overflow-hidden flex flex-col p-0 border-none rounded-3xl shadow-2xl">
+        <DialogContent className="sm:max-w-[850px] max-h-[90vh] overflow-hidden flex flex-col p-0 border-none rounded-2xl shadow-2xl">
           <DialogHeader className="p-6 border-b bg-white">
             <DialogTitle className="text-2xl font-black flex items-center gap-3">
                 <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
@@ -429,7 +430,7 @@ export default function AdminProductsPage() {
             </DialogTitle>
           </DialogHeader>
           
-          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto bg-[#f8f9fa]">
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto bg-background">
             <div className="p-6 space-y-8 pb-24">
               
               {/* SECTION 1: INFOS GENERALES */}
@@ -437,16 +438,16 @@ export default function AdminProductsPage() {
                 <h3 className="font-black text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                     <LayoutGrid className="h-4 w-4" /> Informations générales
                 </h3>
-                <Card className="p-6 border-none shadow-sm rounded-2xl space-y-4">
+                <Card className="p-6 border shadow-sm rounded-xl space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="name" className="font-bold">Nom de l'article *</Label>
-                            <Input id="name" name="name" value={productForm.name} onChange={handleInputChange} placeholder="Ex: iPhone 15 Pro Max" className="h-12 rounded-xl bg-muted/30 border-none focus:ring-primary" required />
+                            <Input id="name" name="name" value={productForm.name} onChange={handleInputChange} placeholder="Ex: iPhone 15 Pro Max" className="h-12 rounded-lg" required />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="category" className="font-bold">Catégorie *</Label>
                             <Select value={productForm.category} onValueChange={handleCategoryChange}>
-                                <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-none"><SelectValue placeholder="Choisir" /></SelectTrigger>
+                                <SelectTrigger className="h-12 rounded-lg"><SelectValue placeholder="Choisir" /></SelectTrigger>
                                 <SelectContent className="rounded-xl border-none shadow-xl">
                                     {productCategories.map(cat => (<SelectItem key={cat} value={cat} className="rounded-lg">{cat.charAt(0).toUpperCase() + cat.slice(1)}</SelectItem>))}
                                 </SelectContent>
@@ -455,16 +456,16 @@ export default function AdminProductsPage() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="description" className="font-bold">Description détaillée *</Label>
-                        <Textarea id="description" name="description" value={productForm.description} onChange={handleInputChange} placeholder="Détaillez les caractéristiques, tailles, couleurs..." className="min-h-[120px] rounded-xl bg-muted/30 border-none focus:ring-primary" required />
+                        <Textarea id="description" name="description" value={productForm.description} onChange={handleInputChange} placeholder="Détaillez les caractéristiques, tailles, couleurs..." className="min-h-[120px] rounded-lg" required />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="brand" className="font-bold">Marque / Fabricant</Label>
-                            <Input id="brand" name="brand" value={productForm.brand} onChange={handleInputChange} placeholder="Ex: Apple, Samsung..." className="h-12 rounded-xl bg-muted/30 border-none focus:ring-primary" />
+                            <Input id="brand" name="brand" value={productForm.brand} onChange={handleInputChange} placeholder="Ex: Apple, Samsung..." className="h-12 rounded-lg" />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="tags" className="font-bold flex items-center gap-2"><TagIcon className="h-3 w-3" /> Tags (séparés par des virgules)</Label>
-                            <Input id="tags" name="tags" value={productForm.tags} onChange={handleInputChange} placeholder="Ex: homme, mode, premium" className="h-12 rounded-xl bg-muted/30 border-none focus:ring-primary" />
+                            <Input id="tags" name="tags" value={productForm.tags} onChange={handleInputChange} placeholder="Ex: homme, mode, premium" className="h-12 rounded-lg" />
                         </div>
                     </div>
                 </Card>
@@ -475,18 +476,18 @@ export default function AdminProductsPage() {
                 <h3 className="font-black text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                     <Package className="h-4 w-4" /> Stock & Visibilité
                 </h3>
-                <Card className="p-6 border-none shadow-sm rounded-2xl space-y-6">
+                <Card className="p-6 border shadow-sm rounded-xl space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="price" className="font-bold text-primary">Prix Cash (FCFA) *</Label>
-                            <Input id="price" name="price" type="number" value={productForm.price} onChange={handleNumberInputChange} className="h-12 rounded-xl bg-primary/5 border-none focus:ring-primary font-black text-lg text-primary" required />
+                            <Input id="price" name="price" type="number" value={productForm.price} onChange={handleNumberInputChange} className="h-12 rounded-lg bg-primary/5 border-primary/20 font-black text-lg text-primary" required />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="stock" className="font-bold">Quantité en stock</Label>
-                            <Input id="stock" name="stock" type="number" value={productForm.stock} onChange={handleNumberInputChange} className="h-12 rounded-xl bg-muted/30 border-none focus:ring-primary font-bold" />
+                            <Input id="stock" name="stock" type="number" value={productForm.stock} onChange={handleNumberInputChange} className="h-12 rounded-lg font-bold" />
                         </div>
                         <div className="flex flex-col justify-end">
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 h-12">
+                            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 h-12">
                                 <Label className="font-bold text-xs">Statut Visible</Label>
                                 <Switch checked={productForm.status === 'active'} onCheckedChange={(val) => setProductForm(p => ({...p, status: val ? 'active' : 'inactive'}))} />
                             </div>
@@ -506,7 +507,7 @@ export default function AdminProductsPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-6 border-l-4 border-primary animate-in slide-in-from-left duration-300">
                                 <div className="space-y-2">
                                     <Label className="font-bold text-sm">Frais de livraison (FCFA)</Label>
-                                    <Input name="deliveryFees" type="number" value={productForm.deliveryFees} onChange={handleNumberInputChange} placeholder="Ex: 1500" className="h-10 rounded-xl bg-muted/30 border-none" />
+                                    <Input name="deliveryFees" type="number" value={productForm.deliveryFees} onChange={handleNumberInputChange} placeholder="Ex: 1500" className="h-10 rounded-lg" />
                                 </div>
                             </div>
                         )}
@@ -514,16 +515,19 @@ export default function AdminProductsPage() {
                 </Card>
               </div>
 
-              {/* SECTION 3: OPTIONS DE PAIEMENT */}
+              {/* SECTION 3: OPTIONS DE PAIEMENT AVANCÉES */}
               <div className="space-y-4">
                 <h3 className="font-black text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    💳 Modes de paiement avancés
+                    <CreditCard className="h-4 w-4" /> Modes d'acquisition avancés
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card className="p-6 border-none shadow-sm rounded-2xl space-y-4">
+                    {/* Paiement par tranches */}
+                    <Card className="p-6 border shadow-sm rounded-xl space-y-4">
                         <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
-                                <Label className="font-black text-base text-blue-600">Paiement par tranches</Label>
+                                <Label className="font-black text-base text-blue-600 flex items-center gap-2">
+                                    <CreditCard className="h-4 w-4" /> Paiement par tranches
+                                </Label>
                                 <p className="text-xs text-muted-foreground">Vente échelonnée sur plusieurs mois.</p>
                             </div>
                             <Switch checked={productForm.allowInstallments} onCheckedChange={(val) => setProductForm(p => ({...p, allowInstallments: val}))} />
@@ -533,21 +537,24 @@ export default function AdminProductsPage() {
                             <div className="grid grid-cols-2 gap-4 pl-4 border-l-2 border-blue-500 animate-in zoom-in-95 duration-200">
                                 <div className="space-y-2">
                                     <Label className="text-xs font-bold">Mensualité (FCFA)</Label>
-                                    <Input name="installmentPrice" type="number" value={productForm.installmentPrice} onChange={handleNumberInputChange} className="h-10 rounded-xl bg-muted/30 border-none font-bold" />
+                                    <Input name="installmentPrice" type="number" value={productForm.installmentPrice} onChange={handleNumberInputChange} className="h-10 rounded-lg font-bold" />
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="text-xs font-bold">Nb de mois</Label>
-                                    <Input name="installmentMonths" type="number" value={productForm.installmentMonths} onChange={handleNumberInputChange} className="h-10 rounded-xl bg-muted/30 border-none font-bold" />
+                                    <Input name="installmentMonths" type="number" value={productForm.installmentMonths} onChange={handleNumberInputChange} className="h-10 rounded-lg font-bold" />
                                 </div>
                             </div>
                         )}
                     </Card>
 
-                    <Card className="p-6 border-none shadow-sm rounded-2xl space-y-4">
+                    {/* Plan Tontine */}
+                    <Card className="p-6 border shadow-sm rounded-xl space-y-4">
                         <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
-                                <Label className="font-black text-base text-green-600">Plan de Tontine</Label>
-                                <p className="text-xs text-muted-foreground">Inclure dans un cycle d'épargne.</p>
+                                <Label className="font-black text-base text-green-600 flex items-center gap-2">
+                                    <Users className="h-4 w-4" /> Plan de Tontine
+                                </Label>
+                                <p className="text-xs text-muted-foreground">Inclure dans un cycle d'épargne collective.</p>
                             </div>
                             <Switch checked={productForm.isTontine} onCheckedChange={(val) => setProductForm(p => ({...p, isTontine: val}))} />
                         </div>
@@ -555,7 +562,7 @@ export default function AdminProductsPage() {
                         {productForm.isTontine && (
                             <div className="space-y-2 pl-4 border-l-2 border-green-500 animate-in zoom-in-95 duration-200">
                                 <Label className="text-xs font-bold">Durée du cycle (ex: 10 mois)</Label>
-                                <Input name="tontineDuration" value={productForm.tontineDuration} onChange={handleInputChange} placeholder="Ex: 6 mois" className="h-10 rounded-xl bg-muted/30 border-none font-bold" />
+                                <Input name="tontineDuration" value={productForm.tontineDuration} onChange={handleInputChange} placeholder="Ex: 6 mois" className="h-10 rounded-lg font-bold" />
                             </div>
                         )}
                     </Card>
@@ -567,16 +574,16 @@ export default function AdminProductsPage() {
                 <h3 className="font-black text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                     📸 Galerie Photos *
                 </h3>
-                <Card className="p-6 border-none shadow-sm rounded-2xl">
+                <Card className="p-6 border shadow-sm rounded-xl">
                     <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
-                        <div className="aspect-square border-2 border-dashed rounded-2xl flex flex-col items-center justify-center hover:bg-primary/5 hover:border-primary transition-all cursor-pointer relative group overflow-hidden">
+                        <div className="aspect-square border-2 border-dashed rounded-xl flex flex-col items-center justify-center hover:bg-primary/5 hover:border-primary transition-all cursor-pointer relative group overflow-hidden">
                             <Input id="images" name="images" type="file" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/*" multiple />
                             <PlusCircle className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
                             <span className="text-[10px] font-black mt-2 uppercase text-muted-foreground group-hover:text-primary">Ajouter</span>
                         </div>
                         
                         {productForm.existingImages.map((image, index) => (
-                            <div key={`existing-${index}`} className="relative aspect-square rounded-2xl overflow-hidden border shadow-sm group">
+                            <div key={`existing-${index}`} className="relative aspect-square rounded-xl overflow-hidden border shadow-sm group">
                                 <Image src={image} alt="" fill className="object-cover" />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <Button type="button" size="icon" variant="destructive" className="h-8 w-8 rounded-full" onClick={() => removeExistingImage(index)}>
@@ -587,7 +594,7 @@ export default function AdminProductsPage() {
                             </div>
                         ))}
                         {productForm.newImages.map((image, index) => (
-                            <div key={`new-${index}`} className="relative aspect-square rounded-2xl overflow-hidden border-2 border-primary shadow-sm group">
+                            <div key={`new-${index}`} className="relative aspect-square rounded-xl overflow-hidden border-2 border-primary shadow-sm group">
                                 <Image src={image.previewUrl} alt="" fill className="object-cover" />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <Button type="button" size="icon" variant="destructive" className="h-8 w-8 rounded-full" onClick={() => removeNewImage(index)}>
@@ -603,8 +610,8 @@ export default function AdminProductsPage() {
             </div>
 
             <DialogFooter className="p-6 border-t bg-white sticky bottom-0 z-20 flex flex-row gap-3">
-              <Button type="button" variant="ghost" onClick={handleCloseDialog} disabled={isSubmitting} className="flex-1 rounded-2xl font-bold h-14">Annuler</Button>
-              <Button type="submit" disabled={isSubmitting} className="flex-[2] rounded-2xl h-14 font-black text-lg shadow-xl bg-primary text-black hover:bg-primary/90">
+              <Button type="button" variant="ghost" onClick={handleCloseDialog} disabled={isSubmitting} className="flex-1 rounded-xl font-bold h-14">Annuler</Button>
+              <Button type="submit" disabled={isSubmitting} className="flex-[2] rounded-xl h-14 font-black text-lg shadow-xl bg-primary text-black hover:bg-primary/90">
                 {isSubmitting ? <><LogoSpinner className="mr-2 h-5 w-5" /> {submissionStatus}</> : (editingProduct?.id ? 'Enregistrer les modifications' : 'Publier l\'article')}
               </Button>
             </DialogFooter>
