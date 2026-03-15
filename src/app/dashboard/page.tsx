@@ -14,11 +14,13 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useUser();
   const db = useFirestore();
   const router = useRouter();
+  const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -59,6 +61,18 @@ export default function DashboardPage() {
   const pendingPaymentsCount = orders?.filter(o => o.status === 'payment_pending').length || 0;
   const totalValue = orders?.reduce((acc, o) => acc + (o.totalPrice || o.amount), 0) || 0;
 
+  const handlePendingClick = () => {
+    if (pendingPaymentsCount > 0) {
+        const el = document.getElementById('orders-list');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        toast({
+            title: "Information",
+            description: "Vous n'avez aucun paiement en attente de validation.",
+        });
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl animate-in fade-in duration-500 pb-20">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -76,14 +90,20 @@ export default function DashboardPage() {
         <div className="flex flex-wrap items-center gap-2 bg-white dark:bg-zinc-900 p-2 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800">
             <Badge variant="outline" className="border-none font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-3 hidden sm:inline-flex">Compte Actif</Badge>
             
-            {pendingPaymentsCount > 0 && (
-                <Button asChild variant="ghost" size="sm" className="rounded-lg text-orange-600 font-black animate-pulse bg-orange-50 dark:bg-orange-950/20">
-                    <Link href="#orders-list">
-                        <Clock className="h-4 w-4 mr-2" /> 
-                        {pendingPaymentsCount} Paiement{pendingPaymentsCount > 1 ? 's' : ''} en attente
-                    </Link>
-                </Button>
-            )}
+            <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handlePendingClick}
+                className={cn(
+                    "rounded-lg font-black transition-all",
+                    pendingPaymentsCount > 0 
+                        ? "text-orange-600 animate-pulse bg-orange-50 dark:bg-orange-950/20" 
+                        : "text-gray-400"
+                )}
+            >
+                <Clock className="h-4 w-4 mr-2" /> 
+                Paiements en attente {pendingPaymentsCount > 0 && `(${pendingPaymentsCount})`}
+            </Button>
 
             <Button asChild variant="ghost" size="sm" className="rounded-lg text-primary font-black">
                 <Link href="/dashboard/gifts"><Gift className="h-4 w-4 mr-2" /> Mes Cadeaux</Link>
