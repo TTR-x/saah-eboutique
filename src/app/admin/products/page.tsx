@@ -21,6 +21,7 @@ import { deleteImageAction } from "@/lib/actions";
 import { db } from "@/lib/firebase";
 import { addDoc, collection, deleteDoc, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const productCategories = ['high-tech', 'beauté', 'maison', 'artisanat', 'mode', 'divers'];
 
@@ -368,7 +369,7 @@ export default function AdminProductsPage() {
         </Button>
       </div>
 
-      <Card className="rounded-2xl overflow-hidden border-none shadow-sm">
+      <Card className="rounded-xl overflow-hidden border-none shadow-sm">
         <CardHeader className="bg-white border-b">
             <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -388,7 +389,7 @@ export default function AdminProductsPage() {
               products.map((product) => (
                 <div key={product.id} className="flex items-center justify-between p-4 bg-white hover:bg-muted/30 transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className="relative h-16 w-16 rounded-xl overflow-hidden border bg-muted/50">
+                    <div className="relative h-16 w-16 rounded-lg overflow-hidden border bg-muted/50">
                         <Image src={product.images[0]} alt={product.name} fill className="object-cover" />
                     </div>
                     <div>
@@ -410,15 +411,15 @@ export default function AdminProductsPage() {
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted"><MoreHorizontal className="h-5 w-5" /></Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-xl border-none p-2">
-                            <DropdownMenuItem onClick={() => handleOpenEdit(product)} className="rounded-lg">
+                        <DropdownMenuContent align="end" className="w-48 rounded-lg shadow-xl border-none p-2">
+                            <DropdownMenuItem onClick={() => handleOpenEdit(product)} className="rounded-md">
                                 <Pencil className="mr-2 h-4 w-4" /> Modifier
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDuplicate(product)} className="rounded-lg">
+                            <DropdownMenuItem onClick={() => handleDuplicate(product)} className="rounded-md">
                                 <Copy className="mr-2 h-4 w-4" /> Dupliquer
                             </DropdownMenuItem>
                             <DropdownMenuSeparator className="my-2" />
-                            <DropdownMenuItem onClick={() => handleDelete(product)} className="text-destructive focus:bg-destructive/10 focus:text-destructive rounded-lg">
+                            <DropdownMenuItem onClick={() => handleDelete(product)} className="text-destructive focus:bg-destructive/10 focus:text-destructive rounded-md">
                                 <Trash2 className="mr-2 h-4 w-4" /> Supprimer
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -438,10 +439,10 @@ export default function AdminProductsPage() {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={(isOpen) => !isSubmitting && setIsDialogOpen(isOpen)}>
-        <DialogContent className="sm:max-w-[850px] max-h-[90vh] overflow-hidden flex flex-col p-0 border-none rounded-2xl shadow-2xl">
+        <DialogContent className="sm:max-w-[850px] max-h-[90vh] overflow-hidden flex flex-col p-0 border-none rounded-xl shadow-2xl">
           <DialogHeader className="p-6 border-b bg-white">
             <DialogTitle className="text-2xl font-black flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                     {editingProduct?.id ? <Pencil className="h-6 w-6" /> : <PlusCircle className="h-6 w-6" />}
                 </div>
                 {editingProduct?.id ? 'Modifier l\'article' : 'Publier un nouvel article'}
@@ -456,34 +457,34 @@ export default function AdminProductsPage() {
                 <h3 className="font-black text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                     <LayoutGrid className="h-4 w-4" /> Informations générales
                 </h3>
-                <Card className="p-6 border shadow-sm rounded-xl space-y-4">
+                <Card className="p-6 border shadow-sm rounded-lg space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="name" className="font-bold">Nom de l'article *</Label>
-                            <Input id="name" name="name" value={productForm.name} onChange={handleInputChange} placeholder="Ex: iPhone 15 Pro Max" className="h-12 rounded-lg" required />
+                            <Input id="name" name="name" value={productForm.name} onChange={handleInputChange} placeholder="Ex: iPhone 15 Pro Max" className="h-12 rounded-md" required />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="category" className="font-bold">Catégorie *</Label>
                             <Select value={productForm.category} onValueChange={handleCategoryChange}>
-                                <SelectTrigger className="h-12 rounded-lg"><SelectValue placeholder="Choisir" /></SelectTrigger>
-                                <SelectContent className="rounded-xl border-none shadow-xl">
-                                    {productCategories.map(cat => (<SelectItem key={cat} value={cat} className="rounded-lg">{cat.charAt(0).toUpperCase() + cat.slice(1)}</SelectItem>))}
+                                <SelectTrigger className="h-12 rounded-md"><SelectValue placeholder="Choisir" /></SelectTrigger>
+                                <SelectContent className="rounded-lg border-none shadow-xl">
+                                    {productCategories.map(cat => (<SelectItem key={cat} value={cat} className="rounded-md">{cat.charAt(0).toUpperCase() + cat.slice(1)}</SelectItem>))}
                                 </SelectContent>
                             </Select>
                         </div>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="description" className="font-bold">Description détaillée *</Label>
-                        <Textarea id="description" name="description" value={productForm.description} onChange={handleInputChange} placeholder="Détaillez les caractéristiques, tailles, couleurs..." className="min-h-[120px] rounded-lg" required />
+                        <Textarea id="description" name="description" value={productForm.description} onChange={handleInputChange} placeholder="Détaillez les caractéristiques, tailles, couleurs..." className="min-h-[120px] rounded-md" required />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="brand" className="font-bold">Marque / Fabricant</Label>
-                            <Input id="brand" name="brand" value={productForm.brand} onChange={handleInputChange} placeholder="Ex: Apple, Samsung..." className="h-12 rounded-lg" />
+                            <Input id="brand" name="brand" value={productForm.brand} onChange={handleInputChange} placeholder="Ex: Apple, Samsung..." className="h-12 rounded-md" />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="tags" className="font-bold flex items-center gap-2"><TagIcon className="h-3 w-3" /> Tags (séparés par des virgules)</Label>
-                            <Input id="tags" name="tags" value={productForm.tags} onChange={handleInputChange} placeholder="Ex: homme, mode, premium" className="h-12 rounded-lg" />
+                            <Input id="tags" name="tags" value={productForm.tags} onChange={handleInputChange} placeholder="Ex: homme, mode, premium" className="h-12 rounded-md" />
                         </div>
                     </div>
                 </Card>
@@ -494,14 +495,14 @@ export default function AdminProductsPage() {
                 <h3 className="font-black text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                     <Package className="h-4 w-4" /> Prix & Visibilité
                 </h3>
-                <Card className="p-6 border shadow-sm rounded-xl space-y-6">
+                <Card className="p-6 border shadow-sm rounded-lg space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="price" className="font-bold text-primary">Prix Cash (FCFA) *</Label>
-                            <Input id="price" name="price" type="number" value={productForm.price} onChange={handleNumberInputChange} className="h-12 rounded-lg bg-primary/5 border-primary/20 font-black text-lg text-primary" required />
+                            <Input id="price" name="price" type="number" value={productForm.price} onChange={handleNumberInputChange} className="h-12 rounded-md bg-primary/5 border-primary/20 font-black text-lg text-primary" required />
                         </div>
                         <div className="flex flex-col justify-end">
-                            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 h-12">
+                            <div className="flex items-center justify-between p-3 rounded-md bg-muted/30 h-12">
                                 <Label className="font-bold text-xs">Statut Visible sur le site</Label>
                                 <Switch checked={productForm.status === 'active'} onCheckedChange={(val) => setProductForm(p => ({...p, status: val ? 'active' : 'inactive'}))} />
                             </div>
@@ -521,7 +522,7 @@ export default function AdminProductsPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-6 border-l-4 border-primary animate-in slide-in-from-left duration-300">
                                 <div className="space-y-2">
                                     <Label className="font-bold text-sm">Frais de livraison (FCFA)</Label>
-                                    <Input name="deliveryFees" type="number" value={productForm.deliveryFees} onChange={handleNumberInputChange} placeholder="Ex: 1500" className="h-10 rounded-lg" />
+                                    <Input name="deliveryFees" type="number" value={productForm.deliveryFees} onChange={handleNumberInputChange} placeholder="Ex: 1500" className="h-10 rounded-md" />
                                 </div>
                             </div>
                         )}
@@ -536,7 +537,7 @@ export default function AdminProductsPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Paiement par tranches */}
-                    <Card className="p-6 border shadow-sm rounded-xl space-y-4">
+                    <Card className="p-6 border shadow-sm rounded-lg space-y-4">
                         <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
                                 <Label className="font-black text-base text-blue-600 flex items-center gap-2">
@@ -551,18 +552,18 @@ export default function AdminProductsPage() {
                             <div className="grid grid-cols-2 gap-4 pl-4 border-l-2 border-blue-500 animate-in zoom-in-95 duration-200">
                                 <div className="space-y-2">
                                     <Label className="text-xs font-bold">Mensualité (FCFA)</Label>
-                                    <Input name="installmentPrice" type="number" value={productForm.installmentPrice} onChange={handleNumberInputChange} className="h-10 rounded-lg font-bold" />
+                                    <Input name="installmentPrice" type="number" value={productForm.installmentPrice} onChange={handleNumberInputChange} className="h-10 rounded-md font-bold" />
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="text-xs font-bold">Nb de mois</Label>
-                                    <Input name="installmentMonths" type="number" value={productForm.installmentMonths} onChange={handleNumberInputChange} className="h-10 rounded-lg font-bold" />
+                                    <Input name="installmentMonths" type="number" value={productForm.installmentMonths} onChange={handleNumberInputChange} className="h-10 rounded-md font-bold" />
                                 </div>
                             </div>
                         )}
                     </Card>
 
                     {/* Plan Tontine */}
-                    <Card className="p-6 border shadow-sm rounded-xl space-y-4">
+                    <Card className="p-6 border shadow-sm rounded-lg space-y-4">
                         <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
                                 <Label className="font-black text-base text-green-600 flex items-center gap-2">
@@ -577,11 +578,11 @@ export default function AdminProductsPage() {
                             <div className="space-y-4 pl-4 border-l-2 border-green-500 animate-in zoom-in-95 duration-200">
                                 <div className="space-y-2">
                                     <Label className="text-xs font-bold">Durée du cycle (ex: 10 mois)</Label>
-                                    <Input name="tontineDuration" value={productForm.tontineDuration} onChange={handleInputChange} placeholder="Ex: 6 mois" className="h-10 rounded-lg font-bold" />
+                                    <Input name="tontineDuration" value={productForm.tontineDuration} onChange={handleInputChange} placeholder="Ex: 6 mois" className="h-10 rounded-md font-bold" />
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="text-xs font-bold">Somme par jour (FCFA)</Label>
-                                    <Input name="tontineDailyRate" type="number" value={productForm.tontineDailyRate} onChange={handleNumberInputChange} placeholder="Ex: 500" className="h-10 rounded-lg font-bold" />
+                                    <Input name="tontineDailyRate" type="number" value={productForm.tontineDailyRate} onChange={handleNumberInputChange} placeholder="Ex: 500" className="h-10 rounded-md font-bold" />
                                 </div>
                             </div>
                         )}
@@ -599,10 +600,10 @@ export default function AdminProductsPage() {
                         {currentTotalImages} / 3 images
                     </Badge>
                 </div>
-                <Card className="p-6 border shadow-sm rounded-xl">
+                <Card className="p-6 border shadow-sm rounded-lg">
                     <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
                         {currentTotalImages < 3 && (
-                            <div className="aspect-square border-2 border-dashed rounded-xl flex flex-col items-center justify-center hover:bg-primary/5 hover:border-primary transition-all cursor-pointer relative group overflow-hidden">
+                            <div className="aspect-square border-2 border-dashed rounded-lg flex flex-col items-center justify-center hover:bg-primary/5 hover:border-primary transition-all cursor-pointer relative group overflow-hidden">
                                 <Input id="images" name="images" type="file" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/*" multiple />
                                 <PlusCircle className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
                                 <span className="text-[10px] font-black mt-2 uppercase text-muted-foreground group-hover:text-primary">Ajouter</span>
@@ -610,7 +611,7 @@ export default function AdminProductsPage() {
                         )}
                         
                         {productForm.existingImages.map((image, index) => (
-                            <div key={`existing-${index}`} className="relative aspect-square rounded-xl overflow-hidden border shadow-sm group">
+                            <div key={`existing-${index}`} className="relative aspect-square rounded-lg overflow-hidden border shadow-sm group">
                                 <Image src={image} alt="" fill className="object-cover" />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <Button type="button" size="icon" variant="destructive" className="h-8 w-8 rounded-full" onClick={() => removeExistingImage(index)}>
@@ -621,7 +622,7 @@ export default function AdminProductsPage() {
                             </div>
                         ))}
                         {productForm.newImages.map((image, index) => (
-                            <div key={`new-${index}`} className="relative aspect-square rounded-xl overflow-hidden border-2 border-primary shadow-sm group">
+                            <div key={`new-${index}`} className="relative aspect-square rounded-lg overflow-hidden border-2 border-primary shadow-sm group">
                                 <Image src={image.previewUrl} alt="" fill className="object-cover" />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <Button type="button" size="icon" variant="destructive" className="h-8 w-8 rounded-full" onClick={() => removeNewImage(index)}>
@@ -642,8 +643,8 @@ export default function AdminProductsPage() {
             </div>
 
             <DialogFooter className="p-6 border-t bg-white sticky bottom-0 z-20 flex flex-row gap-3">
-              <Button type="button" variant="ghost" onClick={handleCloseDialog} disabled={isSubmitting} className="flex-1 rounded-xl font-bold h-14">Annuler</Button>
-              <Button type="submit" disabled={isSubmitting} className="flex-[2] rounded-xl h-14 font-black text-lg shadow-xl bg-primary text-black hover:bg-primary/90">
+              <Button type="button" variant="ghost" onClick={handleCloseDialog} disabled={isSubmitting} className="flex-1 rounded-lg font-bold h-14">Annuler</Button>
+              <Button type="submit" disabled={isSubmitting} className="flex-[2] rounded-lg h-14 font-black text-lg shadow-xl bg-primary text-black hover:bg-primary/90">
                 {isSubmitting ? <><LogoSpinner className="mr-2 h-5 w-5" /> {submissionStatus}</> : (editingProduct?.id ? 'Enregistrer les modifications' : 'Publier l\'article')}
               </Button>
             </DialogFooter>
