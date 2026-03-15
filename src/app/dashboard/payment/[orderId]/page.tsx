@@ -44,7 +44,7 @@ export default function OrderPaymentPage() {
     }
   }, [order]);
 
-  // Scroll automatique quand on choisit un mode de paiement
+  // Scroll automatique quand on choisit un mode de paiement (En Ligne ou Boutique)
   useEffect(() => {
     if (paymentType) {
       setTimeout(() => {
