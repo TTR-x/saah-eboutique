@@ -40,6 +40,9 @@ export type Order = {
   createdAt: any;
   isDelivery?: boolean;
   address?: string;
+  neighborhood?: string;
+  totalPrice?: number;
+  remainingAmount?: number;
 };
 
 export type UserProfile = {
