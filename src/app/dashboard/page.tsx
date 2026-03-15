@@ -73,7 +73,14 @@ export default function DashboardPage() {
 
   // Statistiques basées UNIQUEMENT sur les paiements validés
   const activeInstallments = validatedOrders.filter(o => (o.paymentMode === 'installments' || o.paymentMode === 'tontine') && o.status !== 'completed').length;
-  const totalValue = validatedOrders.reduce((acc, o) => acc + (o.totalPrice || o.amount), 0);
+  
+  // Correction : On calcule la somme REELLEMENT PAYÉE (Total - Reste) au lieu du prix total de l'article
+  const totalValue = validatedOrders.reduce((acc, o) => {
+    const totalPrice = o.totalPrice || o.amount;
+    const remaining = o.remainingAmount ?? totalPrice;
+    return acc + (totalPrice - remaining);
+  }, 0);
+
   const pendingPaymentsCount = pendingOrders.length;
 
   const handlePendingClick = () => {
