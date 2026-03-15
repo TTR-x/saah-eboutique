@@ -159,7 +159,7 @@ export default function DashboardPage() {
                                     </p>
                                 </div>
                                 <div className="rounded-lg font-black text-xs h-9 px-4 bg-orange-500 text-white flex items-center justify-center shrink-0 group-hover:bg-orange-600 transition-colors">
-                                    Détails & Paiement <ChevronRight className="h-3 w-3 ml-1" />
+                                    Statut <ChevronRight className="h-3 w-3 ml-1" />
                                 </div>
                             </CardContent>
                         </Card>
@@ -244,7 +244,7 @@ export default function DashboardPage() {
                                     ? "bg-orange-500 text-white" 
                                     : order.status === 'completed' ? "bg-gray-100 text-gray-600 border border-gray-200" : "bg-primary text-black"
                             )}>
-                                {isPendingVerif ? "Suivre ma validation" : order.status === 'completed' ? "Voir détails" : "Nouveau versement"} 
+                                {isPendingVerif ? "Statut" : order.status === 'completed' ? "Voir détails" : "Nouveau versement"} 
                                 <ChevronRight className="h-3 w-3 ml-1" />
                             </div>
                         </div>
