@@ -189,7 +189,7 @@ export default function InstallmentCheckoutPage() {
                 />
                 <div className="grid gap-0.5">
                     <Label htmlFor="isDelivery" className="font-black text-sm cursor-pointer">Je souhaite être livré</Label>
-                    <p className="text-[10px] font-bold text-primary uppercase">Frais: {product.deliveryFees ? `${product.deliveryFees.toLocaleString('fr-FR')} FCFA` : 'Gratuit'}</p>
+                    <p className="text-[10px] font-bold text-green-600 uppercase tracking-tight">Frais: {product.deliveryFees ? `${product.deliveryFees.toLocaleString('fr-FR')} FCFA` : 'Gratuit'}</p>
                 </div>
               </div>
 

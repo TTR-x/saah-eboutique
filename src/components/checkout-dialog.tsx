@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -310,7 +311,7 @@ Merci de valider ma commande.`;
                         className="h-12 rounded-sm border-gray-100 bg-white focus:ring-primary"
                         required 
                       />
-                      <p className="text-[10px] font-bold text-primary uppercase">Frais: {product.deliveryFees ? `${product.deliveryFees.toLocaleString('fr-FR')} FCFA` : 'Gratuit'}</p>
+                      <p className="text-[10px] font-bold text-green-600 uppercase tracking-tight">Frais: {product.deliveryFees ? `${product.deliveryFees.toLocaleString('fr-FR')} FCFA` : 'Gratuit'}</p>
                     </div>
                   )}
                 </div>
