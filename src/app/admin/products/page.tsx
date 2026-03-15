@@ -1,7 +1,7 @@
 
 'use client'
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -125,6 +125,57 @@ export default function AdminProductsPage() {
     }
   }, [editingProduct, isDialogOpen]);
 
+  // Handle Ctrl+V Paste
+  const handlePaste = useCallback((e: ClipboardEvent) => {
+    if (!isDialogOpen) return;
+    
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    const files: File[] = [];
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") !== -1) {
+        const file = items[i].getAsFile();
+        if (file) files.push(file);
+      }
+    }
+
+    if (files.length > 0) {
+      addFilesToForm(files);
+    }
+  }, [isDialogOpen, productForm.existingImages.length, productForm.newImages.length]);
+
+  useEffect(() => {
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [handlePaste]);
+
+  const addFilesToForm = (selectedFiles: File[]) => {
+    const currentTotal = productForm.existingImages.length + productForm.newImages.length;
+    const remainingSlots = 3 - currentTotal;
+    
+    if (remainingSlots <= 0) {
+      toast({ title: "Limite atteinte", description: "Vous ne pouvez pas ajouter plus de 3 images.", variant: "destructive" });
+      return;
+    }
+
+    const filesToAdd = selectedFiles.slice(0, remainingSlots);
+    
+    if (selectedFiles.length > remainingSlots) {
+      toast({ 
+        title: "Limite atteinte", 
+        description: `Seules les ${remainingSlots} premières images ont été ajoutées (Max 3).`,
+        variant: "destructive" 
+      });
+    }
+
+    const newImagePreviews = filesToAdd.map(file => ({
+      file,
+      previewUrl: URL.createObjectURL(file)
+    }));
+    setProductForm(prev => ({ ...prev, newImages: [...prev.newImages, ...newImagePreviews] }));
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setProductForm((prev) => ({ ...prev, [name]: value }));
@@ -141,30 +192,7 @@ export default function AdminProductsPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const currentTotal = productForm.existingImages.length + productForm.newImages.length;
-      const remainingSlots = 3 - currentTotal;
-      
-      if (remainingSlots <= 0) {
-        toast({ title: "Limite atteinte", description: "Vous ne pouvez pas ajouter plus de 3 images.", variant: "destructive" });
-        return;
-      }
-
-      const selectedFiles = Array.from(e.target.files);
-      const filesToAdd = selectedFiles.slice(0, remainingSlots);
-      
-      if (selectedFiles.length > remainingSlots) {
-        toast({ 
-          title: "Limite atteinte", 
-          description: `Seules les ${remainingSlots} premières images ont été ajoutées (Max 3).`,
-          variant: "destructive" 
-        });
-      }
-
-      const newImagePreviews = filesToAdd.map(file => ({
-        file,
-        previewUrl: URL.createObjectURL(file)
-      }));
-      setProductForm(prev => ({ ...prev, newImages: [...prev.newImages, ...newImagePreviews] }));
+      addFilesToForm(Array.from(e.target.files));
     }
   };
   
@@ -600,44 +628,53 @@ export default function AdminProductsPage() {
                         {currentTotalImages} / 3 images
                     </Badge>
                 </div>
-                <Card className="p-6 border shadow-sm rounded-lg">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                <Card className="p-4 border shadow-sm rounded-lg bg-muted/10">
+                    <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-hide min-h-[120px]">
+                        {/* BOUTON AJOUTER (TOUJOURS À GAUCHE) */}
                         {currentTotalImages < 3 && (
-                            <div className="aspect-square border-2 border-dashed rounded-lg flex flex-col items-center justify-center hover:bg-primary/5 hover:border-primary transition-all cursor-pointer relative group overflow-hidden">
+                            <div className="flex-shrink-0 w-28 h-28 border-2 border-dashed rounded-xl flex flex-col items-center justify-center hover:bg-primary/5 hover:border-primary transition-all cursor-pointer relative group overflow-hidden bg-white">
                                 <Input id="images" name="images" type="file" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/*" multiple />
-                                <PlusCircle className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
-                                <span className="text-[10px] font-black mt-2 uppercase text-muted-foreground group-hover:text-primary">Ajouter</span>
+                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2 group-hover:scale-110 transition-transform">
+                                    <PlusCircle className="h-6 w-6" />
+                                </div>
+                                <span className="text-[10px] font-black uppercase text-muted-foreground tracking-tighter">Ajouter</span>
                             </div>
                         )}
                         
-                        {productForm.existingImages.map((image, index) => (
-                            <div key={`existing-${index}`} className="relative aspect-square rounded-lg overflow-hidden border shadow-sm group">
-                                <Image src={image} alt="" fill className="object-cover" />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <Button type="button" size="icon" variant="destructive" className="h-8 w-8 rounded-full" onClick={() => removeExistingImage(index)}>
-                                        <X className="h-4 w-4" />
-                                    </Button>
+                        {/* LISTE DES IMAGES (À LA SUITE DU BOUTON) */}
+                        <div className="flex gap-4">
+                            {productForm.existingImages.map((image, index) => (
+                                <div key={`existing-${index}`} className="flex-shrink-0 relative w-28 h-28 rounded-xl overflow-hidden border shadow-sm group bg-white">
+                                    <Image src={image} alt="" fill className="object-cover" />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <Button type="button" size="icon" variant="destructive" className="h-8 w-8 rounded-full" onClick={() => removeExistingImage(index)}>
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    <span className="absolute top-1 left-1 bg-black/60 text-[8px] text-white px-1.5 py-0.5 rounded-full uppercase font-bold">Existant</span>
                                 </div>
-                                <span className="absolute top-1 left-1 bg-black/60 text-[8px] text-white px-1.5 py-0.5 rounded-full uppercase font-bold">Existant</span>
-                            </div>
-                        ))}
-                        {productForm.newImages.map((image, index) => (
-                            <div key={`new-${index}`} className="relative aspect-square rounded-lg overflow-hidden border-2 border-primary shadow-sm group">
-                                <Image src={image.previewUrl} alt="" fill className="object-cover" />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <Button type="button" size="icon" variant="destructive" className="h-8 w-8 rounded-full" onClick={() => removeNewImage(index)}>
-                                        <X className="h-4 w-4" />
-                                    </Button>
+                            ))}
+                            {productForm.newImages.map((image, index) => (
+                                <div key={`new-${index}`} className="flex-shrink-0 relative w-28 h-28 rounded-xl overflow-hidden border-2 border-primary shadow-sm group bg-white">
+                                    <Image src={image.previewUrl} alt="" fill className="object-cover" />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <Button type="button" size="icon" variant="destructive" className="h-8 w-8 rounded-full" onClick={() => removeNewImage(index)}>
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    <span className="absolute top-1 left-1 bg-primary text-[8px] text-black px-1.5 py-0.5 rounded-full uppercase font-bold">Nouveau</span>
                                 </div>
-                                <span className="absolute top-1 left-1 bg-primary text-[8px] text-black px-1.5 py-0.5 rounded-full uppercase font-bold">Nouveau</span>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
-                    {currentTotalImages >= 3 && (
-                        <p className="text-[10px] text-muted-foreground italic mt-4 flex items-center gap-1">
-                            <ImageIcon className="h-3 w-3" /> Limite de 3 images atteinte. Supprimez-en une pour en ajouter une nouvelle.
+                    <div className="mt-4 border-t border-dashed pt-3 flex items-center justify-between">
+                        <p className="text-[10px] text-muted-foreground font-medium italic flex items-center gap-1">
+                            <ImageIcon className="h-3 w-3" /> Astuce : Collez une image directement avec <strong>Ctrl + V</strong>
                         </p>
-                    )}
+                        {currentTotalImages >= 3 && (
+                            <p className="text-[10px] text-red-500 font-bold uppercase tracking-tighter">Limite atteinte (3/3)</p>
+                        )}
+                    </div>
                 </Card>
               </div>
             </div>
