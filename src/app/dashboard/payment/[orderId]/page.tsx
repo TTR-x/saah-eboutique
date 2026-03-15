@@ -330,30 +330,35 @@ Merci de valider mon paiement.`;
                     </CardHeader>
                     <CardContent className="p-8 space-y-8">
                         {/* SECTION ENREGISTREMENT PHOTO ARTICLE */}
-                        <div className="p-6 rounded-2xl border-2 border-primary/20 bg-primary/5 flex flex-col items-center gap-4">
-                            <div className="relative h-24 w-24 rounded-xl overflow-hidden border bg-white shadow-sm">
-                                <Image src={order.productImage} alt="" fill className="object-cover" />
-                            </div>
-                            <div className="text-center">
-                                <p className="font-black text-sm">{order.productName}</p>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase">Reste: {remainingAmount.toLocaleString('fr-FR')} F</p>
-                            </div>
-                            <Button 
-                                onClick={handleRegisterForStore}
-                                disabled={isRegistering || order.isStoreRegistered}
-                                className={cn(
-                                    "w-full h-12 rounded-xl font-black text-sm",
-                                    order.isStoreRegistered ? "bg-green-500 hover:bg-green-500" : "bg-black text-white"
-                                )}
-                            >
-                                {isRegistering ? <LogoSpinner /> : order.isStoreRegistered ? <><BookmarkCheck className="mr-2 h-5 w-5" /> Produit Enregistré</> : "Enregistrer le produit pour boutique"}
-                            </Button>
-                            {!order.isStoreRegistered && (
-                                <p className="text-[9px] font-bold text-muted-foreground uppercase text-center leading-tight">
-                                    Cliquez sur ce bouton pour que l'admin retrouve <br/> votre article instantanément en boutique.
-                                </p>
-                            )}
-                        </div>
+                        {!order.isStoreRegistered ? (
+                          <div className="p-6 rounded-2xl border-2 border-primary/20 bg-primary/5 flex flex-col items-center gap-4">
+                              <div className="relative h-24 w-24 rounded-xl overflow-hidden border bg-white shadow-sm">
+                                  <Image src={order.productImage} alt="" fill className="object-cover" />
+                              </div>
+                              <div className="text-center">
+                                  <p className="font-black text-sm">{order.productName}</p>
+                                  <p className="text-[10px] font-bold text-muted-foreground uppercase">Reste: {remainingAmount.toLocaleString('fr-FR')} F</p>
+                              </div>
+                              <Button 
+                                  onClick={handleRegisterForStore}
+                                  disabled={isRegistering}
+                                  className="w-full h-12 rounded-xl font-black text-sm bg-black text-white"
+                              >
+                                  {isRegistering ? <LogoSpinner /> : "Enregistrer le produit pour boutique"}
+                              </Button>
+                              <p className="text-[9px] font-bold text-muted-foreground uppercase text-center leading-tight">
+                                  Cliquez sur ce bouton pour que l'admin retrouve <br/> votre article instantanément en boutique.
+                              </p>
+                          </div>
+                        ) : (
+                          <div className="p-6 rounded-2xl bg-green-50 border-2 border-green-200 flex flex-col items-center gap-2">
+                              <div className="h-12 w-12 rounded-full bg-green-500 flex items-center justify-center text-white">
+                                  <BookmarkCheck className="h-6 w-6" />
+                              </div>
+                              <p className="font-black text-green-700 text-sm">Produit déjà enregistré</p>
+                              <p className="text-[10px] font-bold text-green-600 uppercase text-center">L'administrateur vous attend pour l'encaissement.</p>
+                          </div>
+                        )}
 
                         <div className="bg-muted/30 p-6 rounded-2xl text-center space-y-3 border border-dashed border-primary/30">
                             <p className="font-black text-gray-800 leading-tight text-xl">Nous sommes à 150m de l'échangeur d'agoè.</p>
