@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useDoc, useFirestore } from '@/firebase';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
@@ -23,6 +23,7 @@ export default function OrderPaymentPage() {
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
+  const paymentSectionRef = useRef<HTMLDivElement>(null);
   
   const orderRef = useMemo(() => {
     if (!db || !orderId) return null;
@@ -42,6 +43,15 @@ export default function OrderPaymentPage() {
       setCustomAmount(order.amount);
     }
   }, [order]);
+
+  // Scroll automatique quand on choisit un mode de paiement
+  useEffect(() => {
+    if (paymentType) {
+      setTimeout(() => {
+        paymentSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }, [paymentType]);
 
   const totalPrice = order?.totalPrice || order?.amount || 0;
   const remainingAmount = order?.remainingAmount ?? totalPrice;
@@ -295,79 +305,81 @@ Merci de valider mon paiement.`;
             </div>
         </div>
 
-        {paymentType === 'online' && (
-            <Card className="border-none shadow-2xl rounded-2xl overflow-hidden bg-white animate-in zoom-in-95 duration-300">
-                <CardHeader className="bg-primary p-8 text-black text-center">
-                    <div className="flex justify-center mb-4">
-                        <div className="bg-black/10 p-3 rounded-full"><Smartphone className="h-8 w-8" /></div>
-                    </div>
-                    <CardTitle className="text-3xl font-black tracking-tighter">92 39 20 62</CardTitle>
-                    <CardDescription className="text-black/70 font-bold uppercase text-xs tracking-widest mt-2">
-                        Envoyez <span className="text-black font-black underline">{customAmount.toLocaleString('fr-FR')} F</span> sur notre Tmoney
-                    </CardDescription>
-                    <Button variant="ghost" size="sm" onClick={() => handleCopy('92392062')} className="mt-4 bg-white/20 hover:bg-white/30 text-black font-black">
-                        Copier le numéro
-                    </Button>
-                </CardHeader>
-                <CardContent className="p-8 space-y-6">
-                    <div className="space-y-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="transferId" className="font-black text-[10px] uppercase text-muted-foreground ml-1">Numéro du transfert (ou ID de transaction) *</Label>
-                            <Input 
-                                id="transferId" 
-                                value={transferId} 
-                                onChange={e => setTransferId(e.target.value)}
-                                placeholder="Saisissez ici le numéro ou code reçu..." 
-                                className="h-14 rounded-xl border-2 border-gray-100 bg-gray-50 focus:ring-primary font-bold text-lg"
-                            />
+        <div ref={paymentSectionRef} className="scroll-mt-20">
+            {paymentType === 'online' && (
+                <Card className="border-none shadow-2xl rounded-2xl overflow-hidden bg-white animate-in zoom-in-95 duration-300">
+                    <CardHeader className="bg-primary p-8 text-black text-center">
+                        <div className="flex justify-center mb-4">
+                            <div className="bg-black/10 p-3 rounded-full"><Smartphone className="h-8 w-8" /></div>
                         </div>
-                        <Button 
-                            onClick={handleAlreadySent}
-                            disabled={!transferId || isSubmitting}
-                            className="w-full h-16 rounded-xl bg-black text-white hover:bg-gray-800 font-black text-xl shadow-xl transition-all"
-                        >
-                            {isSubmitting ? <LogoSpinner /> : <><CheckCircle2 className="mr-2 h-6 w-6" /> Valider mon paiement</>}
+                        <CardTitle className="text-3xl font-black tracking-tighter">92 39 20 62</CardTitle>
+                        <CardDescription className="text-black/70 font-bold uppercase text-xs tracking-widest mt-2">
+                            Envoyez <span className="text-black font-black underline">{customAmount.toLocaleString('fr-FR')} F</span> sur notre Tmoney
+                        </CardDescription>
+                        <Button variant="ghost" size="sm" onClick={() => handleCopy('92392062')} className="mt-4 bg-white/20 hover:bg-white/30 text-black font-black">
+                            Copier le numéro
                         </Button>
-                    </div>
-                </CardContent>
-            </Card>
-        )}
+                    </CardHeader>
+                    <CardContent className="p-8 space-y-6">
+                        <div className="space-y-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="transferId" className="font-black text-[10px] uppercase text-muted-foreground ml-1">Numéro du transfert (ou ID de transaction) *</Label>
+                                <Input 
+                                    id="transferId" 
+                                    value={transferId} 
+                                    onChange={e => setTransferId(e.target.value)}
+                                    placeholder="Saisissez ici le numéro ou code reçu..." 
+                                    className="h-14 rounded-xl border-2 border-gray-100 bg-gray-50 focus:ring-primary font-bold text-lg"
+                                />
+                            </div>
+                            <Button 
+                                onClick={handleAlreadySent}
+                                disabled={!transferId || isSubmitting}
+                                className="w-full h-16 rounded-xl bg-black text-white hover:bg-gray-800 font-black text-xl shadow-xl transition-all"
+                            >
+                                {isSubmitting ? <LogoSpinner /> : <><CheckCircle2 className="mr-2 h-6 w-6" /> Valider mon paiement</>}
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
-        {paymentType === 'store' && (
-            <Card className="border-none shadow-2xl rounded-2xl overflow-hidden bg-white animate-in slide-in-from-right-4 duration-300">
-                <CardHeader className="bg-primary p-8 text-black text-center">
-                    <div className="flex justify-center mb-4">
-                        <div className="bg-black/10 p-3 rounded-full"><MapPin className="h-8 w-8" /></div>
-                    </div>
-                    <CardTitle className="text-2xl font-black tracking-tight uppercase">Rendez-vous en boutique</CardTitle>
-                    <CardDescription className="text-black/70 font-bold uppercase text-xs tracking-widest mt-2">
-                        Agoè échangeur (Lomé)
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="p-8 space-y-6">
-                    <div className="bg-muted/30 p-6 rounded-2xl text-center space-y-3 border border-dashed border-primary/30">
-                        <p className="font-black text-gray-800 leading-tight text-xl">
-                            Nous sommes à 150m de l'échangeur d'agoè.
-                        </p>
-                        <p className="text-primary font-black uppercase text-sm tracking-widest animate-pulse">
-                            On se revoit tout de suite !
-                        </p>
-                    </div>
-                    <div className="grid gap-4">
-                        <Button asChild className="w-full h-16 rounded-xl bg-black text-white hover:bg-gray-800 font-black text-lg shadow-xl">
-                            <Link href="https://maps.app.goo.gl/HSZCvJGxY1CfpUNp8" target="_blank">
-                                <MapPin className="mr-2 h-6 w-6" /> Voir la localisation
-                            </Link>
-                        </Button>
-                        <Button asChild variant="outline" className="w-full h-16 rounded-xl border-2 border-gray-100 hover:border-primary font-black text-lg transition-all">
-                            <Link href={`https://wa.me/22890101392?text=${encodeURIComponent(`Bonjour, je souhaite passer en boutique pour un versement de ${customAmount} F pour l'article ${order.productName}`)}`} target="_blank">
-                                <MessageSquare className="mr-2 h-6 w-6 text-green-600" /> Écrivez-nous
-                            </Link>
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
-        )}
+            {paymentType === 'store' && (
+                <Card className="border-none shadow-2xl rounded-2xl overflow-hidden bg-white animate-in slide-in-from-right-4 duration-300">
+                    <CardHeader className="bg-primary p-8 text-black text-center">
+                        <div className="flex justify-center mb-4">
+                            <div className="bg-black/10 p-3 rounded-full"><MapPin className="h-8 w-8" /></div>
+                        </div>
+                        <CardTitle className="text-2xl font-black tracking-tight uppercase">Rendez-vous en boutique</CardTitle>
+                        <CardDescription className="text-black/70 font-bold uppercase text-xs tracking-widest mt-2">
+                            Agoè échangeur (Lomé)
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-8 space-y-6">
+                        <div className="bg-muted/30 p-6 rounded-2xl text-center space-y-3 border border-dashed border-primary/30">
+                            <p className="font-black text-gray-800 leading-tight text-xl">
+                                Nous sommes à 150m de l'échangeur d'agoè.
+                            </p>
+                            <p className="text-primary font-black uppercase text-sm tracking-widest animate-pulse">
+                                On se revoit tout de suite !
+                            </p>
+                        </div>
+                        <div className="grid gap-4">
+                            <Button asChild className="w-full h-16 rounded-xl bg-black text-white hover:bg-gray-800 font-black text-lg shadow-xl">
+                                <Link href="https://maps.app.goo.gl/HSZCvJGxY1CfpUNp8" target="_blank">
+                                    <MapPin className="mr-2 h-6 w-6" /> Voir la localisation
+                                </Link>
+                            </Button>
+                            <Button asChild variant="outline" className="w-full h-16 rounded-xl border-2 border-gray-100 hover:border-primary font-black text-lg transition-all">
+                                <Link href={`https://wa.me/22890101392?text=${encodeURIComponent(`Bonjour, je souhaite passer en boutique pour un versement de ${customAmount} F pour l'article ${order.productName}`)}`} target="_blank">
+                                    <MessageSquare className="mr-2 h-6 w-6 text-green-600" /> Écrivez-nous
+                                </Link>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+        </div>
 
         {/* SECTION HISTORIQUE */}
         {order.paymentHistory && order.paymentHistory.length > 0 && (
