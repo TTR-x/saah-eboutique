@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -183,7 +182,7 @@ Merci de valider mon paiement.`;
                     <div className="flex justify-center mb-4">
                         <div className="bg-black/10 p-3 rounded-full"><MapPin className="h-8 w-8" /></div>
                     </div>
-                    <CardTitle className="text-2xl font-black tracking-tight uppercase">Rendez-vous en agence</CardTitle>
+                    <CardTitle className="text-2xl font-black tracking-tight uppercase">Rendez-vous en boutique</CardTitle>
                     <CardDescription className="text-black/70 font-bold uppercase text-xs tracking-widest mt-2">
                         Agoè échangeur (Lomé)
                     </CardDescription>
