@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
@@ -207,6 +206,13 @@ Merci de valider mon paiement.`;
           <CardContent className="p-10 space-y-6">
             <h1 className="text-3xl font-black tracking-tight mb-2">Validation en attente</h1>
             <p className="text-muted-foreground font-medium">Nous vérifions votre versement Tmoney...</p>
+            
+            <div className="py-2">
+              <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 font-bold px-4 py-1.5 rounded-full text-xs">
+                Service de validation de 8h à 19h
+              </Badge>
+            </div>
+
             <div className="bg-muted/30 p-6 rounded-2xl border border-dashed border-orange-200">
               <p className="text-sm font-bold text-orange-700 mb-1">ID de transaction :</p>
               <code className="text-lg font-black tracking-widest">{order.transferId}</code>
@@ -315,9 +321,12 @@ Merci de valider mon paiement.`;
                     <CardContent className="p-8 space-y-6">
                         <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl flex gap-3 items-start">
                             <AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                            <p className="text-xs text-blue-800 font-medium leading-relaxed">
-                                Une fois le transfert effectué, veuillez saisir le <strong>numéro de transaction</strong> (ou l'ID de transfert) reçu par SMS ci-dessous.
-                            </p>
+                            <div className="space-y-1">
+                                <p className="text-xs text-blue-800 font-medium leading-relaxed">
+                                    Une fois le transfert effectué, veuillez saisir le <strong>numéro de transaction</strong> (ou l'ID de transfert) reçu par SMS ci-dessous.
+                                </p>
+                                <p className="text-[10px] font-bold text-blue-600 uppercase">Service de validation de 8h à 19h</p>
+                            </div>
                         </div>
                         <div className="space-y-4">
                             <div className="grid gap-2">
