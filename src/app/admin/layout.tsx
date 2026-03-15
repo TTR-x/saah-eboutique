@@ -25,6 +25,7 @@ import {
   Shield,
   Clock,
   Gift,
+  BarChart3,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Logo } from '@/components/layout/logo';
@@ -132,6 +133,14 @@ export default function AdminLayout({
                     <Link href="/admin">
                       <LayoutGrid />
                       Tableau de bord
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={pathname === '/admin/traffic'}>
+                    <Link href="/admin/traffic">
+                      <BarChart3 />
+                      Trafic
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
