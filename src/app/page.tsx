@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -102,11 +101,11 @@ export default function HomePage() {
                     <Input 
                         type="search" 
                         placeholder="Rechercher un article, une marque..." 
-                        className="pl-12 h-14 w-full rounded-xl border-2 border-primary/20 focus:border-primary shadow-sm bg-background font-medium"
+                        className="pl-12 h-14 w-full rounded-lg border-2 border-primary/20 focus:border-primary shadow-sm bg-background font-medium"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <button type="submit" className="absolute right-2 top-2 h-10 px-4 rounded-lg bg-primary text-black font-black hover:bg-primary/90 transition-colors">
+                    <button type="submit" className="absolute right-2 top-2 h-10 px-4 rounded-md bg-primary text-black font-black hover:bg-primary/90 transition-colors">
                         Trouver
                     </button>
                 </form>
@@ -114,7 +113,7 @@ export default function HomePage() {
                 {/* Carousel */}
                 {slides.length > 0 ? (
                     <Carousel 
-                        className="w-full rounded-xl overflow-hidden shadow-2xl border-none"
+                        className="w-full rounded-lg overflow-hidden shadow-2xl border-none"
                         plugins={[Autoplay({ delay: 5000 })]}
                     >
                         <CarouselContent>
@@ -134,7 +133,7 @@ export default function HomePage() {
                         <CarouselNext className="right-4 bg-white/20 text-white border-none hover:bg-white hover:text-black" />
                     </Carousel>
                 ) : (
-                    <div className="w-full aspect-[21/9] rounded-xl bg-muted animate-pulse flex items-center justify-center">
+                    <div className="w-full aspect-[21/9] rounded-lg bg-muted animate-pulse flex items-center justify-center">
                         <LogoSpinner className="h-10 w-10 text-primary" />
                     </div>
                 )}
@@ -150,7 +149,7 @@ export default function HomePage() {
           <section>
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-orange-500 flex items-center justify-center text-white"><Zap className="h-5 w-5" /></div>
+                    <div className="h-8 w-8 rounded-md bg-orange-500 flex items-center justify-center text-white"><Zap className="h-5 w-5" /></div>
                     <h2 className="text-2xl font-black">Nouveautés</h2>
                 </div>
                 <Link href="/products" className="text-primary font-black text-sm hover:underline flex items-center gap-1">Tout voir <ChevronRight className="h-4 w-4" /></Link>
@@ -167,7 +166,7 @@ export default function HomePage() {
           </section>
 
           {/* Banner: Surprise Mobile */}
-          <section className="lg:hidden relative rounded-xl overflow-hidden bg-black text-white p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
+          <section className="lg:hidden relative rounded-lg overflow-hidden bg-black text-white p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
             <div className="relative h-48 w-48 shrink-0">
                 <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
                 <Image 
@@ -184,7 +183,7 @@ export default function HomePage() {
                 <h2 className="text-3xl md:text-4xl font-black tracking-tight">Gagnez un cadeau incroyable !</h2>
                 <p className="text-gray-400 font-medium max-w-xl text-lg">Cliquez ci-dessous pour découvrir votre surprise et la réclamer dès maintenant.</p>
                 <div className="flex wrap gap-4 justify-center md:justify-start pt-4">
-                    <Button onClick={handleClaimGift} size="lg" className="rounded-xl h-14 bg-white text-black font-black hover:bg-gray-100">
+                    <Button onClick={handleClaimGift} size="lg" className="rounded-md h-14 bg-white text-black font-black hover:bg-gray-100">
                         Réclamer mon cadeau
                     </Button>
                 </div>
@@ -194,7 +193,7 @@ export default function HomePage() {
           <section>
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-blue-500 flex items-center justify-center text-white"><TrendingUp className="h-5 w-5" /></div>
+                    <div className="h-8 w-8 rounded-md bg-blue-500 flex items-center justify-center text-white"><TrendingUp className="h-5 w-5" /></div>
                     <h2 className="text-2xl font-black">Articles Tendances</h2>
                 </div>
                 <Link href="/products" className="text-primary font-black text-sm hover:underline flex items-center gap-1">Découvrir <ChevronRight className="h-4 w-4" /></Link>
@@ -218,7 +217,7 @@ export default function HomePage() {
         {/* Right Sidebar Sticky (Desktop Only) */}
         <aside className="hidden lg:block lg:col-span-1 relative">
           <div className="sticky top-24 space-y-8 h-fit">
-            <section className="relative rounded-xl overflow-hidden bg-black text-white p-8 flex flex-col items-center text-center gap-6 shadow-2xl">
+            <section className="relative rounded-lg overflow-hidden bg-black text-white p-8 flex flex-col items-center text-center gap-6 shadow-2xl">
                 <div className="relative h-40 w-40 shrink-0">
                     <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
                     <Image 
@@ -237,7 +236,7 @@ export default function HomePage() {
                     C'est votre jour de chance. Cliquez ici pour obtenir votre récompense spéciale SAAH Business.
                     </p>
                     <div className="flex flex-col gap-3 pt-4">
-                        <Button onClick={handleClaimGift} size="lg" className="rounded-xl h-12 bg-white text-black font-black hover:bg-gray-100 w-full">
+                        <Button onClick={handleClaimGift} size="lg" className="rounded-md h-12 bg-white text-black font-black hover:bg-gray-100 w-full">
                             Réclamer mon cadeau
                         </Button>
                     </div>
@@ -270,7 +269,7 @@ export default function HomePage() {
                   Notre mission est de rendre le shopping accessible à tous au Togo. Nous vous aidons à obtenir ce que vous voulez, même si vous n'avez pas tout l'argent tout de suite, grâce à des solutions de paiement souples et sécurisées.
                 </p>
               </div>
-              <div className="relative aspect-video rounded-2xl overflow-hidden shadow-xl border-4 border-white dark:border-zinc-800">
+              <div className="relative aspect-video rounded-lg overflow-hidden shadow-xl border-4 border-white dark:border-zinc-800">
                 <Image 
                   src="https://picsum.photos/seed/saah-concept/800/450" 
                   alt="Concept SAAH" 
@@ -291,8 +290,8 @@ export default function HomePage() {
               </div>
 
               <div className="grid md:grid-cols-3 gap-8">
-                <div className="group p-8 rounded-2xl bg-background border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
-                  <div className="h-14 w-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
+                <div className="group p-8 rounded-lg bg-background border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
+                  <div className="h-14 w-14 bg-primary/10 rounded-md flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
                     <Search className="h-7 w-7" />
                   </div>
                   <h3 className="font-black text-xl mb-3">1. Je choisis</h3>
@@ -301,8 +300,8 @@ export default function HomePage() {
                   </p>
                 </div>
 
-                <div className="group p-8 rounded-2xl bg-background border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
-                  <div className="h-14 w-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 mb-6 group-hover:scale-110 transition-transform">
+                <div className="group p-8 rounded-lg bg-background border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
+                  <div className="h-14 w-14 bg-blue-500/10 rounded-md flex items-center justify-center text-blue-500 mb-6 group-hover:scale-110 transition-transform">
                     <Wallet className="h-7 w-7" />
                   </div>
                   <h3 className="font-black text-xl mb-3">2. Je décide</h3>
@@ -311,8 +310,8 @@ export default function HomePage() {
                   </p>
                 </div>
 
-                <div className="group p-8 rounded-2xl bg-background border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
-                  <div className="h-14 w-14 bg-green-500/10 rounded-2xl flex items-center justify-center text-green-500 mb-6 group-hover:scale-110 transition-transform">
+                <div className="group p-8 rounded-lg bg-background border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
+                  <div className="h-14 w-14 bg-green-500/10 rounded-md flex items-center justify-center text-green-500 mb-6 group-hover:scale-110 transition-transform">
                     <MessageCircle className="h-7 w-7" />
                   </div>
                   <h3 className="font-black text-xl mb-3">3. Je valide</h3>

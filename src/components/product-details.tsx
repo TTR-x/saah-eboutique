@@ -65,7 +65,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
               <CarouselContent>
                 {product.images.map((img, index) => (
                   <CarouselItem key={index}>
-                    <div className="aspect-square relative rounded-2xl overflow-hidden bg-white border shadow-sm">
+                    <div className="aspect-square relative rounded-lg overflow-hidden bg-white border shadow-sm">
                       <Image
                         src={img}
                         alt={product.name}
@@ -88,14 +88,14 @@ export function ProductDetails({ product }: ProductDetailsProps) {
             
             {/* Badges de statut rapide */}
             <div className="flex flex-wrap gap-2 pt-2">
-                {product.isTontine && <Badge className="bg-green-600 text-white border-none font-black px-3 py-1 rounded-lg">PLAN TONTINE</Badge>}
-                {product.allowInstallments && <Badge className="bg-blue-600 text-white border-none font-black px-3 py-1 rounded-lg">TRANCHES DISPONIBLES</Badge>}
+                {product.isTontine && <Badge className="bg-green-600 text-white border-none font-black px-3 py-1 rounded-sm">PLAN TONTINE</Badge>}
+                {product.allowInstallments && <Badge className="bg-blue-600 text-white border-none font-black px-3 py-1 rounded-sm">TRANCHES DISPONIBLES</Badge>}
                 {product.allowDelivery ? (
-                    <Badge variant="outline" className="border-primary text-primary font-black px-3 py-1 rounded-lg flex items-center gap-1">
+                    <Badge variant="outline" className="border-primary text-primary font-black px-3 py-1 rounded-sm flex items-center gap-1">
                         <Truck className="h-3 w-3" /> LIVRAISON POSSIBLE
                     </Badge>
                 ) : (
-                    <Badge variant="outline" className="text-muted-foreground font-black px-3 py-1 rounded-lg">RETRAIT EN BOUTIQUE</Badge>
+                    <Badge variant="outline" className="text-muted-foreground font-black px-3 py-1 rounded-sm">RETRAIT EN BOUTIQUE</Badge>
                 )}
             </div>
           </div>
@@ -108,7 +108,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 <h1 className="text-3xl lg:text-4xl font-black leading-tight tracking-tight">{product.name}</h1>
               </div>
               
-              <div className="mt-8 p-6 rounded-2xl bg-card border shadow-sm">
+              <div className="mt-8 p-6 rounded-lg bg-card border shadow-sm">
                 <div className="flex flex-col gap-1">
                     <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Prix Total Cash</span>
                     <div className="flex items-baseline gap-2">
@@ -126,9 +126,9 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 
                 <div className="grid gap-3">
                     {/* Paiement Cash */}
-                    <div className="flex items-center justify-between p-4 rounded-xl border bg-background/50 group">
+                    <div className="flex items-center justify-between p-4 rounded-md border bg-background/50 group">
                         <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <div className="h-10 w-10 rounded-sm bg-primary/10 flex items-center justify-center text-primary">
                                 <Wallet className="h-5 w-5" />
                             </div>
                             <div>
@@ -141,9 +141,9 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
                     {/* Paiement par Tranches */}
                     {product.allowInstallments && (
-                        <div className="flex items-center justify-between p-4 rounded-xl border border-blue-100 bg-blue-50/30">
+                        <div className="flex items-center justify-between p-4 rounded-md border border-blue-100 bg-blue-50/30">
                             <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                                <div className="h-10 w-10 rounded-sm bg-blue-100 flex items-center justify-center text-blue-600">
                                     <CreditCard className="h-5 w-5" />
                                 </div>
                                 <div>
@@ -160,9 +160,9 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
                     {/* Plan Tontine */}
                     {product.isTontine && (
-                        <div className="flex items-center justify-between p-4 rounded-xl border border-green-100 bg-green-50/30">
+                        <div className="flex items-center justify-between p-4 rounded-md border border-green-100 bg-green-50/30">
                             <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center text-green-600">
+                                <div className="h-10 w-10 rounded-sm bg-green-100 flex items-center justify-center text-green-600">
                                     <Users className="h-5 w-5" />
                                 </div>
                                 <div>
@@ -182,7 +182,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
               {/* DESCRIPTION */}
               <div className="mt-10 space-y-4">
                 <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Description de l'article</h3>
-                <p className="text-muted-foreground leading-relaxed font-medium whitespace-pre-line bg-muted/20 p-6 rounded-2xl border border-dashed">
+                <p className="text-muted-foreground leading-relaxed font-medium whitespace-pre-line bg-muted/20 p-6 rounded-lg border border-dashed">
                     {product.description}
                 </p>
               </div>
@@ -192,7 +192,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
             <div className="mt-10 flex flex-col gap-4">
                 <Button 
                   size="lg" 
-                  className="w-full bg-primary text-black font-black h-16 text-xl rounded-xl hover:bg-primary/90 shadow-xl shadow-yellow-100 transition-all active:scale-[0.98]" 
+                  className="w-full bg-primary text-black font-black h-16 text-xl rounded-md hover:bg-primary/90 shadow-xl shadow-yellow-100 transition-all active:scale-[0.98]" 
                   onClick={() => setIsCheckoutOpen(true)}
                 >
                     Commander l'article
@@ -202,7 +202,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                         size="lg" 
                         variant="outline" 
                         className={cn(
-                            "rounded-xl font-bold h-12 transition-all",
+                            "rounded-md font-bold h-12 transition-all",
                             isAdded ? "bg-green-50 border-green-200 text-green-600" : "hover:bg-primary/5"
                         )} 
                         onClick={handleAddToCart}
@@ -210,7 +210,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                     >
                         {isAdded ? "Dans le panier" : "Ajouter au panier"}
                     </Button>
-                    <Button size="lg" variant="outline" className="rounded-xl font-bold h-12 gap-2 hover:bg-muted" onClick={() => {
+                    <Button size="lg" variant="outline" className="rounded-md font-bold h-12 gap-2 hover:bg-muted" onClick={() => {
                         navigator.clipboard.writeText(window.location.href);
                         toast({ title: "Lien copié !", description: "Vous pouvez maintenant le partager." });
                     }}>
@@ -221,11 +221,11 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
             {/* GARANTIES SAAH */}
             <div className="mt-12 border-t pt-8 grid grid-cols-2 gap-4">
-              <div className="flex flex-col items-center justify-center p-4 bg-muted/30 rounded-2xl border border-white text-center">
+              <div className="flex flex-col items-center justify-center p-4 bg-muted/30 rounded-lg border border-white text-center">
                 <CheckCircle className="h-6 w-6 text-green-500 mb-2"/> 
                 <span className="text-[10px] font-black uppercase tracking-widest">Produit Authentique</span>
               </div>
-              <div className="flex flex-col items-center justify-center p-4 bg-muted/30 rounded-2xl border border-white text-center">
+              <div className="flex flex-col items-center justify-center p-4 bg-muted/30 rounded-lg border border-white text-center">
                 <ShieldCheck className="h-6 w-6 text-primary mb-2"/> 
                 <span className="text-[10px] font-black uppercase tracking-widest">Garantie SAAH</span>
               </div>
@@ -245,7 +245,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 Nos conseillers SAAH Business sont à votre écoute pour vous aider à choisir le mode de paiement le plus adapté à votre budget.
             </p>
             <div className="pt-4">
-                <Button asChild variant="outline" size="lg" className="rounded-xl px-10 h-14 font-black border-2 border-primary text-primary hover:bg-primary hover:text-black transition-all">
+                <Button asChild variant="outline" size="lg" className="rounded-md px-10 h-14 font-black border-2 border-primary text-primary hover:bg-primary hover:text-black transition-all">
                     <Link href="/support">Contacter le service client</Link>
                 </Button>
             </div>

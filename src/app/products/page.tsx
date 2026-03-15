@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -40,12 +39,12 @@ const FiltersSidebar = ({
     <div>
       <Label htmlFor="category-select" className="text-base font-bold">Catégorie</Label>
       <Select value={filters.category} onValueChange={handleCategoryChange}>
-        <SelectTrigger id="category-select" className="w-full mt-2 h-11 rounded-xl">
+        <SelectTrigger id="category-select" className="w-full mt-2 h-11 rounded-md">
           <SelectValue placeholder="Choisir une catégorie" />
         </SelectTrigger>
-        <SelectContent className="rounded-xl border-none shadow-xl">
+        <SelectContent className="rounded-md border-none shadow-xl">
           {allCategories.map(cat => (
-            <SelectItem key={cat} value={cat} className="rounded-lg">{cat.charAt(0).toUpperCase() + cat.slice(1)}</SelectItem>
+            <SelectItem key={cat} value={cat} className="rounded-sm">{cat.charAt(0).toUpperCase() + cat.slice(1)}</SelectItem>
           ))}
         </SelectContent>
       </Select>
@@ -197,7 +196,7 @@ export default function ProductsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* FILTERS DESKTOP */}
         <aside className="hidden lg:block lg:col-span-1">
-            <div className="p-8 border border-gray-100 dark:border-zinc-800 rounded-2xl bg-card sticky top-24 shadow-sm">
+            <div className="p-8 border border-gray-100 dark:border-zinc-800 rounded-md bg-card sticky top-24 shadow-sm">
                 <h3 className="text-xl font-black mb-6 uppercase tracking-tight flex items-center gap-2">
                     <Filter className="h-5 w-5 text-primary" /> Filtres
                 </h3>
@@ -222,23 +221,23 @@ export default function ProductsPage() {
         {/* MAIN CONTENT */}
         <main className="lg:col-span-3 space-y-8">
           {/* SEARCH BAR (Like Home Page) */}
-          <section className="bg-card dark:bg-zinc-900 p-1 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-800">
+          <section className="bg-card dark:bg-zinc-900 p-1 rounded-md shadow-sm border border-gray-100 dark:border-zinc-800">
             <form onSubmit={(e) => e.preventDefault()} className="relative group w-full">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input 
                     type="search" 
                     placeholder="Rechercher un article, une marque..." 
-                    className="pl-12 h-14 w-full rounded-xl border-none focus:ring-0 shadow-none bg-transparent font-medium text-lg"
+                    className="pl-12 h-14 w-full rounded-md border-none focus:ring-0 shadow-none bg-transparent font-medium text-lg"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <Button type="button" className="absolute right-2 top-2 h-10 rounded-lg bg-primary text-black font-black hover:bg-primary/90 hidden sm:block">
+                <Button type="button" className="absolute right-2 top-2 h-10 rounded-sm bg-primary text-black font-black hover:bg-primary/90 hidden sm:block">
                     Trouver
                 </Button>
             </form>
           </section>
 
-          <div className="flex justify-between items-center bg-muted/30 p-3 rounded-xl">
+          <div className="flex justify-between items-center bg-muted/30 p-3 rounded-md">
             <p className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-2">
                 {filteredAndSortedProducts.length} articles disponibles
             </p>
@@ -246,12 +245,12 @@ export default function ProductsPage() {
             <div className="flex items-center gap-2">
                 <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                     <SheetTrigger asChild>
-                        <Button variant="outline" size="sm" className="lg:hidden rounded-lg font-bold">
+                        <Button variant="outline" size="sm" className="lg:hidden rounded-md font-bold">
                             <Filter className="mr-2 h-4 w-4" />
                             Filtrer
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="w-[300px] p-0 border-none rounded-r-2xl overflow-hidden">
+                    <SheetContent side="left" className="w-[300px] p-0 border-none rounded-r-md overflow-hidden">
                         <SheetHeader className="p-6 border-b">
                             <SheetTitle className="text-left font-black uppercase">Filtrer les articles</SheetTitle>
                         </SheetHeader>
@@ -269,7 +268,7 @@ export default function ProductsPage() {
                             />
                         </div>
                         <SheetFooter className="p-6 border-t mt-auto">
-                            <Button onClick={() => setIsSheetOpen(false)} className="w-full h-12 rounded-xl font-black bg-primary text-black">
+                            <Button onClick={() => setIsSheetOpen(false)} className="w-full h-12 rounded-md font-black bg-primary text-black">
                                 Appliquer
                             </Button>
                         </SheetFooter>
@@ -277,10 +276,10 @@ export default function ProductsPage() {
                 </Sheet>
 
                 <Select value={filters.sort} onValueChange={handleSortChange}>
-                    <SelectTrigger className="w-[160px] h-9 rounded-lg font-bold border-none bg-background shadow-sm text-xs">
+                    <SelectTrigger className="w-[160px] h-9 rounded-md font-bold border-none bg-background shadow-sm text-xs">
                         <SelectValue placeholder="Trier par" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl border-none shadow-xl">
+                    <SelectContent className="rounded-md border-none shadow-xl">
                         <SelectItem value="newest" className="text-xs font-medium">Nouveautés</SelectItem>
                         <SelectItem value="rating-desc" className="text-xs font-medium">Mieux notés</SelectItem>
                         <SelectItem value="price-asc" className="text-xs font-medium">Prix croissant</SelectItem>
@@ -303,7 +302,7 @@ export default function ProductsPage() {
                         <ProductCard key={product.id} product={product} />
                     ))
                 ) : (
-                    <div className="col-span-full py-20 text-center space-y-4 bg-muted/10 rounded-3xl border-2 border-dashed border-gray-100 dark:border-zinc-800">
+                    <div className="col-span-full py-20 text-center space-y-4 bg-muted/10 rounded-md border-2 border-dashed border-gray-100 dark:border-zinc-800">
                         <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center mx-auto">
                             <Search className="h-8 w-8 text-muted-foreground opacity-20" />
                         </div>

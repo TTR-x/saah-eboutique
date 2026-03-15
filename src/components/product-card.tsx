@@ -43,7 +43,7 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <Card className="flex flex-col h-full border border-gray-200 dark:border-zinc-800 shadow-sm rounded-xl overflow-hidden bg-card group transition-all hover:shadow-md">
+    <Card className="flex flex-col h-full border border-gray-200 dark:border-zinc-800 shadow-sm rounded-lg overflow-hidden bg-card group transition-all hover:shadow-md">
       <CardContent className="p-0">
         <Link href={`/products/${product.id}`} onClick={handleLinkClick} className="block relative aspect-square w-full overflow-hidden bg-muted/20">
           <Image
@@ -87,8 +87,8 @@ export function ProductCard({ product }: ProductCardProps) {
 
       <CardFooter className="p-2 sm:p-3 pt-0 flex flex-col gap-2 mt-auto">
         {product.allowInstallments && (
-          <div className="w-full bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-lg p-1.5 flex items-center gap-2">
-            <div className="bg-blue-600 p-1 rounded-md text-white">
+          <div className="w-full bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-md p-1.5 flex items-center gap-2">
+            <div className="bg-blue-600 p-1 rounded-sm text-white">
               <CreditCard className="h-3 w-3" />
             </div>
             <div className="flex flex-col">
@@ -105,7 +105,7 @@ export function ProductCard({ product }: ProductCardProps) {
             variant="outline" 
             size="icon"
             className={cn(
-              "rounded-lg transition-all h-9 w-9 sm:h-10 sm:w-10 shrink-0",
+              "rounded-md transition-all h-9 w-9 sm:h-10 sm:w-10 shrink-0",
               isAdded 
                 ? "bg-green-500 border-green-500 text-white hover:bg-green-600" 
                 : "border-gray-200 dark:border-zinc-700 text-foreground hover:bg-muted"
@@ -117,7 +117,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </Button>
           
           <Button 
-            className="flex-1 rounded-lg bg-primary text-black font-black h-9 sm:h-10 hover:bg-primary/90 text-[11px] sm:text-[13px] shadow-sm transition-all"
+            className="flex-1 rounded-md bg-primary text-black font-black h-9 sm:h-10 hover:bg-primary/90 text-[11px] sm:text-[13px] shadow-sm transition-all"
             onClick={() => setIsCheckoutOpen(true)}
           >
             Payer
