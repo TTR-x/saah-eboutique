@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Product } from '@/lib/types';
@@ -25,7 +25,6 @@ import { useCart } from '@/hooks/use-cart';
 import { useNavigation } from '@/hooks/use-navigation';
 import { CheckoutDialog } from './checkout-dialog';
 import { cn } from '@/lib/utils';
-import { useSearchParams } from 'next/navigation';
 
 interface ProductDetailsProps {
     product: Product;
@@ -35,20 +34,9 @@ export function ProductDetails({ product }: ProductDetailsProps) {
   const { toast } = useToast();
   const { addItem, items } = useCart();
   const { handleLinkClick } = useNavigation();
-  const searchParams = useSearchParams();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [initialMode, setInitialMode] = useState<'cash' | 'installments' | undefined>(undefined);
 
   const isAdded = items.some(item => item.id === product.id);
-
-  // Gérer l'ouverture automatique si on revient d'une inscription pour paiement par tranches
-  useEffect(() => {
-    const autoOpen = searchParams.get('autoOpen');
-    if (autoOpen === 'installments') {
-      setInitialMode('installments');
-      setIsCheckoutOpen(true);
-    }
-  }, [searchParams]);
 
   const handleAddToCart = () => {
     if (isAdded) return;
@@ -267,7 +255,6 @@ export function ProductDetails({ product }: ProductDetailsProps) {
           product={product} 
           open={isCheckoutOpen} 
           onOpenChange={setIsCheckoutOpen}
-          initialMode={initialMode}
         />
       </div>
   );

@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Product } from '@/lib/types';
-import { Wallet, Truck, User, CheckCircle2, ChevronLeft, ArrowRight, MessageSquare, FileEdit } from 'lucide-react';
+import { Wallet, Truck, User, CheckCircle2, ChevronLeft, ArrowRight, MessageSquare, FileEdit, CreditCard } from 'lucide-react';
 import { useUser, useFirestore } from '@/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -43,19 +43,28 @@ export function CheckoutDialog({ product, open, onOpenChange, initialMode }: Che
     address: '',
   });
 
-  // Gérer l'ouverture automatique suite à une redirection d'auth
   useEffect(() => {
     if (open && initialMode) {
-      setFormData(prev => ({ ...prev, paymentMode: initialMode }));
-      setStep('choice');
+      if (initialMode === 'installments') {
+          // Si on est censé ouvrir les tranches, on redirige vers la page dédiée
+          router.push(`/checkout/installments/${product.id}`);
+          onOpenChange(false);
+      } else {
+          setFormData(prev => ({ ...prev, paymentMode: initialMode }));
+          setStep('choice');
+      }
     }
-  }, [open, initialMode]);
+  }, [open, initialMode, product.id, router, onOpenChange]);
 
   const handleModeSelect = (mode: 'cash' | 'installments') => {
-    // Si c'est par tranche et que l'user n'est pas connecté, on redirige
-    if (mode === 'installments' && !user) {
-      const returnUrl = encodeURIComponent(`${window.location.pathname}?autoOpen=installments`);
-      router.push(`/signup?redirect=${returnUrl}`);
+    if (mode === 'installments') {
+      const checkoutUrl = `/checkout/installments/${product.id}`;
+      if (!user) {
+        router.push(`/signup?redirect=${encodeURIComponent(checkoutUrl)}`);
+      } else {
+        router.push(checkoutUrl);
+      }
+      onOpenChange(false);
       return;
     }
     setFormData({ ...formData, paymentMode: mode });
@@ -193,7 +202,7 @@ Merci de valider ma commande.`;
                     onClick={() => handleModeSelect('installments')}
                   >
                       <div className="h-12 w-12 rounded-sm bg-gray-100 group-hover:bg-blue-100 flex items-center justify-center text-gray-600 group-hover:text-blue-600 transition-colors">
-                        <Truck className="h-6 w-6" />
+                        <CreditCard className="h-6 w-6" />
                       </div>
                       <div className="flex-1">
                         <p className="font-black text-base">Par tranches</p>
