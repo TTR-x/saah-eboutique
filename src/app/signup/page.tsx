@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, Suspense } from 'react';
@@ -144,6 +145,21 @@ function SignupForm() {
   );
 }
 
+function SignupFooter() {
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect');
+  const loginUrl = redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : '/login';
+
+  return (
+    <div className="mt-8 text-center text-sm">
+      <span className="text-muted-foreground">Déjà inscrit ? </span>
+      <Link href={loginUrl} className="text-primary font-black hover:underline underline-offset-4">
+        Se connecter
+      </Link>
+    </div>
+  );
+}
+
 export default function SignupPage() {
   return (
     <div className="flex items-center justify-center py-12 px-4 min-h-screen bg-background">
@@ -157,13 +173,8 @@ export default function SignupPage() {
         <CardContent className="bg-card">
           <Suspense fallback={<div className="flex justify-center p-8"><LogoSpinner /></div>}>
             <SignupForm />
+            <SignupFooter />
           </Suspense>
-          <div className="mt-8 text-center text-sm">
-            <span className="text-muted-foreground">Déjà inscrit ? </span>
-            <Link href="/login" className="text-primary font-black hover:underline underline-offset-4">
-              Se connecter
-            </Link>
-          </div>
         </CardContent>
       </Card>
     </div>

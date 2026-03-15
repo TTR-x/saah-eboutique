@@ -1,3 +1,4 @@
+
 'use client'
 
 import Link from 'next/link';
@@ -97,6 +98,26 @@ function LoginForm() {
   );
 }
 
+function LoginFooter() {
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect');
+  const signupUrl = redirect ? `/signup?redirect=${encodeURIComponent(redirect)}` : '/signup';
+
+  return (
+    <div className="mt-6 text-center text-sm space-y-4">
+      <p className="text-muted-foreground">
+        Pas encore de compte ?{' '}
+        <Link href={signupUrl} className="text-primary font-bold hover:underline">
+          S'inscrire
+        </Link>
+      </p>
+      <Link href="/" className="block text-xs text-muted-foreground hover:text-primary transition-colors">
+        Retour au site
+      </Link>
+    </div>
+  );
+}
+
 export default function LoginPage() {
   return (
     <div className="flex items-center justify-center py-12 px-4 min-h-screen bg-background">
@@ -110,18 +131,8 @@ export default function LoginPage() {
         <CardContent>
           <Suspense fallback={<div className="flex justify-center p-8"><LogoSpinner /></div>}>
             <LoginForm />
+            <LoginFooter />
           </Suspense>
-          <div className="mt-6 text-center text-sm space-y-4">
-            <p className="text-muted-foreground">
-              Pas encore de compte ?{' '}
-              <Link href="/signup" className="text-primary font-bold hover:underline">
-                S'inscrire
-              </Link>
-            </p>
-            <Link href="/" className="block text-xs text-muted-foreground hover:text-primary transition-colors">
-              Retour au site
-            </Link>
-          </div>
         </CardContent>
       </Card>
     </div>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -46,20 +47,19 @@ export function CheckoutDialog({ product, open, onOpenChange, initialMode }: Che
   useEffect(() => {
     if (open && initialMode) {
       if (initialMode === 'installments') {
-          // Si on est censé ouvrir les tranches, on redirige vers la page dédiée
-          router.push(`/checkout/installments/${product.id}`);
-          onOpenChange(false);
+          handleModeSelect('installments');
       } else {
           setFormData(prev => ({ ...prev, paymentMode: initialMode }));
           setStep('choice');
       }
     }
-  }, [open, initialMode, product.id, router, onOpenChange]);
+  }, [open, initialMode]);
 
   const handleModeSelect = (mode: 'cash' | 'installments') => {
     if (mode === 'installments') {
       const checkoutUrl = `/checkout/installments/${product.id}`;
       if (!user) {
+        // Rediriger vers l'inscription avec l'URL de retour vers la nouvelle page de paiement dédiée
         router.push(`/signup?redirect=${encodeURIComponent(checkoutUrl)}`);
       } else {
         router.push(checkoutUrl);
