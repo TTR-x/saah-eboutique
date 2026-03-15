@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Product } from '@/lib/types';
-import { Wallet, Truck, User, CheckCircle2, ChevronLeft, ArrowRight, MessageSquare, FileEdit, CreditCard } from 'lucide-react';
+import { Wallet, Truck, User, CheckCircle2, ChevronLeft, ArrowRight, MessageSquare, FileEdit, CreditCard, Users } from 'lucide-react';
 import { useUser, useFirestore } from '@/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -25,7 +25,7 @@ interface CheckoutDialogProps {
   product: Product;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initialMode?: 'cash' | 'installments';
+  initialMode?: 'cash' | 'installments' | 'tontine';
 }
 
 type Step = 'payment' | 'choice' | 'details' | 'summary';
@@ -36,7 +36,7 @@ export function CheckoutDialog({ product, open, onOpenChange, initialMode }: Che
   const router = useRouter();
   const [step, setStep] = useState<Step>('payment');
   const [formData, setFormData] = useState({
-    paymentMode: 'cash' as 'cash' | 'installments',
+    paymentMode: 'cash' as 'cash' | 'installments' | 'tontine',
     name: '',
     phone: '',
     email: '',
@@ -46,8 +46,8 @@ export function CheckoutDialog({ product, open, onOpenChange, initialMode }: Che
 
   useEffect(() => {
     if (open && initialMode) {
-      if (initialMode === 'installments') {
-          handleModeSelect('installments');
+      if (initialMode === 'installments' || initialMode === 'tontine') {
+          handleModeSelect(initialMode);
       } else {
           setFormData(prev => ({ ...prev, paymentMode: initialMode }));
           setStep('choice');
@@ -55,9 +55,9 @@ export function CheckoutDialog({ product, open, onOpenChange, initialMode }: Che
     }
   }, [open, initialMode]);
 
-  const handleModeSelect = (mode: 'cash' | 'installments') => {
-    if (mode === 'installments') {
-      const checkoutUrl = `/checkout/installments/${product.id}`;
+  const handleModeSelect = (mode: 'cash' | 'installments' | 'tontine') => {
+    if (mode === 'installments' || mode === 'tontine') {
+      const checkoutUrl = `/checkout/${mode}/${product.id}`;
       if (!user) {
         router.push(`/signup?redirect=${encodeURIComponent(checkoutUrl)}`);
       } else {
@@ -104,9 +104,9 @@ export function CheckoutDialog({ product, open, onOpenChange, initialMode }: Che
 
   const handleDirectWhatsApp = () => {
     const phoneNumber = "22890101392";
-    const modeLabel = formData.paymentMode === 'cash' ? 'Paiement Cash' : 'Paiement par tranches';
+    const modeLabel = formData.paymentMode === 'cash' ? 'Paiement Cash' : (formData.paymentMode === 'installments' ? 'Paiement par tranches' : 'Plan Tontine');
     
-    const totalEstimate = formData.paymentMode === 'cash' ? product.price : (product.installmentPrice || 0);
+    const totalEstimate = formData.paymentMode === 'cash' ? product.price : (formData.paymentMode === 'installments' ? (product.installmentPrice || 0) : (product.tontineDailyRate || 0));
     saveOrderToFirestore(totalEstimate);
 
     const message = `Bonjour SAAH Business, je suis intéressé par l'article : *${product.name}*
@@ -122,15 +122,19 @@ Merci de m'indiquer la marche à suivre pour finaliser mon achat rapidement.`;
 
   const handleFinish = () => {
     const phoneNumber = "22890101392";
-    const modeLabel = formData.paymentMode === 'cash' ? 'Paiement Cash' : 'Paiement par tranches';
+    const modeLabel = formData.paymentMode === 'cash' ? 'Paiement Cash' : (formData.paymentMode === 'installments' ? 'Paiement par tranches' : 'Plan Tontine');
     
     const deliveryInfo = formData.isDelivery 
       ? `✅ Livraison demandée\n📍 Adresse: ${formData.address}\n🚚 Frais: ${product.deliveryFees || 0} FCFA`
       : `🏪 Retrait en boutique (Lomé, Deckon)`;
 
+    let baseAmount = product.price;
+    if (formData.paymentMode === 'installments') baseAmount = product.installmentPrice || 0;
+    if (formData.paymentMode === 'tontine') baseAmount = product.tontineDailyRate || 0;
+
     const totalToPay = formData.isDelivery && product.deliveryFees 
-      ? (formData.paymentMode === 'installments' ? (product.installmentPrice || 0) + product.deliveryFees : product.price + product.deliveryFees)
-      : (formData.paymentMode === 'installments' ? (product.installmentPrice || 0) : product.price);
+      ? baseAmount + product.deliveryFees
+      : baseAmount;
 
     saveOrderToFirestore(totalToPay);
 
@@ -139,6 +143,7 @@ Merci de m'indiquer la marche à suivre pour finaliser mon achat rapidement.`;
 *PRODUIT:* ${product.name}
 *MODE:* ${modeLabel}
 ${formData.paymentMode === 'installments' ? `💰 Mensualité: ${product.installmentPrice?.toLocaleString('fr-FR')} FCFA x ${product.installmentMonths} mois` : ''}
+${formData.paymentMode === 'tontine' ? `🤝 Cotisation: ${product.tontineDailyRate?.toLocaleString('fr-FR')} FCFA / jour\n📅 Durée: ${product.tontineDuration}` : ''}
 
 *CLIENT:*
 👤 ${formData.name}
@@ -211,6 +216,22 @@ Merci de valider ma commande.`;
                         <p className="text-xs text-muted-foreground">{product.installmentMonths} mois</p>
                       </div>
                       <div className="text-right font-black text-blue-600">{product.installmentPrice?.toLocaleString('fr-FR')} F/m</div>
+                  </div>
+                )}
+
+                {product.isTontine && (
+                  <div 
+                    className="group cursor-pointer border-2 rounded-md p-5 flex items-center gap-4 transition-all hover:border-green-500 hover:bg-green-50/50 border-gray-100 bg-white shadow-sm"
+                    onClick={() => handleModeSelect('tontine')}
+                  >
+                      <div className="h-12 w-12 rounded-sm bg-gray-100 group-hover:bg-green-100 flex items-center justify-center text-gray-600 group-hover:text-green-600 transition-colors">
+                        <Users className="h-6 w-6" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-black text-base">Plan Tontine</p>
+                        <p className="text-xs text-muted-foreground">{product.tontineDuration}</p>
+                      </div>
+                      <div className="text-right font-black text-green-600">{product.tontineDailyRate?.toLocaleString('fr-FR')} F/j</div>
                   </div>
                 )}
               </div>
@@ -315,14 +336,22 @@ Merci de valider ma commande.`;
                   </div>
                   <div className="text-right space-y-1">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase">Mode</p>
-                    <p className="font-black text-sm text-primary uppercase">{formData.paymentMode === 'cash' ? 'Cash' : 'Tranches'}</p>
+                    <p className="font-black text-sm text-primary uppercase">
+                        {formData.paymentMode === 'cash' ? 'Cash' : (formData.paymentMode === 'installments' ? 'Tranches' : 'Tontine')}
+                    </p>
                   </div>
                 </div>
 
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between font-medium">
                     <span className="text-muted-foreground">Prix article</span>
-                    <span>{(formData.paymentMode === 'installments' ? product.installmentPrice : product.price)?.toLocaleString('fr-FR')} F</span>
+                    <span>
+                        {formData.paymentMode === 'cash' 
+                            ? product.price.toLocaleString('fr-FR') 
+                            : (formData.paymentMode === 'installments' 
+                                ? product.installmentPrice?.toLocaleString('fr-FR') 
+                                : product.tontineDailyRate?.toLocaleString('fr-FR'))} F
+                    </span>
                   </div>
                   {formData.isDelivery && (
                     <div className="flex justify-between font-medium">
@@ -333,7 +362,11 @@ Merci de valider ma commande.`;
                   <div className="flex justify-between border-t border-gray-200 pt-3 mt-3">
                     <span className="font-black text-lg">TOTAL</span>
                     <span className="font-black text-xl text-primary">
-                      {((formData.paymentMode === 'installments' ? (product.installmentPrice || 0) : product.price) + (formData.isDelivery ? (product.deliveryFees || 0) : 0)).toLocaleString('fr-FR')} FCFA
+                      {((formData.paymentMode === 'cash' 
+                        ? product.price 
+                        : (formData.paymentMode === 'installments' 
+                            ? (product.installmentPrice || 0) 
+                            : (product.tontineDailyRate || 0))) + (formData.isDelivery ? (product.deliveryFees || 0) : 0)).toLocaleString('fr-FR')} FCFA
                     </span>
                   </div>
                 </div>
