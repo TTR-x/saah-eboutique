@@ -49,9 +49,7 @@ export default function DashboardPage() {
     });
   }, [rawOrders]);
 
-  // --- LOGIQUE DE FILTRAGE AMÉLIORÉE ET ROBUSTE ---
-  
-  // Un achat est "Confirmé" s'il a été validé au moins une fois par l'admin
+  // LOGIQUE DE FILTRAGE : Un article est confirmé s'il a été validé au moins une fois
   const confirmedOrders = useMemo(() => {
     return orders.filter(o => 
         o.status === 'completed' || 
@@ -60,34 +58,17 @@ export default function DashboardPage() {
     );
   }, [orders]);
 
-  // Une "Demande à finaliser" est une nouvelle intention qui n'a JAMAIS été validée
+  // Une intention est une demande qui n'a JAMAIS été validée
   const newIntentions = useMemo(() => {
     return orders.filter(o => 
-        o.status !== 'completed' && 
-        o.status !== 'validated' && 
-        o.status !== 'cancelled' &&
-        (!o.paymentHistory || o.paymentHistory.length === 0)
+        !(o.status === 'completed' || o.status === 'validated' || (o.paymentHistory && o.paymentHistory.length > 0)) &&
+        o.status !== 'cancelled'
     );
   }, [orders]);
 
   const pendingPaymentsCount = useMemo(() => {
     return orders.filter(o => o.status === 'payment_pending').length;
   }, [orders]);
-
-  // CALCUL DES STATS : Somme réelle de l'historique validé
-  const totalValuePaid = useMemo(() => {
-    return confirmedOrders.reduce((total, order: any) => {
-        const historySum = (order.paymentHistory || [])
-            .filter((h: any) => h.status === 'validated')
-            .reduce((sum: number, h: any) => sum + h.amount, 0);
-        
-        // Si le statut est validé mais que l'historique n'est pas encore là (latence), on peut utiliser totalPrice - remaining
-        const calculatedSum = Math.max(historySum, (order.totalPrice || 0) - (order.remainingAmount || 0));
-        return total + calculatedSum;
-    }, 0);
-  }, [confirmedOrders]);
-
-  const activePlansCount = confirmedOrders.filter(o => o.status !== 'completed').length;
 
   useEffect(() => {
     if (!authLoading && !user && mounted) {
@@ -107,7 +88,8 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl animate-in fade-in duration-500 pb-20">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      {/* HEADER PROFIL */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-12">
         <div className="flex items-center gap-4">
           <div className="h-16 w-16 rounded-2xl bg-primary flex items-center justify-center text-black shadow-lg shadow-yellow-100">
             <User className="h-8 w-8" />
@@ -131,8 +113,8 @@ export default function DashboardPage() {
                 )}
                 onClick={() => {
                     if (pendingPaymentsCount > 0) {
-                        document.getElementById('intentions-section')?.scrollIntoView({ behavior: 'smooth' });
-                        document.getElementById('confirmed-section')?.scrollIntoView({ behavior: 'smooth' });
+                        const el = document.getElementById('intentions-section') || document.getElementById('confirmed-section');
+                        el?.scrollIntoView({ behavior: 'smooth' });
                     } else {
                         toast({ title: "Information", description: "Aucun versement en attente de vérification." });
                     }
@@ -146,44 +128,6 @@ export default function DashboardPage() {
                 <Link href="/dashboard/gifts"><Gift className="h-4 w-4 mr-2" /> Mes Cadeaux</Link>
             </Button>
         </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3 mb-10">
-        <Card className="border-none shadow-sm rounded-2xl bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <ShoppingBag className="h-3 w-3 text-primary" /> Achats Confirmés
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-black">{confirmedOrders.length}</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Cycles en cours ou terminés</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-sm rounded-2xl bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <CreditCard className="h-3 w-3 text-blue-500" /> Valeur Validée
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-black text-blue-600">{totalValuePaid.toLocaleString('fr-FR')} F</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Argent réellement encaissé</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-sm rounded-2xl bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <Clock className="h-3 w-3 text-orange-500" /> Plans Actifs
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-black text-orange-500">{activePlansCount}</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Articles non encore finis</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* SECTION DES INTENTIONS : Uniquement les vrais nouveaux articles */}
@@ -300,7 +244,7 @@ export default function DashboardPage() {
                                     : "bg-primary text-black hover:bg-primary/90"
                             )}>
                                 <Link href={`/dashboard/payment/${order.id}`}>
-                                    {isPendingVerif ? "Suivre ma validation" : "Nouvel versement"} 
+                                    {isPendingVerif ? "Suivre ma validation" : "Nouveau versement"} 
                                     <ChevronRight className="h-3 w-3 ml-1" />
                                 </Link>
                             </Button>
