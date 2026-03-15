@@ -8,7 +8,7 @@ import type { Order } from '@/lib/types';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy, MapPin, Clock, RefreshCw, AlertCircle, Sparkles, History, Calendar, Edit3 } from 'lucide-react';
+import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy, MapPin, Clock, RefreshCw, AlertCircle, Sparkles, History, Calendar } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -36,7 +36,7 @@ export default function OrderPaymentPage() {
   const [customAmount, setCustomAmount] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialiser le montant personnalisé avec le montant suggéré de la commande
+  // Initialiser le montant avec le montant de la commande
   useEffect(() => {
     if (order && customAmount === 0) {
       setCustomAmount(order.amount);
@@ -54,21 +54,10 @@ export default function OrderPaymentPage() {
   const handleAlreadySent = async () => {
     if (!orderRef || !transferId || !order) return;
     
-    // Validation finale du montant
-    if (customAmount <= 0 || customAmount > remainingAmount) {
-        toast({ 
-            title: "Montant invalide", 
-            description: `Le versement doit être compris entre 1 et ${remainingAmount.toLocaleString('fr-FR')} F.`,
-            variant: "destructive"
-        });
-        return;
-    }
-
     setIsSubmitting(true);
     try {
       await updateDoc(orderRef, {
         transferId: transferId,
-        amount: customAmount, // On met à jour avec le montant réellement choisi
         status: 'payment_pending',
         updatedAt: serverTimestamp()
       });
@@ -254,8 +243,6 @@ Merci de valider mon paiement.`;
   }
 
   // --- ÉCRAN DE CHOIX INITIAL (PENDING) ---
-  const isAmountValid = customAmount > 0 && customAmount <= remainingAmount;
-
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       <div className="space-y-8">
@@ -279,21 +266,9 @@ Merci de valider mon paiement.`;
                 </div>
                 <div className="p-6 text-center space-y-2 bg-primary/5 flex flex-col justify-center items-center">
                     <p className="text-[10px] font-black text-primary uppercase tracking-widest">À payer aujourd'hui</p>
-                    <div className="relative group w-full max-w-[120px]">
-                        <Input 
-                            type="number"
-                            value={customAmount}
-                            onChange={(e) => setCustomAmount(Number(e.target.value))}
-                            className={cn(
-                                "h-10 text-center font-black text-xl bg-white border-2 focus:ring-0 rounded-lg",
-                                !isAmountValid ? "border-red-500 text-red-600" : "border-primary text-primary"
-                            )}
-                        />
-                        <Edit3 className="absolute -right-2 -top-2 h-4 w-4 text-primary bg-white rounded-full p-0.5 shadow-sm" />
+                    <div className="p-2 px-4 rounded-lg bg-white border-2 border-primary text-primary font-black text-xl">
+                        {customAmount.toLocaleString('fr-FR')} F
                     </div>
-                    {!isAmountValid && (
-                        <p className="text-[8px] font-bold text-red-500 uppercase">Max: {remainingAmount} F</p>
-                    )}
                 </div>
             </div>
         </Card>
@@ -302,9 +277,8 @@ Merci de valider mon paiement.`;
             <h3 className="text-sm font-black uppercase tracking-widest text-center text-muted-foreground">Comment souhaitez-vous régler ?</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button 
-                    disabled={!isAmountValid}
                     onClick={() => setPaymentType('online')}
-                    className={`flex flex-col items-center gap-4 p-8 rounded-2xl border-2 transition-all group ${!isAmountValid ? 'opacity-50 cursor-not-allowed' : ''} ${paymentType === 'online' ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
+                    className={`flex flex-col items-center gap-4 p-8 rounded-2xl border-2 transition-all group ${paymentType === 'online' ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
                 >
                     <div className={`h-16 w-16 rounded-2xl flex items-center justify-center transition-colors ${paymentType === 'online' ? 'bg-primary text-black' : 'bg-muted text-gray-400 group-hover:bg-gray-100'}`}>
                         <Smartphone className="h-8 w-8" />
@@ -316,9 +290,8 @@ Merci de valider mon paiement.`;
                 </button>
 
                 <button 
-                    disabled={!isAmountValid}
                     onClick={() => setPaymentType('store')}
-                    className={`flex flex-col items-center gap-4 p-8 rounded-2xl border-2 transition-all group ${!isAmountValid ? 'opacity-50 cursor-not-allowed' : ''} ${paymentType === 'store' ? 'border-black bg-black text-white' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
+                    className={`flex flex-col items-center gap-4 p-8 rounded-2xl border-2 transition-all group ${paymentType === 'store' ? 'border-black bg-black text-white' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
                 >
                     <div className={`h-16 w-16 rounded-2xl flex items-center justify-center transition-colors ${paymentType === 'store' ? 'bg-white/20 text-white' : 'bg-muted text-gray-400 group-hover:bg-gray-100'}`}>
                         <Store className="h-8 w-8" />
@@ -359,7 +332,7 @@ Merci de valider mon paiement.`;
                         </div>
                         <Button 
                             onClick={handleAlreadySent}
-                            disabled={!transferId || isSubmitting || !isAmountValid}
+                            disabled={!transferId || isSubmitting}
                             className="w-full h-16 rounded-xl bg-black text-white hover:bg-gray-800 font-black text-xl shadow-xl transition-all"
                         >
                             {isSubmitting ? <LogoSpinner /> : <><CheckCircle2 className="mr-2 h-6 w-6" /> Valider mon paiement</>}
