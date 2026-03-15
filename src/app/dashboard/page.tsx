@@ -5,7 +5,7 @@ import { useUser, useDoc, useFirestore, useCollection } from '@/firebase';
 import { doc, collection, query, where } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogoSpinner } from '@/components/logo-spinner';
-import { User, Package, Clock, CreditCard, ShoppingBag, ChevronRight, Gift, CheckCircle2 } from 'lucide-react';
+import { User, Package, Clock, CreditCard, ShoppingBag, ChevronRight, Gift, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
@@ -30,7 +30,7 @@ export default function DashboardPage() {
   const userRef = useMemo(() => (user ? doc(db, 'users', user.uid) : null), [db, user]);
   const { data: profile } = useDoc(userRef);
 
-  // Requête simplifiée (sans orderBy) pour éviter les erreurs d'index composite
+  // Récupération de toutes les commandes de l'utilisateur
   const ordersQuery = useMemo(() => {
     if (!db || !user) return null;
     return query(
@@ -41,7 +41,7 @@ export default function DashboardPage() {
 
   const { data: rawOrders, loading: ordersLoading } = useCollection(ordersQuery);
 
-  // Tri côté client pour plus de robustesse
+  // Tri et filtrage côté client
   const orders = useMemo(() => {
     if (!rawOrders) return [];
     return [...rawOrders].sort((a: any, b: any) => {
@@ -50,6 +50,10 @@ export default function DashboardPage() {
         return dateB.getTime() - dateA.getTime();
     });
   }, [rawOrders]);
+
+  // Filtres par statut
+  const validatedOrders = useMemo(() => orders.filter(o => o.status === 'validated' || o.status === 'completed'), [orders]);
+  const pendingOrders = useMemo(() => orders.filter(o => o.status === 'payment_pending' || o.status === 'pending' || o.status === 'rejected'), [orders]);
 
   useEffect(() => {
     if (!authLoading && !user && mounted) {
@@ -67,13 +71,14 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
-  const activeInstallments = orders.filter(o => (o.paymentMode === 'installments' || o.paymentMode === 'tontine') && o.status !== 'completed').length;
-  const pendingPaymentsCount = orders.filter(o => o.status === 'payment_pending').length;
-  const totalValue = orders.reduce((acc, o) => acc + (o.totalPrice || o.amount), 0);
+  // Statistiques basées UNIQUEMENT sur les paiements validés
+  const activeInstallments = validatedOrders.filter(o => (o.paymentMode === 'installments' || o.paymentMode === 'tontine') && o.status !== 'completed').length;
+  const totalValue = validatedOrders.reduce((acc, o) => acc + (o.totalPrice || o.amount), 0);
+  const pendingPaymentsCount = pendingOrders.length;
 
   const handlePendingClick = () => {
     if (pendingPaymentsCount > 0) {
-        const el = document.getElementById('orders-list');
+        const el = document.getElementById('pending-section');
         if (el) el.scrollIntoView({ behavior: 'smooth' });
     } else {
         toast({
@@ -94,12 +99,10 @@ export default function DashboardPage() {
             <h1 className="text-3xl font-black tracking-tight">
               {profile?.displayName || user.displayName || 'Client SAAH'}
             </h1>
-            <p className="text-muted-foreground text-sm font-medium">UID: <span className="font-mono text-xs opacity-50">{user.uid.slice(0, 8)}...</span></p>
+            <p className="text-muted-foreground text-sm font-medium">Compte Client</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 bg-white dark:bg-zinc-900 p-2 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800">
-            <Badge variant="outline" className="border-none font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-3 hidden sm:inline-flex">Compte Actif</Badge>
-            
             <Button 
                 variant="ghost" 
                 size="sm" 
@@ -125,24 +128,24 @@ export default function DashboardPage() {
         <Card className="border-none shadow-sm rounded-2xl bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <ShoppingBag className="h-3 w-3 text-primary" /> Achats
+              <ShoppingBag className="h-3 w-3 text-primary" /> Achats Validés
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black">{orders.length}</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Articles commandés</p>
+            <div className="text-3xl font-black">{validatedOrders.length}</div>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Articles confirmés</p>
           </CardContent>
         </Card>
 
         <Card className="border-none shadow-sm rounded-2xl bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <CreditCard className="h-3 w-3 text-blue-500" /> Valeur Totale
+              <CreditCard className="h-3 w-3 text-blue-500" /> Valeur Validée
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-black text-blue-600">{totalValue.toLocaleString('fr-FR')} F</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Engagé sur la plateforme</p>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Somme totale payée</p>
           </CardContent>
         </Card>
 
@@ -159,27 +162,62 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <h2 id="orders-list" className="text-xl font-black mb-4 flex items-center gap-2 scroll-mt-20">
-        <Package className="h-5 w-5 text-primary" /> Mes Commandes & Suivi
+      {/* SECTION DES ATTENTES (Visible si existantes ou si on clique sur le bouton) */}
+      {pendingOrders.length > 0 && (
+        <div id="pending-section" className="mb-12 scroll-mt-24">
+            <h2 className="text-xl font-black mb-4 flex items-center gap-2 text-orange-600">
+                <Clock className="h-5 w-5" /> Mes demandes à finaliser ({pendingOrders.length})
+            </h2>
+            <div className="grid gap-4">
+                {pendingOrders.map((order: any) => (
+                    <Card key={order.id} className="border-none shadow-sm rounded-2xl bg-orange-50/50 border-orange-100 overflow-hidden hover:shadow-md transition-all">
+                        <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                            <div className="relative h-14 w-14 rounded-xl overflow-hidden bg-white border shrink-0 mx-auto sm:mx-0">
+                                {order.productImage && <Image src={order.productImage} alt="" fill className="object-cover" sizes="56px" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-start">
+                                    <h3 className="font-bold text-sm truncate">{order.productName}</h3>
+                                    <Badge className={cn(
+                                        "font-black uppercase text-[8px] px-2 h-4",
+                                        order.status === 'payment_pending' ? 'bg-orange-500 text-white animate-pulse' : 
+                                        order.status === 'rejected' ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600'
+                                    )}>
+                                        {order.status === 'payment_pending' ? 'En vérification' : order.status === 'rejected' ? 'Refusé' : 'À régler'}
+                                    </Badge>
+                                </div>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1">
+                                    Mode: {order.paymentMode === 'installments' ? 'Tranches' : order.paymentMode === 'tontine' ? 'Tontine' : 'Cash'} • {order.amount.toLocaleString('fr-FR')} F
+                                </p>
+                            </div>
+                            <Button asChild size="sm" className="rounded-lg font-black text-xs h-9 bg-orange-500 hover:bg-orange-600 text-white">
+                                <Link href={`/dashboard/payment/${order.id}`}>Finaliser / Suivre <ChevronRight className="h-3 w-3 ml-1" /></Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        </div>
+      )}
+
+      {/* SECTION PRINCIPALE : UNIQUEMENT LES VALIDES */}
+      <h2 className="text-xl font-black mb-4 flex items-center gap-2">
+        <CheckCircle2 className="h-5 w-5 text-green-600" /> Mes Achats & Plans Validés
       </h2>
 
       {ordersLoading ? (
         <div className="flex justify-center py-12">
             <LogoSpinner className="h-8 w-8 text-primary" />
         </div>
-      ) : orders.length > 0 ? (
+      ) : validatedOrders.length > 0 ? (
         <div className="grid gap-4">
-          {orders.map((order: any) => {
+          {validatedOrders.map((order: any) => {
             const totalPrice = order.totalPrice || order.amount;
             const remaining = order.remainingAmount ?? totalPrice;
             const progress = ((totalPrice - remaining) / totalPrice) * 100;
-            const isWaitingValidation = order.status === 'payment_pending';
 
             return (
-              <Card key={order.id} className={cn(
-                "border-none shadow-sm rounded-2xl bg-card overflow-hidden hover:shadow-md transition-all group",
-                isWaitingValidation && "ring-2 ring-primary/20"
-              )}>
+              <Card key={order.id} className="border-none shadow-sm rounded-2xl bg-card overflow-hidden hover:shadow-md transition-all group">
                 <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
                   <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-gray-50 dark:bg-zinc-800 border shrink-0 mx-auto sm:mx-0">
                     {order.productImage ? (
@@ -196,17 +234,9 @@ export default function DashboardPage() {
                       <h3 className="font-black text-sm sm:text-base truncate pr-2">{order.productName}</h3>
                       <Badge className={cn(
                           "font-bold uppercase text-[9px] px-2 h-5",
-                          order.status === 'completed' ? 'bg-green-500 text-white' : 
-                          order.status === 'validated' ? 'bg-blue-500 text-white' : 
-                          order.status === 'payment_pending' ? 'bg-primary text-black animate-pulse' :
-                          order.status === 'rejected' ? 'bg-red-500 text-white' :
-                          'bg-gray-100 text-gray-600 border-none'
+                          order.status === 'completed' ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
                       )}>
-                          {order.status === 'pending' ? 'À régler' : 
-                           order.status === 'payment_pending' ? 'En vérification' :
-                           order.status === 'validated' ? 'Actif' :
-                           order.status === 'rejected' ? 'Refusé' :
-                           order.status}
+                          {order.status === 'completed' ? 'Terminé ✅' : 'Actif ⚡'}
                       </Badge>
                     </div>
                     
@@ -230,20 +260,14 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="flex items-center justify-center sm:justify-end gap-2 shrink-0">
-                    {order.status !== 'completed' && (
-                        <Button asChild size="sm" className={cn(
-                            "rounded-lg font-black text-xs px-4 h-9 shadow-sm transition-all active:scale-95",
-                            isWaitingValidation ? "bg-primary text-black" : "bg-primary text-black hover:bg-primary/90"
-                        )}>
-                            <Link href={`/dashboard/payment/${order.id}`}>
-                                {order.status === 'payment_pending' ? 'Suivre validation' : 'Effectuer versement'} <ChevronRight className="h-3 w-3 ml-1" />
-                            </Link>
+                    {order.status !== 'completed' ? (
+                        <Button asChild size="sm" className="rounded-lg font-black text-xs px-4 h-9 shadow-sm bg-primary text-black hover:bg-primary/90">
+                            <Link href={`/dashboard/payment/${order.id}`}>Effectuer versement <ChevronRight className="h-3 w-3 ml-1" /></Link>
                         </Button>
-                    )}
-                    {order.status === 'completed' && (
+                    ) : (
                         <div className="flex items-center gap-2 bg-green-50 text-green-600 px-3 py-1.5 rounded-lg border border-green-100">
                             <CheckCircle2 className="h-4 w-4" />
-                            <span className="text-[10px] font-black uppercase">Terminé</span>
+                            <span className="text-[10px] font-black uppercase">Remis / Terminé</span>
                         </div>
                     )}
                   </div>
@@ -255,11 +279,11 @@ export default function DashboardPage() {
       ) : (
         <div className="bg-card rounded-2xl p-12 text-center border-2 border-dashed border-gray-100 dark:border-zinc-800">
           <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-            <Package className="h-10 w-10 text-gray-300" />
+            <CheckCircle2 className="h-10 w-10 text-gray-300" />
           </div>
-          <h3 className="font-black text-xl">Aucune commande</h3>
+          <h3 className="font-black text-xl">Aucun achat validé</h3>
           <p className="text-muted-foreground max-w-sm mx-auto mt-2 text-sm">
-            Vos intentions d'achat apparaîtront ici.
+            Vos articles apparaîtront ici une fois que votre premier versement sera confirmé par SAAH Business.
           </p>
           <Button asChild className="mt-6 rounded-xl font-bold bg-primary text-black" size="lg">
             <Link href="/products">Découvrir le catalogue</Link>
