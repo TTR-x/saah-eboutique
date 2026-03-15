@@ -2,7 +2,7 @@
 'use client';
 
 import { useUser, useDoc, useFirestore, useCollection } from '@/firebase';
-import { doc, collection, query, where, orderBy } from 'firebase/firestore';
+import { doc, collection, query, where } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { User, Package, Clock, CreditCard, ShoppingBag, ChevronRight, Gift, CheckCircle2 } from 'lucide-react';
@@ -30,16 +30,26 @@ export default function DashboardPage() {
   const userRef = useMemo(() => (user ? doc(db, 'users', user.uid) : null), [db, user]);
   const { data: profile } = useDoc(userRef);
 
+  // Requête simplifiée (sans orderBy) pour éviter les erreurs d'index composite
   const ordersQuery = useMemo(() => {
     if (!db || !user) return null;
     return query(
       collection(db, 'orders'),
-      where('userId', '==', user.uid),
-      orderBy('createdAt', 'desc')
+      where('userId', '==', user.uid)
     );
   }, [db, user]);
 
-  const { data: orders, loading: ordersLoading } = useCollection(ordersQuery);
+  const { data: rawOrders, loading: ordersLoading } = useCollection(ordersQuery);
+
+  // Tri côté client pour plus de robustesse
+  const orders = useMemo(() => {
+    if (!rawOrders) return [];
+    return [...rawOrders].sort((a: any, b: any) => {
+        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+        return dateB.getTime() - dateA.getTime();
+    });
+  }, [rawOrders]);
 
   useEffect(() => {
     if (!authLoading && !user && mounted) {
@@ -57,9 +67,9 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
-  const activeInstallments = orders?.filter(o => (o.paymentMode === 'installments' || o.paymentMode === 'tontine') && o.status !== 'completed').length || 0;
-  const pendingPaymentsCount = orders?.filter(o => o.status === 'payment_pending').length || 0;
-  const totalValue = orders?.reduce((acc, o) => acc + (o.totalPrice || o.amount), 0) || 0;
+  const activeInstallments = orders.filter(o => (o.paymentMode === 'installments' || o.paymentMode === 'tontine') && o.status !== 'completed').length;
+  const pendingPaymentsCount = orders.filter(o => o.status === 'payment_pending').length;
+  const totalValue = orders.reduce((acc, o) => acc + (o.totalPrice || o.amount), 0);
 
   const handlePendingClick = () => {
     if (pendingPaymentsCount > 0) {
@@ -97,8 +107,8 @@ export default function DashboardPage() {
                 className={cn(
                     "rounded-lg font-black transition-all",
                     pendingPaymentsCount > 0 
-                        ? "text-orange-600 animate-pulse bg-orange-50 dark:bg-orange-950/20" 
-                        : "text-gray-400"
+                        ? "bg-primary text-black animate-pulse shadow-md" 
+                        : "text-gray-400 bg-muted/50"
                 )}
             >
                 <Clock className="h-4 w-4 mr-2" /> 
@@ -119,7 +129,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black">{orders?.length || 0}</div>
+            <div className="text-3xl font-black">{orders.length}</div>
             <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Articles commandés</p>
           </CardContent>
         </Card>
@@ -157,7 +167,7 @@ export default function DashboardPage() {
         <div className="flex justify-center py-12">
             <LogoSpinner className="h-8 w-8 text-primary" />
         </div>
-      ) : orders && orders.length > 0 ? (
+      ) : orders.length > 0 ? (
         <div className="grid gap-4">
           {orders.map((order: any) => {
             const totalPrice = order.totalPrice || order.amount;
@@ -168,7 +178,7 @@ export default function DashboardPage() {
             return (
               <Card key={order.id} className={cn(
                 "border-none shadow-sm rounded-2xl bg-card overflow-hidden hover:shadow-md transition-all group",
-                isWaitingValidation && "ring-2 ring-orange-100 dark:ring-orange-900/20"
+                isWaitingValidation && "ring-2 ring-primary/20"
               )}>
                 <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
                   <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-gray-50 dark:bg-zinc-800 border shrink-0 mx-auto sm:mx-0">
@@ -188,7 +198,7 @@ export default function DashboardPage() {
                           "font-bold uppercase text-[9px] px-2 h-5",
                           order.status === 'completed' ? 'bg-green-500 text-white' : 
                           order.status === 'validated' ? 'bg-blue-500 text-white' : 
-                          order.status === 'payment_pending' ? 'bg-orange-500 text-white animate-pulse' :
+                          order.status === 'payment_pending' ? 'bg-primary text-black animate-pulse' :
                           order.status === 'rejected' ? 'bg-red-500 text-white' :
                           'bg-gray-100 text-gray-600 border-none'
                       )}>
@@ -223,7 +233,7 @@ export default function DashboardPage() {
                     {order.status !== 'completed' && (
                         <Button asChild size="sm" className={cn(
                             "rounded-lg font-black text-xs px-4 h-9 shadow-sm transition-all active:scale-95",
-                            isWaitingValidation ? "bg-orange-500 hover:bg-orange-600 text-white" : "bg-primary text-black hover:bg-primary/90"
+                            isWaitingValidation ? "bg-primary text-black" : "bg-primary text-black hover:bg-primary/90"
                         )}>
                             <Link href={`/dashboard/payment/${order.id}`}>
                                 {order.status === 'payment_pending' ? 'Suivre validation' : 'Effectuer versement'} <ChevronRight className="h-3 w-3 ml-1" />
