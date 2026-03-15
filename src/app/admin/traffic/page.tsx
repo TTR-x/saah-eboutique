@@ -41,7 +41,9 @@ function StatCard({ title, value, subtext, icon, trend, isLoading }: { title: st
             </CardHeader>
             <CardContent>
                 {isLoading ? (
-                    <LogoSpinner className="h-6 w-6 text-primary/30" />
+                    <div className="h-8 flex items-center">
+                        <LogoSpinner className="h-5 w-5 text-primary/30" />
+                    </div>
                 ) : (
                     <>
                         <div className="text-2xl font-black">{value}</div>
@@ -59,20 +61,24 @@ function StatCard({ title, value, subtext, icon, trend, isLoading }: { title: st
 export default function AdminTrafficPage() {
     const db = useFirestore();
     
-    // Données réelles pour piloter les stats
-    const { data: users, loading: loadingUsers } = useCollection<UserProfile>(collection(db, 'users'));
-    const { data: orders, loading: loadingOrders } = useCollection<Order>(collection(db, 'orders'));
-    const { data: messages, loading: loadingMessages } = useCollection<ContactMessage>(collection(db, 'contact-messages'));
-    const { data: imports, loading: loadingImports } = useCollection<ImportOrder>(collection(db, 'import-orders'));
+    // Mémoïsation des références pour éviter le clignotement (re-renders infinis)
+    const usersQuery = useMemo(() => collection(db, 'users'), [db]);
+    const ordersQuery = useMemo(() => collection(db, 'orders'), [db]);
+    const messagesQuery = useMemo(() => collection(db, 'contact-messages'), [db]);
+    const importsQuery = useMemo(() => collection(db, 'import-orders'), [db]);
+
+    const { data: users, loading: loadingUsers } = useCollection<UserProfile>(usersQuery);
+    const { data: orders, loading: loadingOrders } = useCollection<Order>(ordersQuery);
+    const { data: messages, loading: loadingMessages } = useCollection<ContactMessage>(messagesQuery);
+    const { data: imports, loading: loadingImports } = useCollection<ImportOrder>(importsQuery);
 
     const isLoading = loadingUsers || loadingOrders || loadingMessages || loadingImports;
 
     // Calculs basés sur la réalité
     const totalUsers = users?.length || 0;
     const totalInteractions = (orders?.length || 0) + (messages?.length || 0) + (imports?.length || 0);
-    const estimatedPageViews = totalUsers * 12 + totalInteractions * 5; // Estimation basée sur l'activité
+    const estimatedPageViews = totalUsers * 12 + totalInteractions * 5; 
 
-    // Simulation de données de graphiques basées sur le volume réel
     const visitData = useMemo(() => {
         const base = totalUsers > 0 ? totalUsers : 10;
         return [
