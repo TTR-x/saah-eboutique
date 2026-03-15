@@ -2,12 +2,11 @@
 'use client'
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { MessageSquare, ShoppingBag, Users, BadgeEuro, TrendingUp, Clock, MessageCircle, CreditCard, CalendarDays } from "lucide-react";
+import { MessageSquare, ShoppingBag, Users, BadgeEuro, TrendingUp, Clock, MessageCircle, CreditCard, CalendarDays, Wallet } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import { getProducts } from "@/lib/products-service";
 import { getMessages } from "@/lib/messages-service";
 import { getImportOrders } from "@/lib/import-orders-service";
-import { getAllOrders } from "@/lib/orders-service";
 import type { Product, ContactMessage, ImportOrder, Order } from "@/lib/types";
 import { LogoSpinner } from "@/components/logo-spinner";
 import Link from "next/link";
@@ -16,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { subHours, subDays, subMonths, isAfter } from "date-fns";
+import { useFirestore, useCollection } from "@/firebase";
+import { collection, query, orderBy } from "firebase/firestore";
 
 function StatCard({ title, value, icon, isLoading, subtext, colorClass = "text-primary" }: { title: string, value: string | number, icon: React.ReactNode, isLoading: boolean, subtext?: string, colorClass?: string }) {
     return (
@@ -35,35 +36,41 @@ function StatCard({ title, value, icon, isLoading, subtext, colorClass = "text-p
 }
 
 export default function AdminDashboardPage() {
+    const db = useFirestore();
     const [products, setProducts] = useState<Product[]>([]);
     const [messages, setMessages] = useState<ContactMessage[]>([]);
     const [importOrders, setImportOrders] = useState<ImportOrder[]>([]);
-    const [sales, setSales] = useState<Order[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    
+    // Requête en temps réel pour les commandes
+    const ordersQuery = useMemo(() => query(collection(db, 'orders'), orderBy('createdAt', 'desc')), [db]);
+    const { data: salesData, loading: salesLoading } = useCollection<Order>(ordersQuery);
+    
+    const [isLoadingStatic, setIsLoadingStatic] = useState(true);
     const [timeFilter, setTimeFilter] = useState('all');
 
     useEffect(() => {
         const fetchData = async () => {
-            setIsLoading(true);
+            setIsLoadingStatic(true);
             try {
-                const [productsData, messagesData, importsData, salesData] = await Promise.all([
+                const [productsData, messagesData, importsData] = await Promise.all([
                     getProducts(),
                     getMessages(),
-                    getImportOrders(),
-                    getAllOrders()
+                    getImportOrders()
                 ]);
                 setProducts(productsData);
                 setMessages(messagesData);
                 setImportOrders(importsData);
-                setSales(salesData);
             } catch (error) {
                 console.error("Failed to fetch dashboard data:", error);
             } finally {
-                setIsLoading(false);
+                setIsLoadingStatic(false);
             }
         };
         fetchData();
     }, []);
+
+    const sales = salesData || [];
+    const isLoading = isLoadingStatic || salesLoading;
 
     const filteredSales = useMemo(() => {
         if (timeFilter === 'all') return sales;
@@ -99,6 +106,10 @@ export default function AdminDashboardPage() {
     const validatedTranchesCount = filteredSales.filter(s => s.paymentMode === 'installments' && (s.status === 'validated' || s.status === 'completed')).length;
     const validatedTontinesCount = filteredSales.filter(s => s.paymentMode === 'tontine' && (s.status === 'validated' || s.status === 'completed')).length;
 
+    // Calcul des ventes en attente pour la nouvelle zone (respecte le filtre temporel)
+    const pendingCashCount = filteredSales.filter(s => s.status === 'pending' && s.paymentMode === 'cash').length;
+    const pendingOthersCount = filteredSales.filter(s => s.status === 'pending' && (s.paymentMode === 'installments' || s.paymentMode === 'tontine')).length;
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -132,6 +143,35 @@ export default function AdminDashboardPage() {
         
         <StatCard title="Par tranche validé" value={validatedTranchesCount} icon={<CreditCard className="h-4 w-4" />} isLoading={isLoading} subtext="Tranches" colorClass="text-blue-500" />
         <StatCard title="Tontine validé" value={validatedTontinesCount} icon={<Users className="h-4 w-4" />} isLoading={isLoading} subtext="Tontines" colorClass="text-purple-500" />
+      </div>
+
+      {/* ZONE VENTES EN ATTENTE TEMPS RÉEL (DETAILLÉE) */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="bg-orange-50 dark:bg-orange-950/10 border border-orange-200 dark:border-orange-900/30 rounded-md p-5 flex items-center gap-4 transition-all hover:shadow-sm">
+            <div className="h-12 w-12 rounded-md bg-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-100 dark:shadow-none">
+                <Wallet className="h-6 w-6" />
+            </div>
+            <div>
+                <p className="text-[10px] font-black uppercase text-orange-600 dark:text-orange-400 tracking-widest leading-none mb-1">Ventes Cash en attente</p>
+                <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-black text-orange-700 dark:text-orange-300">{pendingCashCount}</span>
+                    <span className="text-xs font-bold text-orange-600/70 uppercase">Commandes</span>
+                </div>
+            </div>
+        </div>
+
+        <div className="bg-blue-50 dark:bg-blue-950/10 border border-blue-200 dark:border-blue-900/30 rounded-md p-5 flex items-center gap-4 transition-all hover:shadow-sm">
+            <div className="h-12 w-12 rounded-md bg-blue-500 flex items-center justify-center text-white shadow-lg shadow-blue-100 dark:shadow-none">
+                <CreditCard className="h-6 w-6" />
+            </div>
+            <div>
+                <p className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 tracking-widest leading-none mb-1">Ventes Tranche / Tontine en attente</p>
+                <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-black text-blue-700 dark:text-blue-300">{pendingOthersCount}</span>
+                    <span className="text-xs font-bold text-blue-600/70 uppercase">Commandes</span>
+                </div>
+            </div>
+        </div>
       </div>
       
       <div className="mt-8 grid gap-8 md:grid-cols-3">
