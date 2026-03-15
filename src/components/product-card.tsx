@@ -51,6 +51,7 @@ export function ProductCard({ product }: ProductCardProps) {
             alt={product.name}
             fill
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 768px) 50vw, 33vw"
           />
           
           <div className="absolute top-1 left-1 sm:top-2 sm:left-2 flex flex-col gap-1">

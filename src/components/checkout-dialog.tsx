@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,7 +59,6 @@ export function CheckoutDialog({ product, open, onOpenChange, initialMode }: Che
     if (mode === 'installments') {
       const checkoutUrl = `/checkout/installments/${product.id}`;
       if (!user) {
-        // Rediriger vers l'inscription avec l'URL de retour vers la nouvelle page de paiement dédiée
         router.push(`/signup?redirect=${encodeURIComponent(checkoutUrl)}`);
       } else {
         router.push(checkoutUrl);
@@ -176,6 +175,9 @@ Merci de valider ma commande.`;
             {step === 'details' && <><div className="h-8 w-8 rounded-sm bg-primary/10 flex items-center justify-center text-primary"><User className="h-5 w-5" /></div> Vos informations</>}
             {step === 'summary' && <><div className="h-8 w-8 rounded-sm bg-green-500/10 flex items-center justify-center text-green-500"><CheckCircle2 className="h-5 w-5" /></div> Résumé</>}
           </DialogTitle>
+          <DialogDescription className="text-xs font-medium text-muted-foreground">
+            Suivez les étapes pour finaliser votre commande de {product.name}.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="p-6">

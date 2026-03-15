@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useRouter, useParams } from 'next/navigation';
@@ -21,7 +21,12 @@ export default function InstallmentCheckoutPage() {
   const router = useRouter();
   const { productId } = useParams();
   
-  const productRef = productId ? doc(db, 'products', productId as string) : null;
+  // Correction : Mémoïser la référence pour éviter les boucles de rendu infinies
+  const productRef = useMemo(() => {
+    if (!db || !productId) return null;
+    return doc(db, 'products', productId as string);
+  }, [db, productId]);
+
   const { data: product, loading: productLoading } = useDoc<Product>(productRef as any);
 
   const [phone, setPhone] = useState('');
@@ -126,7 +131,7 @@ Merci de me contacter pour la validation finale.`;
             <CardContent className="p-0">
               <div className="flex flex-col sm:flex-row gap-6 p-6 border-b">
                 <div className="relative h-32 w-32 rounded-xl overflow-hidden border bg-white shrink-0 shadow-sm">
-                  <Image src={product.images[0]} alt={product.name} fill className="object-contain p-2" />
+                  <Image src={product.images[0]} alt={product.name} fill className="object-contain p-2" sizes="128px" />
                 </div>
                 <div className="flex-1 space-y-2">
                   <h2 className="font-black text-xl leading-tight">{product.name}</h2>
