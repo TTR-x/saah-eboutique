@@ -3,7 +3,7 @@
 
 import { useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { CreditCard, CheckCircle2, XCircle, Smartphone, MessageCircle, User } from "lucide-react";
+import { CreditCard, CheckCircle2, XCircle, Smartphone, MessageCircle } from "lucide-react";
 import type { Order } from "@/lib/types";
 import { LogoSpinner } from "@/components/logo-spinner";
 import { Badge } from "@/components/ui/badge";
@@ -50,7 +50,7 @@ export default function AdminPaymentsPage() {
       const newRemaining = Math.max(0, currentRemaining - amountPaid);
       const isFinished = newRemaining <= 0;
 
-      // 1. Créer la COPIE du paiement (Historique indépendant)
+      // 1. Créer la COPIE du paiement dans l'espace DÉDIÉ du client (Sous-collection historique)
       const paymentCopy = {
         orderId: order.id,
         userId: order.userId,
@@ -64,16 +64,15 @@ export default function AdminPaymentsPage() {
         status: 'validated'
       };
 
-      await addDoc(collection(db, 'payments'), paymentCopy);
+      await addDoc(collection(db, 'users', order.userId, 'payments'), paymentCopy);
 
-      // 2. Mettre à jour l'ordre principal (Compteurs)
+      // 2. Mettre à jour l'ordre principal (Le client voit son reste à payer baisser immédiatement)
       await updateDoc(orderRef, {
         status: isFinished ? 'completed' : 'validated',
         remainingAmount: newRemaining,
         totalPrice: totalPrice,
         paymentValidatedAt: serverTimestamp(),
         lastPaymentValidatedAt: serverTimestamp(),
-        // On garde arrayUnion en backup mais la source de vérité sera la collection 'payments'
         paymentHistory: arrayUnion({
             amount: amountPaid,
             date: Timestamp.now(),
@@ -84,7 +83,7 @@ export default function AdminPaymentsPage() {
       
       toast({ 
         title: "Paiement validé", 
-        description: `La copie du paiement a été archivée. Reste : ${newRemaining.toLocaleString('fr-FR')} F` 
+        description: `Copie archivée chez le client. Reste : ${newRemaining.toLocaleString('fr-FR')} F` 
       });
     } catch (error) {
       console.error("Validation error:", error);
@@ -111,7 +110,7 @@ export default function AdminPaymentsPage() {
       <div className="flex justify-between items-center">
         <div>
             <h2 className="text-3xl font-extrabold tracking-tight">Validation des Paiements</h2>
-            <p className="text-muted-foreground">Vérifiez les transferts Tmoney et archivez les copies.</p>
+            <p className="text-muted-foreground">Vérifiez les transferts et envoyez une copie certifiée aux clients.</p>
         </div>
         <div className="h-12 px-6 rounded-xl bg-white border flex items-center gap-3 shadow-sm">
             <Smartphone className="h-5 w-5 text-primary" />

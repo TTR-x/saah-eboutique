@@ -2,7 +2,7 @@
 'use client';
 
 import { useUser, useFirestore, useCollection } from '@/firebase';
-import { collection, query, where, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { Card, CardContent } from '@/components/ui/card';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { History, ArrowLeft, Calendar, BadgeEuro, CreditCard, Users, CheckCircle2 } from 'lucide-react';
@@ -24,12 +24,11 @@ export default function GlobalHistoryPage() {
     setMounted(true);
   }, []);
 
-  // Lecture des copies de paiements (Système robuste)
+  // Lecture des copies de paiements certifiées (Sous-collection de l'utilisateur)
   const paymentsQuery = useMemo(() => {
     if (!db || !user) return null;
     return query(
-      collection(db, 'payments'),
-      where('userId', '==', user.uid),
+      collection(db, 'users', user.uid, 'payments'),
       orderBy('date', 'desc')
     );
   }, [db, user]);
@@ -64,9 +63,9 @@ export default function GlobalHistoryPage() {
 
       <div className="flex flex-col gap-2 mb-10">
         <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-          <History className="h-8 w-8 text-primary" /> Historique des Copies
+          <History className="h-8 w-8 text-primary" /> Copies Certifiées
         </h1>
-        <p className="text-muted-foreground font-medium">Chaque ligne ci-dessous est une copie certifiée de vos versements.</p>
+        <p className="text-muted-foreground font-medium">Retrouvez ici toutes les preuves de vos versements validés.</p>
       </div>
 
       {paymentsLoading ? (
@@ -76,9 +75,9 @@ export default function GlobalHistoryPage() {
       ) : payments && payments.length > 0 ? (
         <div className="space-y-4">
           {payments.map((tx, idx) => {
-            const txDate = tx.date?.toDate ? tx.date.toDate() : new Date();
+            const txDate = tx.date?.toDate ? tx.date.toDate() : (tx.date ? new Date(tx.date) : new Date());
             return (
-              <Card key={tx.id || idx} className="border-none shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-all bg-card">
+              <Card key={tx.id || idx} className="border-none shadow-sm rounded-2xl overflow-hidden bg-card">
                 <CardContent className="p-5 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <div className={cn(
@@ -107,7 +106,7 @@ export default function GlobalHistoryPage() {
                   <div className="text-right shrink-0">
                     <p className="text-lg font-black text-primary">{tx.amount.toLocaleString('fr-FR')} F</p>
                     <div className="flex items-center justify-end gap-1 text-[9px] font-bold text-green-600 uppercase">
-                      <CheckCircle2 className="h-3 w-3" /> Validé
+                      <CheckCircle2 className="h-3 w-3" /> Archivé
                     </div>
                   </div>
                 </CardContent>
@@ -118,9 +117,9 @@ export default function GlobalHistoryPage() {
       ) : (
         <div className="bg-card rounded-3xl p-16 text-center border-2 border-dashed border-gray-100">
           <History className="h-16 w-16 text-gray-200 mx-auto mb-4" />
-          <h3 className="font-black text-xl">Aucune copie trouvée</h3>
+          <h3 className="font-black text-xl">Historique vide</h3>
           <p className="text-muted-foreground mt-2">
-            Vos versements apparaîtront ici dès qu'ils seront certifiés par l'admin.
+            Vos preuves de paiement apparaîtront ici dès validation par l'admin.
           </p>
         </div>
       )}
