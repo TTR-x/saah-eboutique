@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -14,23 +14,25 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Product } from '@/lib/types';
 import { Wallet, Truck, User, CheckCircle2, ChevronLeft, ArrowRight, MessageSquare, FileEdit } from 'lucide-react';
-import { Card, CardContent } from '@/components/card';
 import { useUser, useFirestore } from '@/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { useRouter } from 'next/navigation';
 
 interface CheckoutDialogProps {
   product: Product;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialMode?: 'cash' | 'installments';
 }
 
 type Step = 'payment' | 'choice' | 'details' | 'summary';
 
-export function CheckoutDialog({ product, open, onOpenChange }: CheckoutDialogProps) {
+export function CheckoutDialog({ product, open, onOpenChange, initialMode }: CheckoutDialogProps) {
   const { user } = useUser();
   const db = useFirestore();
+  const router = useRouter();
   const [step, setStep] = useState<Step>('payment');
   const [formData, setFormData] = useState({
     paymentMode: 'cash' as 'cash' | 'installments',
@@ -41,7 +43,21 @@ export function CheckoutDialog({ product, open, onOpenChange }: CheckoutDialogPr
     address: '',
   });
 
+  // Gérer l'ouverture automatique suite à une redirection d'auth
+  useEffect(() => {
+    if (open && initialMode) {
+      setFormData(prev => ({ ...prev, paymentMode: initialMode }));
+      setStep('choice');
+    }
+  }, [open, initialMode]);
+
   const handleModeSelect = (mode: 'cash' | 'installments') => {
+    // Si c'est par tranche et que l'user n'est pas connecté, on redirige
+    if (mode === 'installments' && !user) {
+      const returnUrl = encodeURIComponent(`${window.location.pathname}?autoOpen=installments`);
+      router.push(`/signup?redirect=${returnUrl}`);
+      return;
+    }
     setFormData({ ...formData, paymentMode: mode });
     setStep('choice');
   };
