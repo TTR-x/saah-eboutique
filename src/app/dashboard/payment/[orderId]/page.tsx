@@ -9,7 +9,7 @@ import type { Order } from '@/lib/types';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy, MapPin, Clock, RefreshCw } from 'lucide-react';
+import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy, MapPin, Clock, RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -35,7 +35,7 @@ export default function OrderPaymentPage() {
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({ title: "Copié !", description: "Le numéro a été copié dans votre presse-papier." });
+    toast({ title: "Copié !", description: "Le numéro a été copié." });
   };
 
   const handleAlreadySent = async () => {
@@ -51,10 +51,10 @@ export default function OrderPaymentPage() {
 
       toast({ 
         title: "Demande envoyée", 
-        description: "Votre preuve de paiement a été transmise pour validation." 
+        description: "Votre preuve de paiement a été transmise." 
       });
 
-      // Ouvrir WhatsApp en arrière-plan pour informer l'admin
+      // Ouvrir WhatsApp pour informer l'admin
       const phoneNumber = "22890101392";
       const message = `Bonjour SAAH Business, je viens d'effectuer mon versement Tmoney pour ma commande :
     
@@ -67,38 +67,31 @@ Merci de valider mon paiement.`;
       const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
       window.open(whatsappUrl, '_blank');
     } catch (error) {
-      toast({ title: "Erreur", description: "Impossible de mettre à jour la commande.", variant: "destructive" });
+      toast({ title: "Erreur", description: "Impossible de mettre à jour.", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleRelancer = () => {
-    const phoneNumber = "22890101392";
-    const message = `Bonjour SAAH Business, je relance ma demande de validation pour mon paiement Tmoney (ID: ${order?.transferId}). Merci !`;
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+  const handleAcknowledgeSuccess = async () => {
+    if (!orderRef) return;
+    // On repasse en pending simple pour permettre le prochain versement
+    await updateDoc(orderRef, { status: 'pending' });
+    router.push('/dashboard');
   };
 
-  const handleStoreWhatsApp = () => {
-    const phoneNumber = "22890101392";
-    const message = `Bonjour SAAH Business, je souhaite passer en boutique pour régler mon paiement concernant l'article :
-    
-*PRODUIT:* ${order?.productName}
-*RÉFÉRENCE:* ${order?.productSku || order?.id.slice(0, 8)}
-*MONTANT DU JOUR:* ${order?.amount.toLocaleString('fr-FR')} FCFA
-
-Je suis en route !`;
-
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+  const handleRetryAfterReject = async () => {
+    if (!orderRef) return;
+    await updateDoc(orderRef, { status: 'pending' });
+    setPaymentType(null);
+    setTransferId('');
   };
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <LogoSpinner className="h-12 w-12 text-primary" />
-        <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Chargement de votre plan...</p>
+        <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Chargement...</p>
       </div>
     );
   }
@@ -112,7 +105,84 @@ Je suis en route !`;
     );
   }
 
-  // ÉCRAN DE VALIDATION EN ATTENTE
+  // --- ÉCRAN DE SUCCÈS (VALIDÉ) ---
+  if (order.status === 'validated' || order.status === 'completed') {
+    return (
+      <div className="container mx-auto px-4 py-12 max-w-2xl animate-in fade-in duration-500">
+        <Card className="border-none shadow-2xl rounded-3xl overflow-hidden bg-white text-center">
+          <div className="bg-green-500 p-12 flex justify-center">
+            <div className="h-24 w-24 rounded-full bg-white flex items-center justify-center text-green-600 shadow-xl">
+              <CheckCircle2 className="h-14 w-14" />
+            </div>
+          </div>
+          <CardContent className="p-10 space-y-8">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-black tracking-tight">Paiement Accepté ! 🥳</h1>
+              <p className="text-muted-foreground font-medium text-lg">
+                Votre versement de <strong>{order.amount.toLocaleString('fr-FR')} F</strong> a été validé avec succès.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Reste à payer</p>
+                    <p className="text-2xl font-black text-blue-700">{order.remainingAmount.toLocaleString('fr-FR')} F</p>
+                </div>
+                <div className="bg-green-50 p-6 rounded-2xl border border-green-100">
+                    <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mb-1">Statut Plan</p>
+                    <p className="text-xl font-black text-green-700">{order.status === 'completed' ? 'Terminé ✅' : 'Actif ⚡'}</p>
+                </div>
+            </div>
+
+            <Button 
+              onClick={handleAcknowledgeSuccess}
+              className="w-full h-16 rounded-2xl bg-black text-white hover:bg-gray-800 font-black text-xl shadow-xl transition-all"
+            >
+              C'est noté, merci !
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // --- ÉCRAN DE REFUS (REJETÉ) ---
+  if (order.status === 'rejected') {
+    return (
+      <div className="container mx-auto px-4 py-12 max-w-2xl animate-in fade-in duration-500">
+        <Card className="border-none shadow-2xl rounded-3xl overflow-hidden bg-white text-center">
+          <div className="bg-red-500 p-12 flex justify-center">
+            <div className="h-24 w-24 rounded-full bg-white flex items-center justify-center text-red-600 shadow-xl">
+              <AlertCircle className="h-14 w-14" />
+            </div>
+          </div>
+          <CardContent className="p-10 space-y-6">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-black tracking-tight">Paiement Refusé ❌</h1>
+              <p className="text-muted-foreground font-medium">
+                Nous n'avons pas pu confirmer votre transfert Tmoney.
+              </p>
+            </div>
+
+            <div className="bg-red-50 p-6 rounded-2xl border border-dashed border-red-200 text-left">
+              <p className="text-sm font-bold text-red-800 leading-relaxed">
+                Il se peut que le numéro de transfert soit incorrect ou que le paiement n'ait pas encore été reçu. Veuillez vérifier vos reçus et recommencer la soumission.
+              </p>
+            </div>
+
+            <Button 
+              onClick={handleRetryAfterReject}
+              className="w-full h-16 rounded-2xl bg-primary text-black font-black text-xl shadow-xl transition-all"
+            >
+              <RefreshCw className="mr-2 h-6 w-6" /> Réessayer maintenant
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // --- ÉCRAN D'ATTENTE (PAYMENT_PENDING) ---
   if (order.status === 'payment_pending') {
     return (
       <div className="container mx-auto px-4 py-12 max-w-2xl animate-in fade-in duration-500">
@@ -126,7 +196,7 @@ Je suis en route !`;
           <CardContent className="p-10 space-y-6">
             <div>
               <h1 className="text-3xl font-black tracking-tight mb-2">Validation en attente</h1>
-              <p className="text-muted-foreground font-medium">Nous avons bien reçu votre preuve de transfert.</p>
+              <p className="text-muted-foreground font-medium">Nous vérifions votre versement...</p>
             </div>
 
             <div className="bg-muted/30 p-6 rounded-2xl border border-dashed border-orange-200">
@@ -138,16 +208,14 @@ Je suis en route !`;
               <div className="flex items-center gap-3 text-left bg-blue-50 p-4 rounded-xl border border-blue-100">
                 <Clock className="h-5 w-5 text-blue-600 shrink-0" />
                 <p className="text-xs font-bold text-blue-800 leading-relaxed">
-                  Les confirmations sont traitées manuellement tous les jours entre <span className="underline">08h00 et 19h00</span>.
+                  Les confirmations sont traitées manuellement entre <span className="underline">08h00 et 19h00</span>.
                 </p>
               </div>
               
-              <Button 
-                onClick={handleRelancer}
-                variant="outline" 
-                className="w-full h-14 rounded-xl border-2 border-gray-100 hover:border-primary font-black text-lg transition-all"
-              >
-                <MessageSquare className="mr-2 h-6 w-6 text-green-600" /> Nous relancer
+              <Button asChild variant="outline" className="w-full h-14 rounded-xl border-2 border-gray-100 hover:border-primary font-black text-lg transition-all">
+                <Link href={`https://wa.me/22890101392?text=${encodeURIComponent(`Bonjour, je relance ma validation Tmoney ID: ${order.transferId}`)}`} target="_blank">
+                    <MessageSquare className="mr-2 h-6 w-6 text-green-600" /> Nous relancer
+                </Link>
               </Button>
 
               <Button asChild variant="ghost" className="w-full text-muted-foreground font-bold uppercase text-xs tracking-widest">
@@ -160,8 +228,9 @@ Je suis en route !`;
     );
   }
 
+  // --- ÉCRAN DE CHOIX INITIAL (PENDING) ---
   const totalPrice = order.totalPrice || order.amount;
-  const remainingAmount = order.remainingAmount || totalPrice;
+  const remainingAmount = order.remainingAmount ?? totalPrice;
   const amountToPayNow = order.amount;
 
   return (
@@ -175,7 +244,6 @@ Je suis en route !`;
             </p>
         </div>
 
-        {/* RECAPITULATIF FINANCIER */}
         <Card className="border-none shadow-xl rounded-2xl overflow-hidden bg-card">
             <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x border-b">
                 <div className="p-6 text-center space-y-1">
@@ -193,10 +261,8 @@ Je suis en route !`;
             </div>
         </Card>
 
-        {/* CHOIX DU MODE DE PAIEMENT */}
         <div className="space-y-6">
             <h3 className="text-sm font-black uppercase tracking-widest text-center text-muted-foreground">Comment souhaitez-vous régler ?</h3>
-            
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button 
                     onClick={() => setPaymentType('online')}
@@ -226,7 +292,6 @@ Je suis en route !`;
             </div>
         </div>
 
-        {/* INSTRUCTIONS EN LIGNE */}
         {paymentType === 'online' && (
             <Card className="border-none shadow-2xl rounded-2xl overflow-hidden bg-white animate-in zoom-in-95 duration-300">
                 <CardHeader className="bg-primary p-8 text-black text-center">
@@ -237,7 +302,7 @@ Je suis en route !`;
                     <CardDescription className="text-black/70 font-bold uppercase text-xs tracking-widest mt-2">
                         Envoyez <span className="text-black font-black underline">{amountToPayNow.toLocaleString('fr-FR')} F</span> sur notre Tmoney
                     </CardDescription>
-                    <Button variant="ghost" size="sm" onClick={() => handleCopy('92392062')} className="mt-4 bg-white/20 hover:bg-white/30 text-black font-black border-none">
+                    <Button variant="ghost" size="sm" onClick={() => handleCopy('92392062')} className="mt-4 bg-white/20 hover:bg-white/30 text-black font-black">
                         Copier le numéro
                     </Button>
                 </CardHeader>
@@ -256,17 +321,15 @@ Je suis en route !`;
                         <Button 
                             onClick={handleAlreadySent}
                             disabled={!transferId || isSubmitting}
-                            className="w-full h-16 rounded-xl bg-black text-white hover:bg-gray-800 font-black text-xl shadow-xl transition-all active:scale-95"
+                            className="w-full h-16 rounded-xl bg-black text-white hover:bg-gray-800 font-black text-xl shadow-xl transition-all"
                         >
                             {isSubmitting ? <LogoSpinner /> : <><CheckCircle2 className="mr-2 h-6 w-6" /> Valider mon paiement</>}
                         </Button>
                     </div>
-                    <p className="text-[10px] text-center text-muted-foreground font-medium italic">Une fois validé, votre dossier sera mis à jour sous 30 minutes.</p>
                 </CardContent>
             </Card>
         )}
 
-        {/* INSTRUCTIONS BOUTIQUE */}
         {paymentType === 'store' && (
             <Card className="border-none shadow-2xl rounded-2xl overflow-hidden bg-white animate-in slide-in-from-right-4 duration-300">
                 <CardHeader className="bg-primary p-8 text-black text-center">
@@ -287,29 +350,17 @@ Je suis en route !`;
                             On se revoit tout de suite !
                         </p>
                     </div>
-                    
                     <div className="grid gap-4">
-                        <Button asChild className="w-full h-16 rounded-xl bg-black text-white hover:bg-gray-800 font-black text-lg shadow-xl transition-all active:scale-95">
+                        <Button asChild className="w-full h-16 rounded-xl bg-black text-white hover:bg-gray-800 font-black text-lg shadow-xl">
                             <Link href="https://maps.app.goo.gl/HSZCvJGxY1CfpUNp8" target="_blank">
                                 <MapPin className="mr-2 h-6 w-6" /> Voir la localisation
                             </Link>
                         </Button>
-                        
-                        <Button 
-                            onClick={handleStoreWhatsApp}
-                            variant="outline" 
-                            className="w-full h-16 rounded-xl border-2 border-gray-100 hover:border-primary font-black text-lg transition-all"
-                        >
-                            <MessageSquare className="mr-2 h-6 w-6 text-green-600" /> Écrivez-nous
+                        <Button asChild variant="outline" className="w-full h-16 rounded-xl border-2 border-gray-100 hover:border-primary font-black text-lg transition-all">
+                            <Link href={`https://wa.me/22890101392?text=${encodeURIComponent(`Bonjour, je souhaite passer en boutique pour l'article ${order.productName}`)}`} target="_blank">
+                                <MessageSquare className="mr-2 h-6 w-6 text-green-600" /> Écrivez-nous
+                            </Link>
                         </Button>
-                    </div>
-
-                    <div className="pt-4 space-y-2 text-[10px] font-bold text-center text-muted-foreground uppercase tracking-widest">
-                        <p className="flex items-center justify-center gap-2"><CheckCircle2 className="h-3 w-3 text-green-500" /> Ouvert de 08h00 à 18h30</p>
-                        <p className="flex items-center justify-center gap-2 font-mono uppercase">
-                            <CheckCircle2 className="h-3 w-3 text-green-500" /> 
-                            Réf Article : {order.productSku || order.id.slice(0, 8)}
-                        </p>
                     </div>
                 </CardContent>
             </Card>
@@ -317,7 +368,7 @@ Je suis en route !`;
 
         <div className="text-center pt-8 border-t border-dashed">
             <Button variant="link" onClick={() => router.push('/dashboard')} className="text-muted-foreground font-bold uppercase text-xs tracking-widest">
-                Terminer plus tard et retourner au dashboard
+                Retourner au dashboard
             </Button>
         </div>
       </div>

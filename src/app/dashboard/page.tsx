@@ -1,16 +1,18 @@
+
 'use client';
 
 import { useUser, useDoc, useFirestore, useCollection } from '@/firebase';
 import { doc, collection, query, where, orderBy } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogoSpinner } from '@/components/logo-spinner';
-import { User, Package, Clock, CreditCard, ShoppingBag, ChevronRight, Gift } from 'lucide-react';
+import { User, Package, Clock, CreditCard, ShoppingBag, ChevronRight, Gift, CheckCircle2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Progress } from '@/components/ui/progress';
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useUser();
@@ -52,8 +54,8 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
-  const totalSpent = orders?.reduce((acc, order) => acc + (order.amount || 0), 0) || 0;
-  const activeInstallments = orders?.filter(o => o.paymentMode === 'installments' && o.status !== 'completed').length || 0;
+  const activeInstallments = orders?.filter(o => (o.paymentMode === 'installments' || o.paymentMode === 'tontine') && o.status !== 'completed').length || 0;
+  const totalValue = orders?.reduce((acc, o) => acc + (o.totalPrice || o.amount), 0) || 0;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl animate-in fade-in duration-500 pb-20">
@@ -81,42 +83,42 @@ export default function DashboardPage() {
         <Card className="border-none shadow-sm rounded-2xl bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <ShoppingBag className="h-3 w-3 text-primary" /> Commandes
+              <ShoppingBag className="h-3 w-3 text-primary" /> Achats
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-black">{orders?.length || 0}</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Articles demandés</p>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Articles commandés</p>
           </CardContent>
         </Card>
 
         <Card className="border-none shadow-sm rounded-2xl bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <CreditCard className="h-3 w-3 text-blue-500" /> Total Engagé
+              <CreditCard className="h-3 w-3 text-blue-500" /> Valeur Totale
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black text-blue-600">{totalSpent.toLocaleString('fr-FR')} F</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Valeur de vos achats</p>
+            <div className="text-3xl font-black text-blue-600">{totalValue.toLocaleString('fr-FR')} F</div>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Engagé sur la plateforme</p>
           </CardContent>
         </Card>
 
         <Card className="border-none shadow-sm rounded-2xl bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <Clock className="h-3 w-3 text-orange-500" /> Tranches
+              <Clock className="h-3 w-3 text-orange-500" /> Plans Actifs
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-black text-orange-500">{activeInstallments}</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Cycles en cours</p>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Tranches & Tontines</p>
           </CardContent>
         </Card>
       </div>
 
       <h2 className="text-xl font-black mb-4 flex items-center gap-2">
-        <Package className="h-5 w-5 text-primary" /> Mes Articles
+        <Package className="h-5 w-5 text-primary" /> Mes Commandes & Suivi
       </h2>
 
       {ordersLoading ? (
@@ -125,55 +127,87 @@ export default function DashboardPage() {
         </div>
       ) : orders && orders.length > 0 ? (
         <div className="grid gap-4">
-          {orders.map((order: any) => (
-            <Card key={order.id} className="border-none shadow-sm rounded-2xl bg-card overflow-hidden hover:shadow-md transition-all group">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-gray-50 dark:bg-zinc-800 border shrink-0">
-                  {order.productImage ? (
-                    <Image src={order.productImage} alt={order.productName} fill className="object-cover" />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                        <ShoppingBag className="h-6 w-6" />
+          {orders.map((order: any) => {
+            const totalPrice = order.totalPrice || order.amount;
+            const remaining = order.remainingAmount ?? totalPrice;
+            const progress = ((totalPrice - remaining) / totalPrice) * 100;
+
+            return (
+              <Card key={order.id} className="border-none shadow-sm rounded-2xl bg-card overflow-hidden hover:shadow-md transition-all group">
+                <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-gray-50 dark:bg-zinc-800 border shrink-0 mx-auto sm:mx-0">
+                    {order.productImage ? (
+                      <Image src={order.productImage} alt={order.productName} fill className="object-cover" sizes="64px" />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                          <ShoppingBag className="h-6 w-6" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start mb-1">
+                      <h3 className="font-black text-sm sm:text-base truncate pr-2">{order.productName}</h3>
+                      <Badge className={
+                          order.status === 'completed' ? 'bg-green-500' : 
+                          order.status === 'validated' ? 'bg-blue-500' : 
+                          order.status === 'payment_pending' ? 'bg-orange-500' :
+                          order.status === 'rejected' ? 'bg-red-500' :
+                          'bg-gray-200 text-gray-600 border-none'
+                      }>
+                          {order.status === 'pending' ? 'À régler' : 
+                           order.status === 'payment_pending' ? 'En vérification' :
+                           order.status === 'validated' ? 'Actif' :
+                           order.status === 'rejected' ? 'Refusé' :
+                           order.status}
+                      </Badge>
                     </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start mb-1">
-                    <h3 className="font-black text-sm sm:text-base truncate pr-2">{order.productName}</h3>
-                    <Badge className={
-                        order.status === 'completed' ? 'bg-green-500' : 
-                        order.status === 'validated' ? 'bg-blue-500' : 
-                        'bg-gray-200 text-gray-600 border-none'
-                    }>
-                        {order.status === 'pending' ? 'En attente' : order.status}
-                    </Badge>
+                    
+                    <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-tighter text-muted-foreground mb-3">
+                      <span className="text-primary">{totalPrice.toLocaleString('fr-FR')} FCFA</span>
+                      <span>•</span>
+                      <span className={order.paymentMode !== 'cash' ? 'text-blue-600' : ''}>
+                          {order.paymentMode === 'installments' ? 'Tranches' : order.paymentMode === 'tontine' ? 'Tontine' : 'Cash'}
+                      </span>
+                    </div>
+
+                    {(order.paymentMode === 'installments' || order.paymentMode === 'tontine') && (
+                        <div className="space-y-1.5">
+                            <div className="flex justify-between text-[9px] font-black uppercase">
+                                <span className="text-blue-600">Payé: {(totalPrice - remaining).toLocaleString('fr-FR')} F</span>
+                                <span className="text-muted-foreground">Reste: {remaining.toLocaleString('fr-FR')} F</span>
+                            </div>
+                            <Progress value={progress} className="h-1.5 bg-gray-100" />
+                        </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">
-                    <span className="text-primary">{order.amount.toLocaleString('fr-FR')} FCFA</span>
-                    <span>•</span>
-                    <span className={order.paymentMode === 'installments' ? 'text-blue-600' : ''}>
-                        {order.paymentMode === 'installments' ? 'Paiement par tranches' : 'Paiement Cash'}
-                    </span>
-                    <span className="hidden sm:inline">•</span>
-                    <span className="hidden sm:inline">Le {new Date(order.createdAt?.toDate?.() || order.createdAt).toLocaleDateString('fr-FR')}</span>
+
+                  <div className="flex items-center justify-center sm:justify-end gap-2 shrink-0">
+                    {order.status !== 'completed' && (
+                        <Button asChild size="sm" className="rounded-lg font-black bg-primary text-black text-xs px-4 h-9">
+                            <Link href={`/dashboard/payment/${order.id}`}>
+                                {order.status === 'payment_pending' ? 'Voir statut' : 'Verser'} <ChevronRight className="h-3 w-3 ml-1" />
+                            </Link>
+                        </Button>
+                    )}
+                    {order.status === 'completed' && <CheckCircle2 className="h-6 w-6 text-green-500" />}
                   </div>
-                </div>
-                <ChevronRight className="h-5 w-5 text-gray-300 group-hover:text-primary transition-colors" />
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       ) : (
         <div className="bg-card rounded-2xl p-12 text-center border-2 border-dashed border-gray-100 dark:border-zinc-800">
           <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
             <Package className="h-10 w-10 text-gray-300" />
           </div>
-          <h3 className="font-black text-xl">Aucun achat enregistré</h3>
+          <h3 className="font-black text-xl">Aucune commande</h3>
           <p className="text-muted-foreground max-w-sm mx-auto mt-2 text-sm">
-            Vos intentions d'achat apparaîtront ici une fois que vous aurez cliqué sur "Payer" depuis le catalogue.
+            Vos intentions d'achat apparaîtront ici.
           </p>
           <Button asChild className="mt-6 rounded-xl font-bold bg-primary text-black" size="lg">
-            <Link href="/products">Explorer le catalogue</Link>
+            <Link href="/products">Découvrir le catalogue</Link>
           </Button>
         </div>
       )}

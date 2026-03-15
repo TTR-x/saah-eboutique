@@ -4,7 +4,6 @@
 import { useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CreditCard, CheckCircle2, XCircle, Smartphone, MessageCircle, User, ShoppingBag } from "lucide-react";
-import { updateOrderStatus } from "@/lib/orders-service";
 import type { Order } from "@/lib/types";
 import { LogoSpinner } from "@/components/logo-spinner";
 import { Badge } from "@/components/ui/badge";
@@ -40,26 +39,39 @@ export default function AdminPaymentsPage() {
   const handleValidate = async (order: Order) => {
     try {
       const orderRef = doc(db, 'orders', order.id);
+      
+      // Calcul du nouveau reste à payer
+      const currentRemaining = order.remainingAmount ?? order.totalPrice;
+      const newRemaining = Math.max(0, currentRemaining - order.amount);
+      const isFinished = newRemaining <= 0;
+
       await updateDoc(orderRef, {
-        status: 'validated',
+        status: isFinished ? 'completed' : 'validated',
+        remainingAmount: newRemaining,
         paymentValidatedAt: serverTimestamp(),
-        // On pourrait aussi déduire ici du reste à payer
+        lastPaymentValidatedAt: serverTimestamp(),
+        // On vide le transferId pour permettre le prochain versement
+        transferId: "", 
       });
-      toast({ title: "Paiement validé", description: `Le transfert de ${order.userName} a été confirmé.` });
+      
+      toast({ 
+        title: "Paiement validé", 
+        description: `Transfert de ${order.userName} confirmé. Reste : ${newRemaining.toLocaleString('fr-FR')} F` 
+      });
     } catch (error) {
       toast({ title: "Erreur", description: "Échec de la validation.", variant: "destructive" });
     }
   };
 
   const handleReject = async (orderId: string) => {
-    if (!confirm("Rejeter ce paiement ? Le client devra soumettre un nouveau numéro.")) return;
+    if (!confirm("Rejeter ce paiement ? Le client recevra une notification pour recommencer.")) return;
     try {
       const orderRef = doc(db, 'orders', orderId);
       await updateDoc(orderRef, {
-        status: 'pending', // On le repasse en attente simple
-        transferId: ""
+        status: 'rejected',
+        transferId: "" // On vide pour qu'il puisse corriger
       });
-      toast({ title: "Paiement rejeté", description: "Le client peut maintenant corriger son ID." });
+      toast({ title: "Paiement rejeté", description: "Le client a été notifié de l'échec." });
     } catch (error) {
       toast({ title: "Erreur", description: "Échec de l'opération.", variant: "destructive" });
     }
@@ -96,7 +108,7 @@ export default function AdminPaymentsPage() {
                   <TableHead className="font-bold">Client</TableHead>
                   <TableHead className="font-bold">Article</TableHead>
                   <TableHead className="font-bold">ID Transfert</TableHead>
-                  <TableHead className="font-bold text-right">Montant</TableHead>
+                  <TableHead className="font-bold text-right">Montant Versement</TableHead>
                   <TableHead className="font-bold text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -117,7 +129,7 @@ export default function AdminPaymentsPage() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <div className="relative h-8 w-8 rounded-md overflow-hidden border bg-muted shrink-0">
-                            {order.productImage && <Image src={order.productImage} alt="" fill className="object-cover" />}
+                            {order.productImage && <Image src={order.productImage} alt="" fill className="object-cover" sizes="32px" />}
                           </div>
                           <span className="font-medium text-xs max-w-[150px] truncate">{order.productName}</span>
                         </div>

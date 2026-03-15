@@ -36,17 +36,18 @@ export type Order = {
   productSku?: string;
   productName: string;
   productImage: string;
-  amount: number;
+  amount: number; // Somme du versement actuel
   paymentMode: 'cash' | 'installments' | 'tontine';
-  status: 'pending' | 'validated' | 'completed' | 'cancelled' | 'payment_pending';
+  status: 'pending' | 'validated' | 'completed' | 'cancelled' | 'payment_pending' | 'rejected';
   transferId?: string;
   paymentValidatedAt?: any;
+  lastPaymentValidatedAt?: any;
   createdAt: any;
   isDelivery?: boolean;
   address?: string;
   neighborhood?: string;
-  totalPrice?: number;
-  remainingAmount?: number;
+  totalPrice: number; // Prix total de l'article au moment de l'achat
+  remainingAmount: number; // Ce qu'il reste à payer
 };
 
 export type UserProfile = {
