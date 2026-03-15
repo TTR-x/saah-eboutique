@@ -219,7 +219,7 @@ export function Header() {
                               <UserAvatar />
                               <div className="flex flex-col items-start overflow-hidden">
                                   <p className="font-bold text-gray-900 dark:text-gray-100 truncate w-full">{user.displayName || user.email?.split('@')[0]}</p>
-                                  <p className="text-xs text-gray-500">Mon Tableau de bord</p>
+                                  <p className="text-xs text-gray-500">Mon compte</p>
                               </div>
                            </Link>
                         </DropdownMenuItem>
@@ -293,7 +293,7 @@ export function Header() {
                         <div className="p-2 rounded-full bg-blue-50 dark:bg-blue-900/20">
                           <LayoutGrid className="h-6 w-6" />
                         </div>
-                        Tableau de bord
+                        Mon compte
                       </Link>
                     )}
                   </nav>
