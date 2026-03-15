@@ -30,7 +30,6 @@ export default function DashboardPage() {
   const userRef = useMemo(() => (user ? doc(db, 'users', user.uid) : null), [db, user]);
   const { data: profile } = useDoc(userRef);
 
-  // Requête simplifiée pour éviter les besoins d'index complexes
   const ordersQuery = useMemo(() => {
     if (!db || !user) return null;
     return query(
@@ -41,7 +40,6 @@ export default function DashboardPage() {
 
   const { data: rawOrders, loading: ordersLoading } = useCollection(ordersQuery);
 
-  // Tri manuel côté client pour la robustesse
   const orders = useMemo(() => {
     if (!rawOrders) return [];
     return [...rawOrders].sort((a: any, b: any) => {
@@ -51,42 +49,38 @@ export default function DashboardPage() {
     });
   }, [rawOrders]);
 
-  // LOGIQUE DES SECTIONS
-  // 1. Les articles confirmés : Tout ce qui a commencé un cycle (historique présent) OU est validé/complété
+  // LOGIQUE ROBUSTE : Un achat est "Confirmé" s'il a au moins UN versement validé dans son historique
+  // ou s'il est déjà complété.
   const confirmedOrders = useMemo(() => {
     return orders.filter(o => 
-        o.status !== 'cancelled' && (
-            o.status === 'completed' || 
-            o.status === 'validated' || 
-            (o.paymentHistory && o.paymentHistory.length > 0)
-        )
+        o.status === 'completed' || 
+        (o.paymentHistory && o.paymentHistory.some((h: any) => h.status === 'validated'))
     );
   }, [orders]);
 
-  // 2. Les intentions pures : Nouvel article sans aucun historique de paiement
+  // Les "Demandes à finaliser" sont uniquement les articles qui n'ont AUCUN versement validé à ce jour.
   const newIntentions = useMemo(() => {
     return orders.filter(o => 
         o.status !== 'completed' && 
-        o.status !== 'validated' &&
         o.status !== 'cancelled' &&
-        (!o.paymentHistory || o.paymentHistory.length === 0)
+        (!o.paymentHistory || !o.paymentHistory.some((h: any) => h.status === 'validated'))
     );
   }, [orders]);
 
-  // 3. Compteur global des paiements en attente de vérification admin
+  // Compteur de paiements en attente de vérification
   const pendingPaymentsCount = useMemo(() => {
     return orders.filter(o => o.status === 'payment_pending').length;
   }, [orders]);
 
-  // CALCUL DES STATISTIQUES (Basé sur la valeur encaissée réelle)
+  // CALCUL DES STATISTIQUES : Somme réelle de TOUS les versements validés dans TOUS les documents
   const totalValuePaid = useMemo(() => {
-    return confirmedOrders.reduce((total, order: any) => {
-        const totalPrice = order.totalPrice || order.amount || 0;
-        const remaining = order.remainingAmount ?? totalPrice;
-        // La différence est ce qui a été validé par l'admin
-        return total + Math.max(0, totalPrice - remaining);
+    return orders.reduce((total, order: any) => {
+        const historySum = (order.paymentHistory || [])
+            .filter((h: any) => h.status === 'validated')
+            .reduce((sum: number, h: any) => sum + h.amount, 0);
+        return total + historySum;
     }, 0);
-  }, [confirmedOrders]);
+  }, [orders]);
 
   const activePlansCount = confirmedOrders.filter(o => o.status !== 'completed').length;
 
@@ -106,18 +100,6 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
-  const handlePendingClick = () => {
-    if (pendingPaymentsCount > 0) {
-        const el = document.getElementById('intentions-section');
-        const confirmedEl = document.getElementById('confirmed-section');
-        // On scrolle vers la section qui contient probablement le versement en attente
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-        else if (confirmedEl) confirmedEl.scrollIntoView({ behavior: 'smooth' });
-    } else {
-        toast({ title: "Information", description: "Aucune vérification de paiement en cours." });
-    }
-  };
-
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl animate-in fade-in duration-500 pb-20">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -136,13 +118,20 @@ export default function DashboardPage() {
             <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={handlePendingClick}
                 className={cn(
                     "rounded-lg font-black transition-all",
                     pendingPaymentsCount > 0 
                         ? "bg-primary text-black animate-pulse shadow-md" 
                         : "text-gray-400 bg-muted/50"
                 )}
+                onClick={() => {
+                    if (pendingPaymentsCount > 0) {
+                        document.getElementById('intentions-section')?.scrollIntoView({ behavior: 'smooth' });
+                        document.getElementById('confirmed-section')?.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        toast({ title: "Information", description: "Aucun versement en attente de vérification." });
+                    }
+                }}
             >
                 <Clock className="h-4 w-4 mr-2" /> 
                 Vérifications {pendingPaymentsCount > 0 && `(${pendingPaymentsCount})`}
@@ -163,7 +152,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-black">{confirmedOrders.length}</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Cycles commencés ou finis</p>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Cycles en cours ou terminés</p>
           </CardContent>
         </Card>
 
@@ -175,7 +164,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-black text-blue-600">{totalValuePaid.toLocaleString('fr-FR')} F</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Somme totale déjà réglée</p>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Argent réellement encaissé</p>
           </CardContent>
         </Card>
 
@@ -187,12 +176,12 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-black text-orange-500">{activePlansCount}</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Articles en cours de paiement</p>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Articles non encore finis</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* SECTION DES INTENTIONS (Nouveaux articles jamais payés) */}
+      {/* SECTION DES INTENTIONS : Nouveaux articles JAMAIS validés */}
       {newIntentions.length > 0 && (
         <div id="intentions-section" className="mb-12 scroll-mt-24">
             <h2 className="text-xl font-black mb-4 flex items-center gap-2 text-orange-600">
@@ -230,7 +219,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* SECTION DES ARTICLES CONFIRMÉS (Cycles commencés ou terminés) */}
+      {/* SECTION DES ARTICLES CONFIRMÉS : Au moins une validation dans l'historique */}
       <div id="confirmed-section" className="scroll-mt-24">
         <h2 className="text-xl font-black mb-4 flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-green-600" /> Mes Achats & Plans Confirmés
@@ -245,7 +234,8 @@ export default function DashboardPage() {
             {confirmedOrders.map((order: any) => {
                 const totalPrice = order.totalPrice || order.amount || 0;
                 const remaining = order.remainingAmount ?? totalPrice;
-                const progress = ((totalPrice - remaining) / totalPrice) * 100;
+                const paidSum = totalPrice - remaining;
+                const progress = (paidSum / totalPrice) * 100;
                 const isPendingVerif = order.status === 'payment_pending';
 
                 return (
@@ -288,7 +278,7 @@ export default function DashboardPage() {
                         {(order.paymentMode === 'installments' || order.paymentMode === 'tontine') && (
                             <div className="space-y-1.5">
                                 <div className="flex justify-between text-[9px] font-black uppercase">
-                                    <span className="text-blue-600">Payé: {(totalPrice - remaining).toLocaleString('fr-FR')} F</span>
+                                    <span className="text-blue-600">Payé: {paidSum.toLocaleString('fr-FR')} F</span>
                                     <span className="text-muted-foreground">Reste: {remaining.toLocaleString('fr-FR')} F</span>
                                 </div>
                                 <Progress value={progress} className="h-1.5 bg-gray-100" />
