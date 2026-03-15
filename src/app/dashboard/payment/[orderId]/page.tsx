@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useDoc, useFirestore } from '@/firebase';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
@@ -9,7 +9,7 @@ import type { Order } from '@/lib/types';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy, MapPin, Clock, RefreshCw, AlertCircle, Sparkles, History, Calendar } from 'lucide-react';
+import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy, MapPin, Clock, RefreshCw, AlertCircle, Sparkles, History, Calendar, Edit3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -33,7 +33,18 @@ export default function OrderPaymentPage() {
   
   const [paymentType, setPaymentType] = useState<'online' | 'store' | null>(null);
   const [transferId, setTransferId] = useState('');
+  const [customAmount, setCustomAmount] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Initialiser le montant personnalisé avec le montant suggéré de la commande
+  useEffect(() => {
+    if (order && customAmount === 0) {
+      setCustomAmount(order.amount);
+    }
+  }, [order]);
+
+  const totalPrice = order?.totalPrice || order?.amount || 0;
+  const remainingAmount = order?.remainingAmount ?? totalPrice;
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -41,12 +52,23 @@ export default function OrderPaymentPage() {
   };
 
   const handleAlreadySent = async () => {
-    if (!orderRef || !transferId) return;
+    if (!orderRef || !transferId || !order) return;
     
+    // Validation finale du montant
+    if (customAmount <= 0 || customAmount > remainingAmount) {
+        toast({ 
+            title: "Montant invalide", 
+            description: `Le versement doit être compris entre 1 et ${remainingAmount.toLocaleString('fr-FR')} F.`,
+            variant: "destructive"
+        });
+        return;
+    }
+
     setIsSubmitting(true);
     try {
       await updateDoc(orderRef, {
         transferId: transferId,
+        amount: customAmount, // On met à jour avec le montant réellement choisi
         status: 'payment_pending',
         updatedAt: serverTimestamp()
       });
@@ -60,8 +82,8 @@ export default function OrderPaymentPage() {
       const phoneNumber = "22890101392";
       const message = `Bonjour SAAH Business, je viens d'effectuer mon versement Tmoney pour ma commande :
     
-*ARTICLE:* ${order?.productName}
-*MONTANT:* ${order?.amount.toLocaleString('fr-FR')} FCFA
+*ARTICLE:* ${order.productName}
+*MONTANT:* ${customAmount.toLocaleString('fr-FR')} FCFA
 *ID TRANSFERT:* ${transferId}
 
 Merci de valider mon paiement.`;
@@ -77,9 +99,7 @@ Merci de valider mon paiement.`;
 
   const handleAcknowledgeSuccess = async () => {
     if (!orderRef) return;
-    // On repasse en pending simple pour permettre le prochain versement
     await updateDoc(orderRef, { status: 'pending' });
-    // On reste sur la page pour voir le choix du prochain paiement
     setPaymentType(null);
     setTransferId('');
   };
@@ -206,6 +226,7 @@ Merci de valider mon paiement.`;
             <div className="bg-muted/30 p-6 rounded-2xl border border-dashed border-orange-200">
               <p className="text-sm font-bold text-orange-700 mb-1">ID de transaction enregistré :</p>
               <code className="text-lg font-black tracking-widest">{order.transferId}</code>
+              <p className="text-xs font-bold text-muted-foreground mt-2 uppercase">Montant: {order.amount.toLocaleString('fr-FR')} F</p>
             </div>
 
             <div className="space-y-4 pt-4">
@@ -233,9 +254,7 @@ Merci de valider mon paiement.`;
   }
 
   // --- ÉCRAN DE CHOIX INITIAL (PENDING) ---
-  const totalPrice = order.totalPrice || order.amount;
-  const remainingAmount = order.remainingAmount ?? totalPrice;
-  const amountToPayNow = order.amount;
+  const isAmountValid = customAmount > 0 && customAmount <= remainingAmount;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
@@ -258,9 +277,23 @@ Merci de valider mon paiement.`;
                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Reste à payer</p>
                     <p className="text-xl font-black text-blue-600">{remainingAmount.toLocaleString('fr-FR')} F</p>
                 </div>
-                <div className="p-6 text-center space-y-1 bg-primary/5">
+                <div className="p-6 text-center space-y-2 bg-primary/5 flex flex-col justify-center items-center">
                     <p className="text-[10px] font-black text-primary uppercase tracking-widest">À payer aujourd'hui</p>
-                    <p className="text-2xl font-black text-primary">{amountToPayNow.toLocaleString('fr-FR')} F</p>
+                    <div className="relative group w-full max-w-[120px]">
+                        <Input 
+                            type="number"
+                            value={customAmount}
+                            onChange={(e) => setCustomAmount(Number(e.target.value))}
+                            className={cn(
+                                "h-10 text-center font-black text-xl bg-white border-2 focus:ring-0 rounded-lg",
+                                !isAmountValid ? "border-red-500 text-red-600" : "border-primary text-primary"
+                            )}
+                        />
+                        <Edit3 className="absolute -right-2 -top-2 h-4 w-4 text-primary bg-white rounded-full p-0.5 shadow-sm" />
+                    </div>
+                    {!isAmountValid && (
+                        <p className="text-[8px] font-bold text-red-500 uppercase">Max: {remainingAmount} F</p>
+                    )}
                 </div>
             </div>
         </Card>
@@ -269,8 +302,9 @@ Merci de valider mon paiement.`;
             <h3 className="text-sm font-black uppercase tracking-widest text-center text-muted-foreground">Comment souhaitez-vous régler ?</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button 
+                    disabled={!isAmountValid}
                     onClick={() => setPaymentType('online')}
-                    className={`flex flex-col items-center gap-4 p-8 rounded-2xl border-2 transition-all group ${paymentType === 'online' ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
+                    className={`flex flex-col items-center gap-4 p-8 rounded-2xl border-2 transition-all group ${!isAmountValid ? 'opacity-50 cursor-not-allowed' : ''} ${paymentType === 'online' ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
                 >
                     <div className={`h-16 w-16 rounded-2xl flex items-center justify-center transition-colors ${paymentType === 'online' ? 'bg-primary text-black' : 'bg-muted text-gray-400 group-hover:bg-gray-100'}`}>
                         <Smartphone className="h-8 w-8" />
@@ -282,8 +316,9 @@ Merci de valider mon paiement.`;
                 </button>
 
                 <button 
+                    disabled={!isAmountValid}
                     onClick={() => setPaymentType('store')}
-                    className={`flex flex-col items-center gap-4 p-8 rounded-2xl border-2 transition-all group ${paymentType === 'store' ? 'border-black bg-black text-white' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
+                    className={`flex flex-col items-center gap-4 p-8 rounded-2xl border-2 transition-all group ${!isAmountValid ? 'opacity-50 cursor-not-allowed' : ''} ${paymentType === 'store' ? 'border-black bg-black text-white' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
                 >
                     <div className={`h-16 w-16 rounded-2xl flex items-center justify-center transition-colors ${paymentType === 'store' ? 'bg-white/20 text-white' : 'bg-muted text-gray-400 group-hover:bg-gray-100'}`}>
                         <Store className="h-8 w-8" />
@@ -304,7 +339,7 @@ Merci de valider mon paiement.`;
                     </div>
                     <CardTitle className="text-3xl font-black tracking-tighter">92 39 20 62</CardTitle>
                     <CardDescription className="text-black/70 font-bold uppercase text-xs tracking-widest mt-2">
-                        Envoyez <span className="text-black font-black underline">{amountToPayNow.toLocaleString('fr-FR')} F</span> sur notre Tmoney
+                        Envoyez <span className="text-black font-black underline">{customAmount.toLocaleString('fr-FR')} F</span> sur notre Tmoney
                     </CardDescription>
                     <Button variant="ghost" size="sm" onClick={() => handleCopy('92392062')} className="mt-4 bg-white/20 hover:bg-white/30 text-black font-black">
                         Copier le numéro
@@ -324,7 +359,7 @@ Merci de valider mon paiement.`;
                         </div>
                         <Button 
                             onClick={handleAlreadySent}
-                            disabled={!transferId || isSubmitting}
+                            disabled={!transferId || isSubmitting || !isAmountValid}
                             className="w-full h-16 rounded-xl bg-black text-white hover:bg-gray-800 font-black text-xl shadow-xl transition-all"
                         >
                             {isSubmitting ? <LogoSpinner /> : <><CheckCircle2 className="mr-2 h-6 w-6" /> Valider mon paiement</>}
@@ -361,7 +396,7 @@ Merci de valider mon paiement.`;
                             </Link>
                         </Button>
                         <Button asChild variant="outline" className="w-full h-16 rounded-xl border-2 border-gray-100 hover:border-primary font-black text-lg transition-all">
-                            <Link href={`https://wa.me/22890101392?text=${encodeURIComponent(`Bonjour, je souhaite passer en boutique pour l'article ${order.productName}`)}`} target="_blank">
+                            <Link href={`https://wa.me/22890101392?text=${encodeURIComponent(`Bonjour, je souhaite passer en boutique pour un versement de ${customAmount} F pour l'article ${order.productName}`)}`} target="_blank">
                                 <MessageSquare className="mr-2 h-6 w-6 text-green-600" /> Écrivez-nous
                             </Link>
                         </Button>
