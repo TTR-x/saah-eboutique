@@ -168,7 +168,7 @@ Merci de valider mon paiement.`;
                             disabled={!transferId}
                             className="w-full h-16 rounded-xl bg-black text-white hover:bg-gray-800 font-black text-xl shadow-xl transition-all active:scale-95"
                         >
-                            <CheckCircle2 className="mr-2 h-6 w-6" /> Déjà envoyé
+                            <CheckCircle2 className="mr-2 h-6 w-6" /> Valider mon paiement
                         </Button>
                     </div>
                     <p className="text-[10px] text-center text-muted-foreground font-medium italic">Une fois validé, votre dossier sera mis à jour sous 30 minutes.</p>
