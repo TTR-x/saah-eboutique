@@ -5,7 +5,7 @@ import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { Card, CardContent } from '@/components/ui/card';
 import { LogoSpinner } from '@/components/logo-spinner';
-import { History, ArrowLeft, Calendar, BadgeEuro, CreditCard, Users, CheckCircle2 } from 'lucide-react';
+import { History, ArrowLeft, Calendar, BadgeEuro, CreditCard, Users, CheckCircle2, Smartphone } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
@@ -76,6 +76,8 @@ export default function GlobalHistoryPage() {
         <div className="space-y-4">
           {payments.map((tx, idx) => {
             const txDate = tx.date?.toDate ? tx.date.toDate() : (tx.date ? new Date(tx.date) : new Date());
+            const isMobilePayment = tx.transferId && tx.transferId !== 'BOUTIQUE';
+
             return (
               <Card key={tx.id || idx} className="border-none shadow-sm rounded-2xl overflow-hidden bg-card">
                 <CardContent className="p-5 flex items-center justify-between gap-4">
@@ -99,6 +101,11 @@ export default function GlobalHistoryPage() {
                         <Badge variant="outline" className="text-[9px] font-mono bg-gray-50">
                           ID: {tx.transferId || 'N/A'}
                         </Badge>
+                        {isMobilePayment && (
+                          <Badge className="text-[8px] font-black bg-blue-600 text-white border-none uppercase h-4 px-1.5 flex items-center gap-1">
+                            <Smartphone className="h-2 w-2" /> Mobile
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </div>
