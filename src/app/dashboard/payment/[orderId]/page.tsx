@@ -178,28 +178,45 @@ Merci de valider mon paiement.`;
 
         {/* INSTRUCTIONS BOUTIQUE */}
         {paymentType === 'store' && (
-            <Card className="border-none shadow-xl rounded-2xl bg-white p-8 animate-in slide-in-from-right-4 duration-300">
-                <div className="flex flex-col items-center text-center space-y-6">
-                    <div className="h-20 w-20 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                        <MapPin className="h-10 w-10" />
+            <Card className="border-none shadow-2xl rounded-2xl overflow-hidden bg-white animate-in slide-in-from-right-4 duration-300">
+                <CardHeader className="bg-primary p-8 text-black text-center">
+                    <div className="flex justify-center mb-4">
+                        <div className="bg-black/10 p-3 rounded-full"><MapPin className="h-8 w-8" /></div>
                     </div>
-                    <div className="space-y-2">
-                        <h3 className="font-black text-2xl">Rendez-vous en agence</h3>
-                        <p className="text-muted-foreground font-medium">Notre boutique est située au quartier <strong>Agoè échangeur (Lomé)</strong>.</p>
+                    <CardTitle className="text-2xl font-black tracking-tight uppercase">Rendez-vous en agence</CardTitle>
+                    <CardDescription className="text-black/70 font-bold uppercase text-xs tracking-widest mt-2">
+                        Agoè échangeur (Lomé)
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 space-y-6">
+                    <div className="bg-muted/30 p-6 rounded-2xl text-center space-y-3 border border-dashed border-primary/30">
+                        <p className="font-black text-gray-800 leading-tight text-xl">
+                            Nous sommes à 150m de l'échangeur d'agoè.
+                        </p>
+                        <p className="text-primary font-black uppercase text-sm tracking-widest animate-pulse">
+                            On se revoit tout de suite !
+                        </p>
                     </div>
-                    <div className="bg-muted/30 p-6 rounded-2xl w-full text-left space-y-3">
-                        <p className="text-xs font-bold uppercase text-primary tracking-widest">Informations pratiques</p>
-                        <ul className="space-y-2 text-sm font-medium text-gray-700">
-                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Ouvert de 08h00 à 18h30</li>
-                            <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Présentez votre numéro de commande : <strong>{orderId?.toString().slice(0, 8)}</strong></li>
-                        </ul>
+                    
+                    <div className="grid gap-4">
+                        <Button asChild className="w-full h-16 rounded-xl bg-black text-white hover:bg-gray-800 font-black text-lg shadow-xl transition-all active:scale-95">
+                            <Link href="https://maps.app.goo.gl/HSZCvJGxY1CfpUNp8" target="_blank">
+                                <MapPin className="mr-2 h-6 w-6" /> Voir la localisation
+                            </Link>
+                        </Button>
+                        
+                        <Button asChild variant="outline" className="w-full h-16 rounded-xl border-2 border-gray-100 hover:border-primary font-black text-lg transition-all">
+                            <Link href={`https://wa.me/22890101392?text=Bonjour, je souhaite passer en boutique pour régler ma commande ${orderId}`} target="_blank">
+                                <MessageSquare className="mr-2 h-6 w-6 text-green-600" /> Écrivez-nous
+                            </Link>
+                        </Button>
                     </div>
-                    <Button asChild className="w-full h-14 rounded-xl bg-primary text-black font-black">
-                        <Link href={`https://wa.me/22890101392?text=Bonjour, je souhaite passer en boutique pour régler ma commande ${orderId}`} target="_blank">
-                            <MessageSquare className="mr-2 h-5 w-5" /> Prévenir de mon passage
-                        </Link>
-                    </Button>
-                </div>
+
+                    <div className="pt-4 space-y-2 text-[10px] font-bold text-center text-muted-foreground uppercase tracking-widest">
+                        <p className="flex items-center justify-center gap-2"><CheckCircle2 className="h-3 w-3 text-green-500" /> Ouvert de 08h00 à 18h30</p>
+                        <p className="flex items-center justify-center gap-2"><CheckCircle2 className="h-3 w-3 text-green-500" /> Commande N° : {orderId?.toString().slice(0, 8)}</p>
+                    </div>
+                </CardContent>
             </Card>
         )}
 
