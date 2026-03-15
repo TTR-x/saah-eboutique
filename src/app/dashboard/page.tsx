@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useUser();
@@ -131,9 +132,13 @@ export default function DashboardPage() {
             const totalPrice = order.totalPrice || order.amount;
             const remaining = order.remainingAmount ?? totalPrice;
             const progress = ((totalPrice - remaining) / totalPrice) * 100;
+            const isWaitingValidation = order.status === 'payment_pending';
 
             return (
-              <Card key={order.id} className="border-none shadow-sm rounded-2xl bg-card overflow-hidden hover:shadow-md transition-all group">
+              <Card key={order.id} className={cn(
+                "border-none shadow-sm rounded-2xl bg-card overflow-hidden hover:shadow-md transition-all group",
+                isWaitingValidation && "ring-2 ring-orange-100 dark:ring-orange-900/20"
+              )}>
                 <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
                   <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-gray-50 dark:bg-zinc-800 border shrink-0 mx-auto sm:mx-0">
                     {order.productImage ? (
@@ -148,13 +153,14 @@ export default function DashboardPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start mb-1">
                       <h3 className="font-black text-sm sm:text-base truncate pr-2">{order.productName}</h3>
-                      <Badge className={
-                          order.status === 'completed' ? 'bg-green-500' : 
-                          order.status === 'validated' ? 'bg-blue-500' : 
-                          order.status === 'payment_pending' ? 'bg-orange-500' :
-                          order.status === 'rejected' ? 'bg-red-500' :
-                          'bg-gray-200 text-gray-600 border-none'
-                      }>
+                      <Badge className={cn(
+                          "font-bold uppercase text-[9px] px-2 h-5",
+                          order.status === 'completed' ? 'bg-green-500 text-white' : 
+                          order.status === 'validated' ? 'bg-blue-500 text-white' : 
+                          order.status === 'payment_pending' ? 'bg-orange-500 text-white animate-pulse' :
+                          order.status === 'rejected' ? 'bg-red-500 text-white' :
+                          'bg-gray-100 text-gray-600 border-none'
+                      )}>
                           {order.status === 'pending' ? 'À régler' : 
                            order.status === 'payment_pending' ? 'En vérification' :
                            order.status === 'validated' ? 'Actif' :
@@ -164,8 +170,8 @@ export default function DashboardPage() {
                     </div>
                     
                     <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-tighter text-muted-foreground mb-3">
-                      <span className="text-primary">{totalPrice.toLocaleString('fr-FR')} FCFA</span>
-                      <span>•</span>
+                      <span className="text-primary font-black">{totalPrice.toLocaleString('fr-FR')} FCFA</span>
+                      <span className="opacity-30">•</span>
                       <span className={order.paymentMode !== 'cash' ? 'text-blue-600' : ''}>
                           {order.paymentMode === 'installments' ? 'Tranches' : order.paymentMode === 'tontine' ? 'Tontine' : 'Cash'}
                       </span>
@@ -184,13 +190,21 @@ export default function DashboardPage() {
 
                   <div className="flex items-center justify-center sm:justify-end gap-2 shrink-0">
                     {order.status !== 'completed' && (
-                        <Button asChild size="sm" className="rounded-lg font-black bg-primary text-black text-xs px-4 h-9">
+                        <Button asChild size="sm" className={cn(
+                            "rounded-lg font-black text-xs px-4 h-9 shadow-sm transition-all active:scale-95",
+                            isWaitingValidation ? "bg-orange-500 hover:bg-orange-600 text-white" : "bg-primary text-black hover:bg-primary/90"
+                        )}>
                             <Link href={`/dashboard/payment/${order.id}`}>
-                                {order.status === 'payment_pending' ? 'Voir statut' : 'Verser'} <ChevronRight className="h-3 w-3 ml-1" />
+                                {order.status === 'payment_pending' ? 'Suivre validation' : 'Effectuer versement'} <ChevronRight className="h-3 w-3 ml-1" />
                             </Link>
                         </Button>
                     )}
-                    {order.status === 'completed' && <CheckCircle2 className="h-6 w-6 text-green-500" />}
+                    {order.status === 'completed' && (
+                        <div className="flex items-center gap-2 bg-green-50 text-green-600 px-3 py-1.5 rounded-lg border border-green-100">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span className="text-[10px] font-black uppercase">Terminé</span>
+                        </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
