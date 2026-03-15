@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -167,6 +168,7 @@ export default function ProductsPage() {
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
         product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.sku?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (product.brand && product.brand.toLowerCase().includes(searchQuery.toLowerCase()));
       const categoryMatch = filters.category === 'tous' || product.category === filters.category;
       const brandMatch = filters.brand === 'tous' || product.brand === filters.brand;
@@ -226,7 +228,7 @@ export default function ProductsPage() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input 
                     type="search" 
-                    placeholder="Rechercher un article, une marque..." 
+                    placeholder="Rechercher par nom ou référence (ex: SAAH-...)" 
                     className="pl-12 h-14 w-full rounded-md border-none focus:ring-0 shadow-none bg-transparent font-medium text-lg"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}

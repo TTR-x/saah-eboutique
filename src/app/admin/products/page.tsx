@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -9,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { PlusCircle, MoreHorizontal, Pencil, Trash2, X, Copy, Tag as TagIcon, LayoutGrid, Package, CreditCard, Users, Image as ImageIcon } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Pencil, Trash2, X, Copy, Tag as TagIcon, LayoutGrid, Package, CreditCard, Users, Image as ImageIcon, Search } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { getProducts } from "@/lib/products-service";
@@ -30,6 +31,7 @@ type ImagePreview = {
 };
 
 type ProductFormData = {
+  sku: string;
   name: string;
   description: string;
   price: number | '';
@@ -58,9 +60,11 @@ export default function AdminProductsPage() {
   const [submissionStatus, setSubmissionStatus] = useState('');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [productForm, setProductForm] = useState<ProductFormData>({
+    sku: "",
     name: "",
     description: "",
     price: '',
@@ -101,6 +105,7 @@ export default function AdminProductsPage() {
   useEffect(() => {
     if (editingProduct) {
         setProductForm({
+            sku: editingProduct.sku || "",
             name: editingProduct.name,
             description: editingProduct.description,
             price: editingProduct.price,
@@ -124,6 +129,10 @@ export default function AdminProductsPage() {
         resetForm();
     }
   }, [editingProduct, isDialogOpen]);
+
+  const generateSKU = () => {
+    return 'SAAH-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  };
 
   const addFilesToForm = useCallback((selectedFiles: File[]) => {
     setProductForm(prev => {
@@ -154,7 +163,6 @@ export default function AdminProductsPage() {
     });
   }, [toast]);
 
-  // Handle Ctrl+V Paste
   const handlePaste = useCallback((e: ClipboardEvent) => {
     if (!isDialogOpen) return;
     
@@ -196,7 +204,6 @@ export default function AdminProductsPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       addFilesToForm(Array.from(e.target.files));
-      // Reset input to allow selecting same file again
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -225,6 +232,7 @@ export default function AdminProductsPage() {
   const resetForm = () => {
     productForm.newImages.forEach(img => URL.revokeObjectURL(img.previewUrl));
     setProductForm({
+      sku: "",
       name: "",
       description: "",
       price: '',
@@ -263,6 +271,7 @@ export default function AdminProductsPage() {
     const duplicated = {
         ...product,
         id: "", 
+        sku: generateSKU(),
         name: `${product.name} (Copie)`,
     };
     setEditingProduct(duplicated as any);
@@ -330,6 +339,7 @@ export default function AdminProductsPage() {
         const finalPublicIds = [...productForm.existingPublicIds, ...uploadedImages.map(img => img.public_id)];
         
         const productData = {
+            sku: productForm.sku || generateSKU(),
             name: productForm.name,
             description: productForm.description,
             price: Number(productForm.price),
@@ -388,6 +398,12 @@ export default function AdminProductsPage() {
     }
   };
 
+  const filteredProducts = products.filter(p => 
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    p.sku?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.brand?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const currentTotalImages = productForm.existingImages.length + productForm.newImages.length;
 
   return (
@@ -397,9 +413,20 @@ export default function AdminProductsPage() {
             <h2 className="text-3xl font-extrabold tracking-tight">Catalogue Articles</h2>
             <p className="text-muted-foreground">Gérez vos produits et options de paiement.</p>
         </div>
-        <Button onClick={handleOpenNew} className="shadow-lg h-12 px-6 rounded-xl font-bold bg-primary text-black hover:bg-primary/90">
-          <PlusCircle className="mr-2 h-5 w-5" /> Nouvel Article
-        </Button>
+        <div className="flex items-center gap-3">
+            <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                    placeholder="Chercher Nom ou Réf..." 
+                    className="pl-9 h-12 rounded-xl"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+            </div>
+            <Button onClick={handleOpenNew} className="shadow-lg h-12 px-6 rounded-xl font-bold bg-primary text-black hover:bg-primary/90">
+                <PlusCircle className="mr-2 h-5 w-5" /> Nouvel Article
+            </Button>
+        </div>
       </div>
 
       <Card className="rounded-xl overflow-hidden border-none shadow-sm">
@@ -407,7 +434,7 @@ export default function AdminProductsPage() {
             <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-lg">
                     <Package className="h-5 w-5 text-primary" />
-                    Articles en vente ({products.length})
+                    Articles en vente ({filteredProducts.length})
                 </CardTitle>
             </div>
         </CardHeader>
@@ -418,8 +445,8 @@ export default function AdminProductsPage() {
                     <LogoSpinner className="h-10 w-10 text-primary" />
                     <p className="text-sm font-medium text-muted-foreground">Chargement du catalogue...</p>
                 </div>
-            ) : products.length > 0 ? (
-              products.map((product) => (
+            ) : filteredProducts.length > 0 ? (
+              filteredProducts.map((product) => (
                 <div key={product.id} className="flex items-center justify-between p-4 bg-white hover:bg-muted/30 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="relative h-16 w-16 rounded-lg overflow-hidden border bg-muted/50">
@@ -434,6 +461,8 @@ export default function AdminProductsPage() {
                       </div>
                       <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground mt-1">
                         <span className="text-primary font-bold">{product.price.toLocaleString('fr-FR')} FCFA</span>
+                        <span>•</span>
+                        <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-[10px] uppercase">{product.sku || 'SANS-REF'}</span>
                         <span>•</span>
                         <span className="capitalize">{product.category}</span>
                       </div>
@@ -463,8 +492,8 @@ export default function AdminProductsPage() {
             ) : (
               <div className="text-center py-24 bg-white">
                 <Package className="mx-auto h-16 w-16 text-muted-foreground opacity-20 mb-4" />
-                <p className="text-muted-foreground font-medium">Votre catalogue est vide.</p>
-                <Button variant="link" onClick={handleOpenNew} className="mt-2 text-primary font-bold">Ajouter votre premier produit</Button>
+                <p className="text-muted-foreground font-medium">Aucun article trouvé.</p>
+                <Button variant="link" onClick={() => setSearchQuery("")} className="mt-2 text-primary font-bold">Effacer la recherche</Button>
               </div>
             )}
           </div>
@@ -497,6 +526,12 @@ export default function AdminProductsPage() {
                             <Input id="name" name="name" value={productForm.name} onChange={handleInputChange} placeholder="Ex: Baskets Nike Air Max" className="h-12 rounded-md" required />
                         </div>
                         <div className="space-y-2">
+                            <Label htmlFor="sku" className="font-bold">Référence Produit (SKU)</Label>
+                            <Input id="sku" name="sku" value={productForm.sku} onChange={handleInputChange} placeholder="Auto-généré si vide" className="h-12 rounded-md font-mono uppercase" />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
                             <Label htmlFor="category" className="font-bold">Catégorie *</Label>
                             <Select value={productForm.category} onValueChange={handleCategoryChange}>
                                 <SelectTrigger className="h-12 rounded-md"><SelectValue placeholder="Choisir" /></SelectTrigger>
@@ -505,20 +540,18 @@ export default function AdminProductsPage() {
                                 </SelectContent>
                             </Select>
                         </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="brand" className="font-bold">Marque / Fabricant</Label>
+                            <Input id="brand" name="brand" value={productForm.brand} onChange={handleInputChange} placeholder="Ex: Nike, Calvin Klein, Adidas..." className="h-12 rounded-md" />
+                        </div>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="description" className="font-bold">Description détaillée *</Label>
                         <Textarea id="description" name="description" value={productForm.description} onChange={handleInputChange} placeholder="Détaillez les caractéristiques, tailles, couleurs..." className="min-h-[120px] rounded-md" required />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="brand" className="font-bold">Marque / Fabricant</Label>
-                            <Input id="brand" name="brand" value={productForm.brand} onChange={handleInputChange} placeholder="Ex: Nike, Calvin Klein, Adidas..." className="h-12 rounded-md" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="tags" className="font-bold flex items-center gap-2"><TagIcon className="h-3 w-3" /> Tags (séparés par des virgules)</Label>
-                            <Input id="tags" name="tags" value={productForm.tags} onChange={handleInputChange} placeholder="Ex: homme, mode, premium" className="h-12 rounded-md" />
-                        </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="tags" className="font-bold flex items-center gap-2"><TagIcon className="h-3 w-3" /> Tags (séparés par des virgules)</Label>
+                        <Input id="tags" name="tags" value={productForm.tags} onChange={handleInputChange} placeholder="Ex: homme, mode, premium" className="h-12 rounded-md" />
                     </div>
                 </Card>
               </div>

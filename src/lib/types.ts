@@ -1,6 +1,7 @@
 
 export type Product = {
   id: string;
+  sku?: string;
   name: string;
   description: string;
   images: string[];
@@ -32,6 +33,7 @@ export type Order = {
   userName: string;
   userPhone?: string;
   productId: string;
+  productSku?: string;
   productName: string;
   productImage: string;
   amount: number;

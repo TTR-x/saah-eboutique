@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -40,7 +41,7 @@ export default function OrderPaymentPage() {
     const phoneNumber = "22890101392";
     const message = `Bonjour SAAH Business, je viens d'effectuer mon versement Tmoney pour ma commande :
     
-*ARTICLE:* ${order?.productName}
+*ARTICLE:* ${order?.productName} ${order?.productSku ? `(Réf: ${order.productSku})` : ''}
 *MONTANT ENVOYÉ:* ${order?.amount.toLocaleString('fr-FR')} FCFA
 *NUMÉRO DE TRANSFERT:* ${transferId}
 
@@ -49,6 +50,20 @@ Merci de valider mon paiement.`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
     router.push('/dashboard');
+  };
+
+  const handleStoreWhatsApp = () => {
+    const phoneNumber = "22890101392";
+    const message = `Bonjour SAAH Business, je souhaite passer en boutique pour régler mon paiement concernant l'article :
+    
+*PRODUIT:* ${order?.productName}
+*RÉFÉRENCE:* ${order?.productSku || order?.id.slice(0, 8)}
+*MONTANT DU JOUR:* ${order?.amount.toLocaleString('fr-FR')} FCFA
+
+Je suis en route !`;
+
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   if (loading) {
@@ -204,16 +219,21 @@ Merci de valider mon paiement.`;
                             </Link>
                         </Button>
                         
-                        <Button asChild variant="outline" className="w-full h-16 rounded-xl border-2 border-gray-100 hover:border-primary font-black text-lg transition-all">
-                            <Link href={`https://wa.me/22890101392?text=Bonjour, je souhaite passer en boutique pour régler ma commande ${orderId}`} target="_blank">
-                                <MessageSquare className="mr-2 h-6 w-6 text-green-600" /> Écrivez-nous
-                            </Link>
+                        <Button 
+                            onClick={handleStoreWhatsApp}
+                            variant="outline" 
+                            className="w-full h-16 rounded-xl border-2 border-gray-100 hover:border-primary font-black text-lg transition-all"
+                        >
+                            <MessageSquare className="mr-2 h-6 w-6 text-green-600" /> Écrivez-nous
                         </Button>
                     </div>
 
                     <div className="pt-4 space-y-2 text-[10px] font-bold text-center text-muted-foreground uppercase tracking-widest">
                         <p className="flex items-center justify-center gap-2"><CheckCircle2 className="h-3 w-3 text-green-500" /> Ouvert de 08h00 à 18h30</p>
-                        <p className="flex items-center justify-center gap-2"><CheckCircle2 className="h-3 w-3 text-green-500" /> Commande N° : {orderId?.toString().slice(0, 8)}</p>
+                        <p className="flex items-center justify-center gap-2 font-mono uppercase">
+                            <CheckCircle2 className="h-3 w-3 text-green-500" /> 
+                            Réf Article : {order.productSku || order.id.slice(0, 8)}
+                        </p>
                     </div>
                 </CardContent>
             </Card>
