@@ -1,16 +1,18 @@
+
 'use client';
 
 import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { LogoSpinner } from '@/components/logo-spinner';
-import { History, ArrowLeft, Calendar, ShoppingBag, BadgeEuro, CreditCard, Users, CheckCircle2 } from 'lucide-react';
+import { History, ArrowLeft, Calendar, BadgeEuro, CreditCard, Users, CheckCircle2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 export default function GlobalHistoryPage() {
   const { user, loading: authLoading } = useUser();
@@ -38,7 +40,7 @@ export default function GlobalHistoryPage() {
     
     const transactions: any[] = [];
     orders.forEach(order => {
-      if (order.paymentHistory && order.paymentHistory.length > 0) {
+      if (order.paymentHistory && Array.isArray(order.paymentHistory)) {
         order.paymentHistory.forEach((payment: any) => {
           transactions.push({
             ...payment,
@@ -148,8 +150,4 @@ export default function GlobalHistoryPage() {
       )}
     </div>
   );
-}
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(' ');
 }

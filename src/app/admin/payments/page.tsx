@@ -20,7 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import Link from "next/link";
 import { useFirestore, useCollection } from "@/firebase";
-import { collection, query, orderBy, doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, orderBy, doc, updateDoc, serverTimestamp, arrayUnion } from "firebase/firestore";
 
 export default function AdminPaymentsPage() {
   const db = useFirestore();
@@ -47,25 +47,26 @@ export default function AdminPaymentsPage() {
       
       // Calcul du nouveau reste à payer
       const currentRemaining = order.remainingAmount ?? order.totalPrice;
-      const newRemaining = Math.max(0, currentRemaining - order.amount);
+      const amountPaid = order.amount || 0;
+      const newRemaining = Math.max(0, currentRemaining - amountPaid);
       const isFinished = newRemaining <= 0;
 
-      // Mise à jour de l'historique
+      // Nouvelle entrée d'historique
       const newHistoryEntry = {
-        amount: order.amount,
-        date: new Date(),
+        amount: amountPaid,
+        date: new Date(), // Utilise une date JS pour l'insertion dans l'array
         transferId: order.transferId || 'N/A',
         status: 'validated'
       };
 
-      const updatedHistory = [...(order.paymentHistory || []), newHistoryEntry];
-
+      // Mise à jour atomique
       await updateDoc(orderRef, {
         status: isFinished ? 'completed' : 'validated',
         remainingAmount: newRemaining,
         paymentValidatedAt: serverTimestamp(),
         lastPaymentValidatedAt: serverTimestamp(),
-        paymentHistory: updatedHistory,
+        // Utilisation de arrayUnion pour garantir qu'on ne perd aucune donnée
+        paymentHistory: arrayUnion(newHistoryEntry),
         // On vide le transferId pour permettre le prochain versement
         transferId: "", 
       });
@@ -75,6 +76,7 @@ export default function AdminPaymentsPage() {
         description: `Transfert de ${order.userName} confirmé. Reste : ${newRemaining.toLocaleString('fr-FR')} F` 
       });
     } catch (error) {
+      console.error("Validation error:", error);
       toast({ title: "Erreur", description: "Échec de la validation.", variant: "destructive" });
     }
   };
