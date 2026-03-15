@@ -1,10 +1,10 @@
 
 'use client'
 
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ShoppingBag, Clock, History, Wallet, CreditCard, MessageCircle } from "lucide-react";
-import { getAllOrders, updateOrderStatus } from "@/lib/orders-service";
+import { updateOrderStatus } from "@/lib/orders-service";
 import type { Order } from "@/lib/types";
 import { LogoSpinner } from "@/components/logo-spinner";
 import { Badge } from "@/components/ui/badge";
@@ -21,43 +21,36 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import Link from "next/link";
+import { useFirestore, useCollection } from "@/firebase";
+import { collection, query, orderBy } from "firebase/firestore";
 
 export default function AdminSalesPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const db = useFirestore();
   const { toast } = useToast();
 
-  const fetchOrders = async () => {
-    setIsLoading(true);
-    try {
-      const data = await getAllOrders();
-      setOrders(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Création de la requête mémoïsée pour le temps réel
+  const ordersQuery = useMemo(() => {
+    return query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+  }, [db]);
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  // Utilisation du hook de collection pour le temps réel
+  const { data: orders, loading: isLoading } = useCollection<Order>(ordersQuery);
 
   const handleStatusUpdate = async (orderId: string, status: Order['status']) => {
     try {
       await updateOrderStatus(orderId, status);
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
       toast({ 
         title: status === 'validated' ? "Vente Validée" : "Vente Annulée", 
-        description: `La vente a été déplacée vers l'historique.` 
+        description: `Le statut a été mis à jour avec succès.` 
       });
     } catch (error) {
       toast({ title: "Erreur", description: "Échec de la mise à jour.", variant: "destructive" });
     }
   };
 
-  const pendingOrders = orders.filter(o => o.status === 'pending');
-  const historyOrders = orders.filter(o => o.status !== 'pending');
+  const safeOrders = orders || [];
+  const pendingOrders = safeOrders.filter(o => o.status === 'pending');
+  const historyOrders = safeOrders.filter(o => o.status !== 'pending');
 
   const pendingCash = pendingOrders.filter(o => o.paymentMode === 'cash');
   const pendingInstallments = pendingOrders.filter(o => o.paymentMode === 'installments');
@@ -84,13 +77,13 @@ export default function AdminSalesPage() {
         </TableHeader>
         <TableBody>
           {data.map((order) => {
-            const userPhone = (order as any).userPhone;
+            const userPhone = order.userPhone;
             const whatsappUrl = userPhone ? `https://wa.me/${userPhone.replace(/\s+/g, '')}` : null;
 
             return (
               <TableRow key={order.id} className="hover:bg-muted/20 transition-colors">
                 <TableCell className="text-[10px] text-muted-foreground whitespace-nowrap">
-                    {new Date(order.createdAt?.toDate?.() || order.createdAt).toLocaleDateString('fr-FR')}
+                    {order.createdAt ? new Date(order.createdAt.toDate ? order.createdAt.toDate() : order.createdAt).toLocaleDateString('fr-FR') : '...'}
                 </TableCell>
                 <TableCell className="py-3">
                   <div className="flex items-center gap-2">
@@ -173,7 +166,7 @@ export default function AdminSalesPage() {
       <div className="flex justify-between items-center">
         <div>
             <h2 className="text-3xl font-extrabold tracking-tight">Ventes en Attente</h2>
-            <p className="text-muted-foreground">Gérez les intentions d'achat et l'historique des décisions.</p>
+            <p className="text-muted-foreground">Gérez les intentions d'achat et l'historique des décisions en temps réel.</p>
         </div>
         <div className="h-12 px-6 rounded-xl bg-white border flex items-center gap-3 shadow-sm">
             <Clock className="h-5 w-5 text-orange-500" />
