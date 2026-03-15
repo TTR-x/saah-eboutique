@@ -23,6 +23,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useFirestore, useCollection } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 export default function AdminSalesPage() {
   const db = useFirestore();
@@ -40,8 +48,8 @@ export default function AdminSalesPage() {
     try {
       await updateOrderStatus(orderId, status);
       toast({ 
-        title: status === 'validated' ? "Vente Validée" : "Vente Annulée", 
-        description: `Le statut a été mis à jour avec succès.` 
+        title: "Statut mis à jour", 
+        description: `La vente a été marquée comme : ${status === 'validated' ? 'Validé' : status === 'completed' ? 'Terminé' : status === 'cancelled' ? 'Annulé' : 'En attente'}` 
       });
     } catch (error) {
       toast({ title: "Erreur", description: "Échec de la mise à jour.", variant: "destructive" });
@@ -68,11 +76,7 @@ export default function AdminSalesPage() {
             <TableHead className="font-bold text-[10px] uppercase">Client</TableHead>
             <TableHead className="font-bold text-[10px] uppercase text-right">Montant</TableHead>
             <TableHead className="font-bold text-[10px] uppercase text-center">Contact</TableHead>
-            {showActions ? (
-              <TableHead className="font-bold text-[10px] uppercase text-center">Actions</TableHead>
-            ) : (
-              <TableHead className="font-bold text-[10px] uppercase text-center">Statut</TableHead>
-            )}
+            <TableHead className="font-bold text-[10px] uppercase text-center">Statut</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -136,14 +140,25 @@ export default function AdminSalesPage() {
                       </Button>
                     </div>
                   ) : (
-                    <Badge className={`text-[9px] h-5 ${
-                      order.status === 'completed' ? 'bg-green-500' : 
-                      order.status === 'validated' ? 'bg-blue-500' : 
-                      'bg-red-500'
-                    }`}>
-                      {order.status === 'validated' ? 'Validé' : 
-                       order.status === 'completed' ? 'Terminé' : 'Annulé'}
-                    </Badge>
+                    <Select 
+                      defaultValue={order.status} 
+                      onValueChange={(val) => handleStatusUpdate(order.id, val as Order['status'])}
+                    >
+                      <SelectTrigger className={cn(
+                        "h-7 w-[100px] text-[10px] font-bold border-none rounded-md mx-auto focus:ring-0",
+                        order.status === 'completed' ? 'bg-green-500 text-white' : 
+                        order.status === 'validated' ? 'bg-blue-500 text-white' : 
+                        'bg-red-500 text-white'
+                      )}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="border-none shadow-xl rounded-md min-w-[120px]">
+                        <SelectItem value="pending" className="text-[10px] font-bold">En attente</SelectItem>
+                        <SelectItem value="validated" className="text-[10px] font-bold">Validé</SelectItem>
+                        <SelectItem value="completed" className="text-[10px] font-bold">Terminé</SelectItem>
+                        <SelectItem value="cancelled" className="text-[10px] font-bold text-red-500">Annulé</SelectItem>
+                      </SelectContent>
+                    </Select>
                   )}
                 </TableCell>
               </TableRow>
