@@ -30,7 +30,7 @@ export default function DashboardPage() {
   const userRef = useMemo(() => (user ? doc(db, 'users', user.uid) : null), [db, user]);
   const { data: profile } = useDoc(userRef);
 
-  // Récupération de toutes les commandes de l'utilisateur
+  // Récupération de toutes les commandes de l'utilisateur sans tri Firestore pour éviter les problèmes d'index
   const ordersQuery = useMemo(() => {
     if (!db || !user) return null;
     return query(
@@ -41,7 +41,7 @@ export default function DashboardPage() {
 
   const { data: rawOrders, loading: ordersLoading } = useCollection(ordersQuery);
 
-  // Tri côté client
+  // Tri et filtrage intelligent côté client
   const orders = useMemo(() => {
     if (!rawOrders) return [];
     return [...rawOrders].sort((a: any, b: any) => {
@@ -51,21 +51,29 @@ export default function DashboardPage() {
     });
   }, [rawOrders]);
 
-  /**
-   * NOUVELLE LOGIQUE DE FILTRAGE
-   */
-  
-  // 1. Les achats "Officiellement Validés" (Au moins un versement dans l'historique ou complété)
+  // 1. Les achats "Officiellement Validés" 
+  // Un article est considéré comme validé s'il est complété, validé par l'admin, 
+  // ou s'il possède au moins une entrée dans son historique de paiement.
   const officiallyValidatedOrders = useMemo(() => {
-    return orders.filter(o => (o.paymentHistory && o.paymentHistory.length > 0) || o.status === 'completed');
+    return orders.filter(o => 
+        o.status === 'completed' || 
+        o.status === 'validated' || 
+        (o.paymentHistory && o.paymentHistory.length > 0)
+    );
   }, [orders]);
 
-  // 2. Les "Nouvelles Intentions" (Pas encore validées une seule fois par l'admin)
+  // 2. Les "Nouvelles Intentions"
+  // Uniquement les articles qui n'ont AUCUN historique et qui ne sont pas encore validés une seule fois.
   const newIntentions = useMemo(() => {
-    return orders.filter(o => (!o.paymentHistory || o.paymentHistory.length === 0) && o.status !== 'completed');
+    return orders.filter(o => 
+        o.status !== 'completed' && 
+        o.status !== 'validated' &&
+        (!o.paymentHistory || o.paymentHistory.length === 0) &&
+        o.status !== 'cancelled'
+    );
   }, [orders]);
 
-  // 3. Compteur global des paiements en attente de vérification admin (pour le bouton clignotant)
+  // 3. Compteur global des paiements en attente de vérification admin
   const pendingPaymentsCount = useMemo(() => {
     return orders.filter(o => o.status === 'payment_pending').length;
   }, [orders]);
@@ -86,10 +94,9 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
-  // Statistiques basées UNIQUEMENT sur les articles ayant déjà eu au moins une validation
+  // Statistiques basées UNIQUEMENT sur les articles validés
   const activePlansCount = officiallyValidatedOrders.filter(o => o.status !== 'completed').length;
   
-  // Valeur totale payée : Somme de (Prix Total - Reste à payer) pour tous les articles validés
   const totalValuePaid = officiallyValidatedOrders.reduce((acc, o) => {
     const totalPrice = o.totalPrice || o.amount;
     const remaining = o.remainingAmount ?? totalPrice;
@@ -135,7 +142,7 @@ export default function DashboardPage() {
                 )}
             >
                 <Clock className="h-4 w-4 mr-2" /> 
-                Paiements en attente {pendingPaymentsCount > 0 && `(${pendingPaymentsCount})`}
+                Vérifications {pendingPaymentsCount > 0 && `(${pendingPaymentsCount})`}
             </Button>
 
             <Button asChild variant="ghost" size="sm" className="rounded-lg text-primary font-black">
@@ -182,11 +189,11 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* SECTION DES NOUVELLES DEMANDES (Pas encore de premier versement validé) */}
+      {/* SECTION DES NOUVELLES DEMANDES (Uniquement celles jamais validées) */}
       {newIntentions.length > 0 && (
         <div id="pending-section" className="mb-12 scroll-mt-24">
             <h2 className="text-xl font-black mb-4 flex items-center gap-2 text-orange-600">
-                <Clock className="h-5 w-5" /> Mes demandes à finaliser ({newIntentions.length})
+                <Clock className="h-5 w-5" /> Mes intentions à finaliser ({newIntentions.length})
             </h2>
             <div className="grid gap-4">
                 {newIntentions.map((order: any) => (
@@ -211,7 +218,7 @@ export default function DashboardPage() {
                                 </p>
                             </div>
                             <Button asChild size="sm" className="rounded-lg font-black text-xs h-9 bg-orange-500 hover:bg-orange-600 text-white">
-                                <Link href={`/dashboard/payment/${order.id}`}>Finaliser / Suivre <ChevronRight className="h-3 w-3 ml-1" /></Link>
+                                <Link href={`/dashboard/payment/${order.id}`}>Finaliser l'achat <ChevronRight className="h-3 w-3 ml-1" /></Link>
                             </Button>
                         </CardContent>
                     </Card>
@@ -222,7 +229,7 @@ export default function DashboardPage() {
 
       {/* SECTION PRINCIPALE : LES ARTICLES DÉJÀ VALIDÉS AU MOINS UNE FOIS */}
       <h2 className="text-xl font-black mb-4 flex items-center gap-2">
-        <CheckCircle2 className="h-5 w-5 text-green-600" /> Mes Achats & Plans Validés
+        <CheckCircle2 className="h-5 w-5 text-green-600" /> Mes Achats & Plans Confirmés
       </h2>
 
       {ordersLoading ? (
@@ -261,7 +268,7 @@ export default function DashboardPage() {
                             "font-bold uppercase text-[9px] px-2 h-5",
                             order.status === 'completed' ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
                         )}>
-                            {order.status === 'completed' ? 'Terminé ✅' : 'Actif ⚡'}
+                            {order.status === 'completed' ? 'Payé / Livré ✅' : 'Cycle Actif ⚡'}
                         </Badge>
                       </div>
                     </div>
@@ -301,7 +308,7 @@ export default function DashboardPage() {
                     ) : (
                         <div className="flex items-center gap-2 bg-green-50 text-green-600 px-3 py-1.5 rounded-lg border border-green-100">
                             <CheckCircle2 className="h-4 w-4" />
-                            <span className="text-[10px] font-black uppercase">Remis / Terminé</span>
+                            <span className="text-[10px] font-black uppercase">Terminé</span>
                         </div>
                     )}
                   </div>
@@ -317,7 +324,7 @@ export default function DashboardPage() {
           </div>
           <h3 className="font-black text-xl">Aucun achat validé</h3>
           <p className="text-muted-foreground max-w-sm mx-auto mt-2 text-sm">
-            Vos articles apparaîtront ici une fois que votre premier versement sera confirmé par SAAH Business.
+            Vos articles apparaîtront ici dès que votre premier versement sera confirmé.
           </p>
           <Button asChild className="mt-6 rounded-xl font-bold bg-primary text-black" size="lg">
             <Link href="/products">Découvrir le catalogue</Link>
