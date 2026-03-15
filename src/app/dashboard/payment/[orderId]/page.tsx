@@ -9,11 +9,12 @@ import type { Order } from '@/lib/types';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy } from 'lucide-react';
+import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy, MapPin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Link from 'next/link';
 
 export default function OrderPaymentPage() {
   const { orderId } = useParams();
@@ -116,7 +117,7 @@ Merci de valider mon paiement.`;
                     </div>
                     <div className="text-center">
                         <p className="font-black text-lg">En Ligne</p>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">Tmoney / Flooz</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">Tmoney</p>
                     </div>
                 </button>
 
@@ -129,7 +130,7 @@ Merci de valider mon paiement.`;
                     </div>
                     <div className="text-center">
                         <p className="font-black text-lg">En Boutique</p>
-                        <p className="text-[10px] font-bold uppercase tracking-tight opacity-60">Lomé, Deckon</p>
+                        <p className="text-[10px] font-bold uppercase tracking-tight opacity-60">agoè échangeur</p>
                     </div>
                 </button>
             </div>
@@ -184,7 +185,7 @@ Merci de valider mon paiement.`;
                     </div>
                     <div className="space-y-2">
                         <h3 className="font-black text-2xl">Rendez-vous en agence</h3>
-                        <p className="text-muted-foreground font-medium">Notre boutique est située au quartier <strong>Deckon (Lomé)</strong>.</p>
+                        <p className="text-muted-foreground font-medium">Notre boutique est située au quartier <strong>Agoè échangeur (Lomé)</strong>.</p>
                     </div>
                     <div className="bg-muted/30 p-6 rounded-2xl w-full text-left space-y-3">
                         <p className="text-xs font-bold uppercase text-primary tracking-widest">Informations pratiques</p>

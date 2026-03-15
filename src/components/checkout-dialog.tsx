@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Product } from '@/lib/types';
-import { Wallet, Truck, User, CheckCircle2, ChevronLeft, ArrowRight, MessageSquare, FileEdit, CreditCard, Users } from 'lucide-react';
+import { Wallet, Truck, User, CheckCircle2, ChevronLeft, ArrowRight, MessageSquare, FileEdit, CreditCard, Users, Store, Smartphone } from 'lucide-react';
 import { useUser, useFirestore } from '@/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -127,7 +127,7 @@ Merci de m'indiquer la marche à suivre pour finaliser mon achat rapidement.`;
     
     const deliveryInfo = formData.isDelivery 
       ? `✅ Livraison demandée\n📍 Adresse: ${formData.address}\n🚚 Frais: ${product.deliveryFees || 0} FCFA`
-      : `🏪 Retrait en boutique (Lomé, Deckon)`;
+      : `🏪 Retrait en boutique (Lomé, Agoè échangeur)`;
 
     let baseAmount = product.price;
     if (formData.paymentMode === 'installments') baseAmount = product.installmentPrice || 0;
