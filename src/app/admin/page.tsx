@@ -100,15 +100,19 @@ export default function AdminDashboardPage() {
 
     const recentMessages = messages.slice(0, 5);
     const recentSales = filteredSales.slice(0, 5);
-    const pendingSalesCount = filteredSales.filter(s => s.status === 'pending').length;
-    const totalPotentialRevenue = filteredSales.reduce((acc, sale) => acc + (sale.status !== 'cancelled' ? sale.amount : 0), 0);
     
+    // Calcul des compteurs
+    const totalPotentialRevenue = filteredSales.reduce((acc, sale) => acc + (sale.status !== 'cancelled' ? sale.amount : 0), 0);
     const validatedTranchesCount = filteredSales.filter(s => s.paymentMode === 'installments' && (s.status === 'validated' || s.status === 'completed')).length;
     const validatedTontinesCount = filteredSales.filter(s => s.paymentMode === 'tontine' && (s.status === 'validated' || s.status === 'completed')).length;
 
-    // Calcul des ventes en attente pour la nouvelle zone (respecte le filtre temporel)
+    // En attente (statistiques pour la carte divisée)
+    const pendingTranchesCount = filteredSales.filter(s => s.status === 'pending' && s.paymentMode === 'installments').length;
+    const pendingTontinesCount = filteredSales.filter(s => s.status === 'pending' && s.paymentMode === 'tontine').length;
+
+    // Calcul pour la zone détaillée
     const pendingCashCount = filteredSales.filter(s => s.status === 'pending' && s.paymentMode === 'cash').length;
-    const pendingOthersCount = filteredSales.filter(s => s.status === 'pending' && (s.paymentMode === 'installments' || s.paymentMode === 'tontine')).length;
+    const pendingOthersTotalCount = pendingTranchesCount + pendingTontinesCount;
 
   return (
     <div className="space-y-8">
@@ -137,8 +141,40 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <StatCard title="Ventes Totales" value={filteredSales.length} icon={<BadgeEuro className="h-4 w-4" />} isLoading={isLoading} subtext={timeFilter === 'all' ? "Historique" : "Sur la période"} />
-        <StatCard title="En Attente" value={pendingSalesCount} icon={<Clock className="h-4 w-4" />} isLoading={isLoading} subtext="À traiter" colorClass="text-orange-500" />
+        <StatCard 
+            title="Ventes Totales" 
+            value={filteredSales.length} 
+            icon={<BadgeEuro className="h-4 w-4" />} 
+            isLoading={isLoading} 
+            subtext={timeFilter === 'all' ? "Historique" : "Sur la période"} 
+        />
+
+        {/* CARTE EN ATTENTE DIVISÉE (Tranches et Tontines) */}
+        <Card className="border-none shadow-sm rounded-md overflow-hidden hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">En Attente</CardTitle>
+                <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center text-orange-500">
+                    <Clock className="h-4 w-4" />
+                </div>
+            </CardHeader>
+            <CardContent className="p-0">
+                {isLoading ? (
+                    <div className="p-4 flex justify-center"><LogoSpinner className="h-6 w-6" /></div>
+                ) : (
+                    <div className="divide-y divide-dashed">
+                        <div className="px-6 py-2">
+                            <div className="text-xl font-black text-blue-600">{pendingTranchesCount}</div>
+                            <p className="text-[8px] font-bold text-muted-foreground uppercase">Tranches à traiter</p>
+                        </div>
+                        <div className="px-6 py-2">
+                            <div className="text-xl font-black text-purple-600">{pendingTontinesCount}</div>
+                            <p className="text-[8px] font-bold text-muted-foreground uppercase">Tontines à traiter</p>
+                        </div>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+
         <StatCard title="Revenu Potentiel" value={`${totalPotentialRevenue.toLocaleString('fr-FR')} F`} icon={<TrendingUp className="h-4 w-4" />} isLoading={isLoading} subtext="Engagé" colorClass="text-green-500" />
         
         <StatCard title="Par tranche validé" value={validatedTranchesCount} icon={<CreditCard className="h-4 w-4" />} isLoading={isLoading} subtext="Tranches" colorClass="text-blue-500" />
@@ -167,7 +203,7 @@ export default function AdminDashboardPage() {
             <div>
                 <p className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 tracking-widest leading-none mb-1">Ventes Tranche / Tontine en attente</p>
                 <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-black text-blue-700 dark:text-blue-300">{pendingOthersCount}</span>
+                    <span className="text-3xl font-black text-blue-700 dark:text-blue-300">{pendingOthersTotalCount}</span>
                     <span className="text-xs font-bold text-blue-600/70 uppercase">Commandes</span>
                 </div>
             </div>
