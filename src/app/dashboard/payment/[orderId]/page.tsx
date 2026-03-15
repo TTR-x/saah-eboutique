@@ -8,7 +8,7 @@ import type { Order } from '@/lib/types';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy, MapPin, Clock, RefreshCw, AlertCircle, Sparkles, History, Calendar } from 'lucide-react';
+import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy, MapPin, Clock, RefreshCw, AlertCircle, Sparkles, History, Calendar, CheckCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -86,13 +86,6 @@ Merci de valider mon paiement.`;
     }
   };
 
-  const handleAcknowledgeSuccess = async () => {
-    if (!orderRef) return;
-    await updateDoc(orderRef, { status: 'pending' });
-    setPaymentType(null);
-    setTransferId('');
-  };
-
   const handleRetryAfterReject = async () => {
     if (!orderRef) return;
     await updateDoc(orderRef, { status: 'pending' });
@@ -118,8 +111,8 @@ Merci de valider mon paiement.`;
     );
   }
 
-  // --- ÉCRAN DE SUCCÈS (VALIDÉ) ---
-  if (order.status === 'validated' || order.status === 'completed') {
+  // --- ÉCRAN FINAL (COMPLÈTEMENT PAYÉ) ---
+  if (order.status === 'completed') {
     return (
       <div className="container mx-auto px-4 py-12 max-w-2xl animate-in fade-in duration-500">
         <Card className="border-none shadow-2xl rounded-3xl overflow-hidden bg-white text-center">
@@ -130,28 +123,13 @@ Merci de valider mon paiement.`;
           </div>
           <CardContent className="p-10 space-y-8">
             <div className="space-y-2">
-              <h1 className="text-3xl font-black tracking-tight">Paiement Accepté ! 🥳</h1>
+              <h1 className="text-3xl font-black tracking-tight">Félicitations ! 🥳</h1>
               <p className="text-muted-foreground font-medium text-lg">
-                Votre dernier versement a été validé avec succès.
+                Cet article est désormais entièrement payé.
               </p>
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-                <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100">
-                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Reste à payer</p>
-                    <p className="text-2xl font-black text-blue-700">{order.remainingAmount.toLocaleString('fr-FR')} F</p>
-                </div>
-                <div className="bg-green-50 p-6 rounded-2xl border border-green-100">
-                    <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mb-1">Statut Plan</p>
-                    <p className="text-xl font-black text-green-700">{order.status === 'completed' ? 'Terminé ✅' : 'Actif ⚡'}</p>
-                </div>
-            </div>
-
-            <Button 
-              onClick={handleAcknowledgeSuccess}
-              className="w-full h-16 rounded-2xl bg-black text-white hover:bg-gray-800 font-black text-xl shadow-xl transition-all"
-            >
-              {order.status === 'completed' ? "Voir mon tableau de bord" : "Préparer le prochain versement"}
+            <Button asChild className="w-full h-16 rounded-2xl bg-black text-white hover:bg-gray-800 font-black text-xl shadow-xl transition-all">
+              <Link href="/dashboard">Voir mon tableau de bord</Link>
             </Button>
           </CardContent>
         </Card>
@@ -242,15 +220,28 @@ Merci de valider mon paiement.`;
     );
   }
 
-  // --- ÉCRAN DE CHOIX INITIAL (PENDING) ---
+  // --- INTERFACE DE PAIEMENT (PENDING ou VALIDATED) ---
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       <div className="space-y-8">
+        
+        {/* BANNIÈRE DE SUCCÈS SI LE PRÉCÉDENT EST VALIDÉ */}
+        {order.status === 'validated' && (
+            <div className="bg-green-500 text-white rounded-2xl p-6 flex items-center gap-4 shadow-lg shadow-green-100 animate-in zoom-in-95">
+                <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center text-green-600 shrink-0 shadow-sm">
+                    <CheckCircle className="h-7 w-7" />
+                </div>
+                <div className="flex-1">
+                    <p className="font-black text-lg leading-none">Dernier versement validé ! 🥳</p>
+                    <p className="text-xs font-bold opacity-90 mt-1 uppercase">Continuez pour le prochain versement ci-dessous.</p>
+                </div>
+            </div>
+        )}
+
         <div className="text-center space-y-2">
-            <Badge className="bg-green-100 text-green-700 border-none font-black text-[10px] uppercase px-3">Engagement Validé</Badge>
-            <h1 className="text-3xl font-black tracking-tight">C'est parti ! 🚀</h1>
+            <h1 className="text-3xl font-black tracking-tight">Effectuer un versement</h1>
             <p className="text-muted-foreground font-medium leading-relaxed">
-                Continuez votre paiement {order.paymentMode === 'tontine' ? 'par tontine' : 'par tranches'} pour <strong>{order.productName}</strong>.
+                Choisissez votre mode de paiement pour <strong>{order.productName}</strong>.
             </p>
         </div>
 
@@ -265,7 +256,7 @@ Merci de valider mon paiement.`;
                     <p className="text-xl font-black text-blue-600">{remainingAmount.toLocaleString('fr-FR')} F</p>
                 </div>
                 <div className="p-6 text-center space-y-2 bg-primary/5 flex flex-col justify-center items-center">
-                    <p className="text-[10px] font-black text-primary uppercase tracking-widest">À payer aujourd'hui</p>
+                    <p className="text-[10px] font-black text-primary uppercase tracking-widest">À payer maintenant</p>
                     <div className="p-2 px-4 rounded-lg bg-white border-2 border-primary text-primary font-black text-xl">
                         {customAmount.toLocaleString('fr-FR')} F
                     </div>
@@ -378,7 +369,7 @@ Merci de valider mon paiement.`;
             </Card>
         )}
 
-        {/* SECTION HISTORIQUE (Visible uniquement si déjà des transactions) */}
+        {/* SECTION HISTORIQUE */}
         {order.paymentHistory && order.paymentHistory.length > 0 && (
             <div className="pt-10">
                 <div className="flex items-center gap-2 mb-4">
