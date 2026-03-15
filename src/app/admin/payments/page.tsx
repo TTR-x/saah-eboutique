@@ -20,21 +20,26 @@ import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import Link from "next/link";
 import { useFirestore, useCollection } from "@/firebase";
-import { collection, query, where, orderBy, doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, orderBy, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 
 export default function AdminPaymentsPage() {
   const db = useFirestore();
   const { toast } = useToast();
 
-  const paymentsQuery = useMemo(() => {
+  // On utilise une requête simple sur la collection pour éviter le besoin d'index composite
+  const allOrdersQuery = useMemo(() => {
     return query(
       collection(db, 'orders'), 
-      where('status', '==', 'payment_pending'),
       orderBy('createdAt', 'desc')
     );
   }, [db]);
 
-  const { data: orders, loading: isLoading } = useCollection<Order>(paymentsQuery);
+  const { data: allOrders, loading: isLoading } = useCollection<Order>(allOrdersQuery);
+
+  // Filtrage côté client pour une robustesse maximale
+  const orders = useMemo(() => {
+    return allOrders?.filter(order => order.status === 'payment_pending') || [];
+  }, [allOrders]);
 
   const handleValidate = async (order: Order) => {
     try {
@@ -86,7 +91,7 @@ export default function AdminPaymentsPage() {
         </div>
         <div className="h-12 px-6 rounded-xl bg-white border flex items-center gap-3 shadow-sm">
             <Smartphone className="h-5 w-5 text-primary" />
-            <span className="font-black text-lg">{orders?.length || 0}</span>
+            <span className="font-black text-lg">{orders.length}</span>
             <span className="text-xs font-bold text-muted-foreground uppercase">En attente</span>
         </div>
       </div>
@@ -101,7 +106,7 @@ export default function AdminPaymentsPage() {
         <CardContent className="p-0">
           {isLoading ? (
             <div className="flex justify-center items-center h-60"><LogoSpinner className="h-10 w-10 text-primary" /></div>
-          ) : orders && orders.length > 0 ? (
+          ) : orders.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
