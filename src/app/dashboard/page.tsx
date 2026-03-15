@@ -1,11 +1,10 @@
-
 'use client';
 
 import { useUser, useDoc, useFirestore, useCollection } from '@/firebase';
 import { doc, collection, query, where } from 'firebase/firestore';
 import { Card, CardContent } from '@/components/ui/card';
 import { LogoSpinner } from '@/components/logo-spinner';
-import { User, ShoppingBag, Clock, ChevronRight, Gift, CheckCircle2 } from 'lucide-react';
+import { User, ShoppingBag, Clock, ChevronRight, Gift, CheckCircle2, History } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
@@ -38,7 +37,7 @@ export default function DashboardPage() {
     );
   }, [db, user]);
 
-  const { data: rawOrders, loading: ordersLoading } = useCollection(ordersQuery);
+  const { data: rawOrders, loading: ordersLoading } = useCollection<any>(ordersQuery);
 
   const orders = useMemo(() => {
     if (!rawOrders) return [];
@@ -171,7 +170,7 @@ export default function DashboardPage() {
       )}
 
       {/* SECTION DES ARTICLES CONFIRMÉS */}
-      <div id="confirmed-section" className="scroll-mt-24">
+      <div id="confirmed-section" className="scroll-mt-24 mb-16">
         <h2 className="text-xl font-black mb-4 flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-green-600" /> Mes Achats & Plans Confirmés
         </h2>
@@ -269,6 +268,16 @@ export default function DashboardPage() {
             </Button>
             </div>
         )}
+      </div>
+
+      {/* BOUTON HISTORIQUE GLOBAL */}
+      <div className="flex justify-center border-t pt-10">
+        <Button asChild variant="outline" className="h-14 px-8 rounded-2xl border-2 font-black gap-3 hover:bg-primary hover:border-primary hover:text-black transition-all">
+          <Link href="/dashboard/history">
+            <History className="h-5 w-5" />
+            Voir mon historique complet
+          </Link>
+        </Button>
       </div>
     </div>
   );
