@@ -49,38 +49,43 @@ export default function DashboardPage() {
     });
   }, [rawOrders]);
 
-  // LOGIQUE ROBUSTE : Un achat est "Confirmé" s'il a au moins UN versement validé dans son historique
-  // ou s'il est déjà complété.
+  // --- LOGIQUE DE FILTRAGE AMÉLIORÉE ET ROBUSTE ---
+  
+  // Un achat est "Confirmé" s'il a été validé au moins une fois par l'admin
   const confirmedOrders = useMemo(() => {
     return orders.filter(o => 
         o.status === 'completed' || 
-        (o.paymentHistory && o.paymentHistory.some((h: any) => h.status === 'validated'))
+        o.status === 'validated' || 
+        (o.paymentHistory && o.paymentHistory.length > 0)
     );
   }, [orders]);
 
-  // Les "Demandes à finaliser" sont uniquement les articles qui n'ont AUCUN versement validé à ce jour.
+  // Une "Demande à finaliser" est une nouvelle intention qui n'a JAMAIS été validée
   const newIntentions = useMemo(() => {
     return orders.filter(o => 
         o.status !== 'completed' && 
+        o.status !== 'validated' && 
         o.status !== 'cancelled' &&
-        (!o.paymentHistory || !o.paymentHistory.some((h: any) => h.status === 'validated'))
+        (!o.paymentHistory || o.paymentHistory.length === 0)
     );
   }, [orders]);
 
-  // Compteur de paiements en attente de vérification
   const pendingPaymentsCount = useMemo(() => {
     return orders.filter(o => o.status === 'payment_pending').length;
   }, [orders]);
 
-  // CALCUL DES STATISTIQUES : Somme réelle de TOUS les versements validés dans TOUS les documents
+  // CALCUL DES STATS : Somme réelle de l'historique validé
   const totalValuePaid = useMemo(() => {
-    return orders.reduce((total, order: any) => {
+    return confirmedOrders.reduce((total, order: any) => {
         const historySum = (order.paymentHistory || [])
             .filter((h: any) => h.status === 'validated')
             .reduce((sum: number, h: any) => sum + h.amount, 0);
-        return total + historySum;
+        
+        // Si le statut est validé mais que l'historique n'est pas encore là (latence), on peut utiliser totalPrice - remaining
+        const calculatedSum = Math.max(historySum, (order.totalPrice || 0) - (order.remainingAmount || 0));
+        return total + calculatedSum;
     }, 0);
-  }, [orders]);
+  }, [confirmedOrders]);
 
   const activePlansCount = confirmedOrders.filter(o => o.status !== 'completed').length;
 
@@ -181,7 +186,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* SECTION DES INTENTIONS : Nouveaux articles JAMAIS validés */}
+      {/* SECTION DES INTENTIONS : Uniquement les vrais nouveaux articles */}
       {newIntentions.length > 0 && (
         <div id="intentions-section" className="mb-12 scroll-mt-24">
             <h2 className="text-xl font-black mb-4 flex items-center gap-2 text-orange-600">
@@ -219,7 +224,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* SECTION DES ARTICLES CONFIRMÉS : Au moins une validation dans l'historique */}
+      {/* SECTION DES ARTICLES CONFIRMÉS */}
       <div id="confirmed-section" className="scroll-mt-24">
         <h2 className="text-xl font-black mb-4 flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-green-600" /> Mes Achats & Plans Confirmés
