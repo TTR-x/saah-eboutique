@@ -30,6 +30,7 @@ export default function DashboardPage() {
   const userRef = useMemo(() => (user ? doc(db, 'users', user.uid) : null), [db, user]);
   const { data: profile } = useDoc(userRef);
 
+  // Requête simplifiée pour éviter les besoins d'index complexes
   const ordersQuery = useMemo(() => {
     if (!db || !user) return null;
     return query(
@@ -40,6 +41,7 @@ export default function DashboardPage() {
 
   const { data: rawOrders, loading: ordersLoading } = useCollection(ordersQuery);
 
+  // Tri manuel côté client pour la robustesse
   const orders = useMemo(() => {
     if (!rawOrders) return [];
     return [...rawOrders].sort((a: any, b: any) => {
@@ -50,22 +52,24 @@ export default function DashboardPage() {
   }, [rawOrders]);
 
   // LOGIQUE DES SECTIONS
-  // 1. Les articles confirmés : Tout ce qui a au moins un historique OU est marqué comme complété/validé
+  // 1. Les articles confirmés : Tout ce qui a commencé un cycle (historique présent) OU est validé/complété
   const confirmedOrders = useMemo(() => {
     return orders.filter(o => 
-        o.status === 'completed' || 
-        o.status === 'validated' || 
-        (o.paymentHistory && o.paymentHistory.length > 0)
+        o.status !== 'cancelled' && (
+            o.status === 'completed' || 
+            o.status === 'validated' || 
+            (o.paymentHistory && o.paymentHistory.length > 0)
+        )
     );
   }, [orders]);
 
-  // 2. Les intentions pures : Jamais de versement validé, pas encore de cycle commencé
+  // 2. Les intentions pures : Nouvel article sans aucun historique de paiement
   const newIntentions = useMemo(() => {
     return orders.filter(o => 
         o.status !== 'completed' && 
         o.status !== 'validated' &&
-        (!o.paymentHistory || o.paymentHistory.length === 0) &&
-        o.status !== 'cancelled'
+        o.status !== 'cancelled' &&
+        (!o.paymentHistory || o.paymentHistory.length === 0)
     );
   }, [orders]);
 
@@ -74,15 +78,15 @@ export default function DashboardPage() {
     return orders.filter(o => o.status === 'payment_pending').length;
   }, [orders]);
 
-  // CALCUL DES STATISTIQUES (Basé sur l'historique réel)
+  // CALCUL DES STATISTIQUES (Basé sur la valeur encaissée réelle)
   const totalValuePaid = useMemo(() => {
-    return orders.reduce((total, order) => {
-        const historySum = order.paymentHistory?.reduce((sum: number, entry: any) => {
-            return entry.status === 'validated' ? sum + entry.amount : sum;
-        }, 0) || 0;
-        return total + historySum;
+    return confirmedOrders.reduce((total, order: any) => {
+        const totalPrice = order.totalPrice || order.amount || 0;
+        const remaining = order.remainingAmount ?? totalPrice;
+        // La différence est ce qui a été validé par l'admin
+        return total + Math.max(0, totalPrice - remaining);
     }, 0);
-  }, [orders]);
+  }, [confirmedOrders]);
 
   const activePlansCount = confirmedOrders.filter(o => o.status !== 'completed').length;
 
@@ -104,8 +108,11 @@ export default function DashboardPage() {
 
   const handlePendingClick = () => {
     if (pendingPaymentsCount > 0) {
-        const el = document.getElementById('pending-section');
+        const el = document.getElementById('intentions-section');
+        const confirmedEl = document.getElementById('confirmed-section');
+        // On scrolle vers la section qui contient probablement le versement en attente
         if (el) el.scrollIntoView({ behavior: 'smooth' });
+        else if (confirmedEl) confirmedEl.scrollIntoView({ behavior: 'smooth' });
     } else {
         toast({ title: "Information", description: "Aucune vérification de paiement en cours." });
     }
@@ -156,7 +163,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-black">{confirmedOrders.length}</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Cycles en cours ou terminés</p>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Cycles commencés ou finis</p>
           </CardContent>
         </Card>
 
@@ -185,11 +192,11 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* SECTION DES INTENTIONS (Uniquement les nouveaux articles jamais payés) */}
+      {/* SECTION DES INTENTIONS (Nouveaux articles jamais payés) */}
       {newIntentions.length > 0 && (
-        <div id="pending-section" className="mb-12 scroll-mt-24">
+        <div id="intentions-section" className="mb-12 scroll-mt-24">
             <h2 className="text-xl font-black mb-4 flex items-center gap-2 text-orange-600">
-                <Clock className="h-5 w-5" /> Mes intentions à finaliser ({newIntentions.length})
+                <Clock className="h-5 w-5" /> Mes demandes à finaliser ({newIntentions.length})
             </h2>
             <div className="grid gap-4">
                 {newIntentions.map((order: any) => (
@@ -224,108 +231,110 @@ export default function DashboardPage() {
       )}
 
       {/* SECTION DES ARTICLES CONFIRMÉS (Cycles commencés ou terminés) */}
-      <h2 className="text-xl font-black mb-4 flex items-center gap-2">
-        <CheckCircle2 className="h-5 w-5 text-green-600" /> Mes Achats & Plans Confirmés
-      </h2>
+      <div id="confirmed-section" className="scroll-mt-24">
+        <h2 className="text-xl font-black mb-4 flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-green-600" /> Mes Achats & Plans Confirmés
+        </h2>
 
-      {ordersLoading ? (
-        <div className="flex justify-center py-12">
-            <LogoSpinner className="h-8 w-8 text-primary" />
-        </div>
-      ) : confirmedOrders.length > 0 ? (
-        <div className="grid gap-4">
-          {confirmedOrders.map((order: any) => {
-            const totalPrice = order.totalPrice || order.amount;
-            const remaining = order.remainingAmount ?? totalPrice;
-            const progress = ((totalPrice - remaining) / totalPrice) * 100;
-            const isPendingVerif = order.status === 'payment_pending';
+        {ordersLoading ? (
+            <div className="flex justify-center py-12">
+                <LogoSpinner className="h-8 w-8 text-primary" />
+            </div>
+        ) : confirmedOrders.length > 0 ? (
+            <div className="grid gap-4">
+            {confirmedOrders.map((order: any) => {
+                const totalPrice = order.totalPrice || order.amount || 0;
+                const remaining = order.remainingAmount ?? totalPrice;
+                const progress = ((totalPrice - remaining) / totalPrice) * 100;
+                const isPendingVerif = order.status === 'payment_pending';
 
-            return (
-              <Card key={order.id} className="border-none shadow-sm rounded-2xl bg-card overflow-hidden hover:shadow-md transition-all group">
-                <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
-                  <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-gray-50 dark:bg-zinc-800 border shrink-0 mx-auto sm:mx-0">
-                    {order.productImage ? (
-                      <Image src={order.productImage} alt={order.productName} fill className="object-cover" sizes="64px" />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                          <ShoppingBag className="h-6 w-6" />
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start mb-1">
-                      <h3 className="font-black text-sm sm:text-base truncate pr-2">{order.productName}</h3>
-                      <div className="flex gap-2">
-                        {isPendingVerif && (
-                            <Badge className="bg-orange-500 text-white font-bold uppercase text-[8px] animate-pulse">Vérification en cours...</Badge>
+                return (
+                <Card key={order.id} className="border-none shadow-sm rounded-2xl bg-card overflow-hidden hover:shadow-md transition-all group">
+                    <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-gray-50 dark:bg-zinc-800 border shrink-0 mx-auto sm:mx-0">
+                        {order.productImage ? (
+                        <Image src={order.productImage} alt={order.productName} fill className="object-cover" sizes="64px" />
+                        ) : (
+                        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                            <ShoppingBag className="h-6 w-6" />
+                        </div>
                         )}
-                        <Badge className={cn(
-                            "font-bold uppercase text-[9px] px-2 h-5",
-                            order.status === 'completed' ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
-                        )}>
-                            {order.status === 'completed' ? 'Payé / Livré ✅' : 'Cycle Actif ⚡'}
-                        </Badge>
-                      </div>
                     </div>
                     
-                    <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-tighter text-muted-foreground mb-3">
-                      <span className="text-primary font-black">{totalPrice.toLocaleString('fr-FR')} FCFA</span>
-                      <span className="opacity-30">•</span>
-                      <span className={order.paymentMode !== 'cash' ? 'text-blue-600' : ''}>
-                          {order.paymentMode === 'installments' ? 'Tranches' : order.paymentMode === 'tontine' ? 'Tontine' : 'Cash'}
-                      </span>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start mb-1">
+                        <h3 className="font-black text-sm sm:text-base truncate pr-2">{order.productName}</h3>
+                        <div className="flex gap-2">
+                            {isPendingVerif && (
+                                <Badge className="bg-orange-500 text-white font-bold uppercase text-[8px] animate-pulse">Vérification...</Badge>
+                            )}
+                            <Badge className={cn(
+                                "font-bold uppercase text-[9px] px-2 h-5",
+                                order.status === 'completed' ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
+                            )}>
+                                {order.status === 'completed' ? 'Payé / Livré ✅' : 'Cycle Actif ⚡'}
+                            </Badge>
+                        </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-tighter text-muted-foreground mb-3">
+                        <span className="text-primary font-black">{totalPrice.toLocaleString('fr-FR')} FCFA</span>
+                        <span className="opacity-30">•</span>
+                        <span className={order.paymentMode !== 'cash' ? 'text-blue-600' : ''}>
+                            {order.paymentMode === 'installments' ? 'Tranches' : order.paymentMode === 'tontine' ? 'Tontine' : 'Cash'}
+                        </span>
+                        </div>
+
+                        {(order.paymentMode === 'installments' || order.paymentMode === 'tontine') && (
+                            <div className="space-y-1.5">
+                                <div className="flex justify-between text-[9px] font-black uppercase">
+                                    <span className="text-blue-600">Payé: {(totalPrice - remaining).toLocaleString('fr-FR')} F</span>
+                                    <span className="text-muted-foreground">Reste: {remaining.toLocaleString('fr-FR')} F</span>
+                                </div>
+                                <Progress value={progress} className="h-1.5 bg-gray-100" />
+                            </div>
+                        )}
                     </div>
 
-                    {(order.paymentMode === 'installments' || order.paymentMode === 'tontine') && (
-                        <div className="space-y-1.5">
-                            <div className="flex justify-between text-[9px] font-black uppercase">
-                                <span className="text-blue-600">Payé: {(totalPrice - remaining).toLocaleString('fr-FR')} F</span>
-                                <span className="text-muted-foreground">Reste: {remaining.toLocaleString('fr-FR')} F</span>
-                            </div>
-                            <Progress value={progress} className="h-1.5 bg-gray-100" />
-                        </div>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-center sm:justify-end gap-2 shrink-0">
-                    {order.status !== 'completed' ? (
-                        <Button asChild size="sm" className={cn(
-                            "rounded-lg font-black text-xs px-4 h-9 shadow-sm transition-all",
-                            isPendingVerif 
-                                ? "bg-orange-500 text-white hover:bg-orange-600" 
-                                : "bg-primary text-black hover:bg-primary/90"
-                        )}>
-                            <Link href={`/dashboard/payment/${order.id}`}>
-                                {isPendingVerif ? "Suivre ma validation" : "Nouvel versement"} 
-                                <ChevronRight className="h-3 w-3 ml-1" />
-                            </Link>
-                        </Button>
-                    ) : (
-                        <Button asChild variant="outline" size="sm" className="rounded-lg font-black text-xs h-9 border-2">
-                            <Link href={`/dashboard/payment/${order.id}`}>Voir historique</Link>
-                        </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="bg-card rounded-2xl p-12 text-center border-2 border-dashed border-gray-100 dark:border-zinc-800">
-          <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle2 className="h-10 w-10 text-gray-300" />
-          </div>
-          <h3 className="font-black text-xl">Aucun achat confirmé</h3>
-          <p className="text-muted-foreground max-w-sm mx-auto mt-2 text-sm">
-            Vos articles validés apparaîtront ici. Commencez par effectuer votre premier versement.
-          </p>
-          <Button asChild className="mt-6 rounded-xl font-bold bg-primary text-black" size="lg">
-            <Link href="/products">Découvrir le catalogue</Link>
-          </Button>
-        </div>
-      )}
+                    <div className="flex items-center justify-center sm:justify-end gap-2 shrink-0">
+                        {order.status !== 'completed' ? (
+                            <Button asChild size="sm" className={cn(
+                                "rounded-lg font-black text-xs px-4 h-9 shadow-sm transition-all",
+                                isPendingVerif 
+                                    ? "bg-orange-500 text-white hover:bg-orange-600" 
+                                    : "bg-primary text-black hover:bg-primary/90"
+                            )}>
+                                <Link href={`/dashboard/payment/${order.id}`}>
+                                    {isPendingVerif ? "Suivre ma validation" : "Nouvel versement"} 
+                                    <ChevronRight className="h-3 w-3 ml-1" />
+                                </Link>
+                            </Button>
+                        ) : (
+                            <Button asChild variant="outline" size="sm" className="rounded-lg font-black text-xs h-9 border-2">
+                                <Link href={`/dashboard/payment/${order.id}`}>Historique & Détails</Link>
+                            </Button>
+                        )}
+                    </div>
+                    </CardContent>
+                </Card>
+                );
+            })}
+            </div>
+        ) : (
+            <div className="bg-card rounded-2xl p-12 text-center border-2 border-dashed border-gray-100 dark:border-zinc-800">
+            <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="h-10 w-10 text-gray-300" />
+            </div>
+            <h3 className="font-black text-xl">Aucun achat confirmé</h3>
+            <p className="text-muted-foreground max-w-sm mx-auto mt-2 text-sm">
+                Vos articles validés apparaîtront ici. Commencez par effectuer votre premier versement.
+            </p>
+            <Button asChild className="mt-6 rounded-xl font-bold bg-primary text-black" size="lg">
+                <Link href="/products">Découvrir le catalogue</Link>
+            </Button>
+            </div>
+        )}
+      </div>
     </div>
   );
 }
