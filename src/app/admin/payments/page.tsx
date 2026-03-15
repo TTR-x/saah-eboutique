@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState, useMemo, useEffect } from "react";
@@ -59,6 +60,9 @@ export default function AdminPaymentsPage() {
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [boutiqueAmount, setBoutiqueAmount] = useState<number>(0);
   const [isProcessing, setIsSubmitting] = useState(false);
+  
+  // État de verrouillage pour éviter les doublons lors des clics rapides
+  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (isBoutiqueOpen) {
@@ -93,7 +97,7 @@ export default function AdminPaymentsPage() {
   };
 
   const processBoutiquePayment = async () => {
-    if (!selectedOrder || boutiqueAmount <= 0) return;
+    if (!selectedOrder || boutiqueAmount <= 0 || isProcessing) return;
 
     setIsSubmitting(true);
     try {
@@ -127,7 +131,7 @@ export default function AdminPaymentsPage() {
         status: isFinished ? 'completed' : 'validated',
         remainingAmount: newRemaining,
         totalPrice: totalPrice,
-        isStoreRegistered: false, // On reset le flag après paiement
+        isStoreRegistered: false, 
         paymentValidatedAt: serverTimestamp(),
         lastPaymentValidatedAt: serverTimestamp(),
         paymentHistory: arrayUnion({
@@ -157,6 +161,11 @@ export default function AdminPaymentsPage() {
   };
 
   const handleValidate = async (order: Order) => {
+    if (processingIds.has(order.id)) return;
+    
+    // Verrouillage instantané de l'ID pour éviter les doublons
+    setProcessingIds(prev => new Set(prev).add(order.id));
+
     try {
       const orderRef = doc(db, 'orders', order.id);
       const totalPrice = Number(order.totalPrice || order.amount || 0);
@@ -165,6 +174,7 @@ export default function AdminPaymentsPage() {
       const newRemaining = Math.max(0, currentRemaining - amountPaid);
       const isFinished = newRemaining <= 0;
 
+      // 1. Création de la copie d'historique
       const paymentCopy = {
         orderId: order.id,
         userId: order.userId,
@@ -180,6 +190,7 @@ export default function AdminPaymentsPage() {
 
       await addDoc(collection(db, 'users', order.userId, 'payments'), paymentCopy);
 
+      // 2. Mise à jour du document parent
       await updateDoc(orderRef, {
         status: isFinished ? 'completed' : 'validated',
         remainingAmount: newRemaining,
@@ -197,16 +208,31 @@ export default function AdminPaymentsPage() {
       toast({ title: "Paiement validé", description: `Reste : ${newRemaining.toLocaleString('fr-FR')} F` });
     } catch (error) {
       toast({ title: "Erreur", description: "Échec de la validation.", variant: "destructive" });
+    } finally {
+      // Libération de l'ID après traitement
+      setProcessingIds(prev => {
+        const next = new Set(prev);
+        next.delete(order.id);
+        return next;
+      });
     }
   };
 
   const handleReject = async (orderId: string) => {
-    if (!confirm("Rejeter ce paiement ?")) return;
+    if (!confirm("Rejeter ce paiement ?") || processingIds.has(orderId)) return;
+    
+    setProcessingIds(prev => new Set(prev).add(orderId));
     try {
       await updateDoc(doc(db, 'orders', orderId), { status: 'rejected', transferId: "" });
       toast({ title: "Paiement rejeté" });
     } catch (error) {
       toast({ title: "Erreur", variant: "destructive" });
+    } finally {
+      setProcessingIds(prev => {
+        const next = new Set(prev);
+        next.delete(orderId);
+        return next;
+      });
     }
   };
 
@@ -248,35 +274,50 @@ export default function AdminPaymentsPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {pendingOrders.map((order) => (
-                    <TableRow key={order.id} className="hover:bg-muted/20">
-                        <TableCell className="py-4">
-                            <div className="flex flex-col">
-                                <span className="font-bold">{order.userName}</span>
-                                <span className="text-[10px] text-muted-foreground">{order.userPhone}</span>
-                            </div>
-                        </TableCell>
-                        <TableCell>
-                            <span className="font-medium text-xs truncate max-w-[150px] inline-block">{order.productName}</span>
-                        </TableCell>
-                        <TableCell>
-                            <Badge variant="outline" className="font-mono bg-blue-50 text-blue-700">{order.transferId}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right font-black text-primary">
-                            {order.amount.toLocaleString('fr-FR')} F
-                        </TableCell>
-                        <TableCell className="text-center">
-                            <div className="flex items-center justify-center gap-2">
-                                <Button onClick={() => handleValidate(order)} size="sm" className="bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg h-8">
-                                    Confirmer
-                                </Button>
-                                <Button onClick={() => handleReject(order.id)} size="icon" variant="ghost" className="h-8 w-8 text-red-500">
-                                    <XCircle className="h-5 w-5" />
-                                </Button>
-                            </div>
-                        </TableCell>
-                    </TableRow>
-                    ))}
+                    {pendingOrders.map((order) => {
+                      const isProcessingThis = processingIds.has(order.id);
+                      
+                      return (
+                        <TableRow key={order.id} className="hover:bg-muted/20">
+                            <TableCell className="py-4">
+                                <div className="flex flex-col">
+                                    <span className="font-bold">{order.userName}</span>
+                                    <span className="text-[10px] text-muted-foreground">{order.userPhone}</span>
+                                </div>
+                            </TableCell>
+                            <TableCell>
+                                <span className="font-medium text-xs truncate max-w-[150px] inline-block">{order.productName}</span>
+                            </TableCell>
+                            <TableCell>
+                                <Badge variant="outline" className="font-mono bg-blue-50 text-blue-700">{order.transferId}</Badge>
+                            </TableCell>
+                            <TableCell className="text-right font-black text-primary">
+                                {order.amount.toLocaleString('fr-FR')} F
+                            </TableCell>
+                            <TableCell className="text-center">
+                                <div className="flex items-center justify-center gap-2">
+                                    <Button 
+                                      onClick={() => handleValidate(order)} 
+                                      disabled={isProcessingThis}
+                                      size="sm" 
+                                      className="bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg h-8 min-w-[90px]"
+                                    >
+                                        {isProcessingThis ? <LogoSpinner className="h-4 w-4" /> : "Confirmer"}
+                                    </Button>
+                                    <Button 
+                                      onClick={() => handleReject(order.id)} 
+                                      disabled={isProcessingThis}
+                                      size="icon" 
+                                      variant="ghost" 
+                                      className="h-8 w-8 text-red-500"
+                                    >
+                                        <XCircle className="h-5 w-5" />
+                                    </Button>
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                      );
+                    })}
                 </TableBody>
                 </Table>
             ) : (
@@ -428,7 +469,7 @@ export default function AdminPaymentsPage() {
                 disabled={!selectedOrder || boutiqueAmount <= 0 || isProcessing}
                 className="bg-black text-white font-black px-8 h-12 rounded-xl"
             >
-                {isProcessing ? <LogoSpinner /> : "Valider le versement"}
+                {isProcessing ? <LogoSpinner className="h-5 w-5" /> : "Valider le versement"}
             </Button>
           </DialogFooter>
         </DialogContent>
