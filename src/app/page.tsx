@@ -8,7 +8,10 @@ import {
   TrendingUp, 
   Search,
   ChevronRight,
-  Zap
+  Zap,
+  Wallet,
+  MessageCircle,
+  Info
 } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { Badge } from '@/components/ui/badge';
@@ -69,7 +72,7 @@ export default function HomePage() {
         await requestGift(user.uid, user.displayName || 'Client', user.email || '');
         toast({
           title: "Demande envoyée !",
-          description: "L'administrateur a été notifié. Vérifiez votre page cadeaux bientôt.",
+          description: "Nous avons bien reçu votre demande. Vérifiez votre page cadeaux bientôt.",
         });
         router.push('/dashboard/gifts');
       } catch (error) {
@@ -88,7 +91,7 @@ export default function HomePage() {
   const trendingProducts = products.filter(p => p.reviews > 0).slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-background pb-12">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="bg-card dark:bg-zinc-950 mb-8 border-b">
         <div className="container mx-auto px-4 py-6">
@@ -103,9 +106,9 @@ export default function HomePage() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <Button type="submit" className="absolute right-2 top-2 h-10 rounded-lg bg-primary text-black font-black hover:bg-primary/90">
+                    <button type="submit" className="absolute right-2 top-2 h-10 px-4 rounded-lg bg-primary text-black font-black hover:bg-primary/90 transition-colors">
                         Trouver
-                    </Button>
+                    </button>
                 </form>
 
                 {/* Carousel */}
@@ -119,9 +122,9 @@ export default function HomePage() {
                                 <CarouselItem key={slide.id}>
                                     <div className="relative aspect-[21/9] w-full bg-muted">
                                         <Image src={slide.imageUrl} alt={slide.title} fill className="object-cover" priority />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 md:p-12 text-white">
-                                            <h2 className="text-3xl md:text-5xl font-black mb-1 max-w-xl leading-tight uppercase">{slide.title}</h2>
-                                            <p className="text-lg md:text-xl font-medium max-w-md opacity-90">{slide.subtitle}</p>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-6 md:p-12 text-white">
+                                            <h2 className="text-2xl md:text-5xl font-black mb-1 max-w-xl leading-tight uppercase">{slide.title}</h2>
+                                            <p className="text-sm md:text-xl font-medium max-w-md opacity-90">{slide.subtitle}</p>
                                         </div>
                                     </div>
                                 </CarouselItem>
@@ -139,7 +142,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-8 mb-16">
         
         {/* Main Flux */}
         <div className="lg:col-span-3 space-y-12">
@@ -247,8 +250,82 @@ export default function HomePage() {
             </div>
           </div>
         </aside>
-
       </div>
+
+      {/* About SAAH & How it works */}
+      <section className="bg-white dark:bg-zinc-900 py-16 border-t">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto space-y-16">
+            
+            {/* Concept Description */}
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div className="space-y-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-black uppercase tracking-widest">
+                  <Info className="h-4 w-4" /> Notre concept
+                </div>
+                <h2 className="text-3xl md:text-4xl font-black leading-tight">C'est quoi SAAH Business ?</h2>
+                <p className="text-lg text-muted-foreground leading-relaxed font-medium">
+                  SAAH Business est une plateforme simple et moderne pour acheter vos articles préférés (téléphones, vêtements, maison) sans vous ruiner. 
+                  <br /><br />
+                  Notre mission est de rendre le shopping accessible à tous au Togo. Nous vous aidons à obtenir ce que vous voulez, même si vous n'avez pas tout l'argent tout de suite, grâce à des solutions de paiement souples et sécurisées.
+                </p>
+              </div>
+              <div className="relative aspect-video rounded-2xl overflow-hidden shadow-xl border-4 border-white dark:border-zinc-800">
+                <Image 
+                  src="https://picsum.photos/seed/saah-concept/800/450" 
+                  alt="Concept SAAH" 
+                  fill 
+                  className="object-cover"
+                  data-ai-hint="happy shoppers" 
+                />
+              </div>
+            </div>
+
+            <hr className="opacity-10" />
+
+            {/* Steps */}
+            <div className="space-y-12">
+              <div className="text-center">
+                <h2 className="text-3xl font-black uppercase tracking-tight">Comment ça fonctionne ?</h2>
+                <p className="text-muted-foreground font-medium mt-2">Acheter chez nous est un jeu d'enfant.</p>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-8">
+                <div className="group p-8 rounded-2xl bg-background border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
+                  <div className="h-14 w-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
+                    <Search className="h-7 w-7" />
+                  </div>
+                  <h3 className="font-black text-xl mb-3">1. Je choisis</h3>
+                  <p className="text-muted-foreground font-medium leading-relaxed">
+                    Je parcours le catalogue sur le site et je trouve l'article qui me plaît (iPhone, console, sac, etc.).
+                  </p>
+                </div>
+
+                <div className="group p-8 rounded-2xl bg-background border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
+                  <div className="h-14 w-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 mb-6 group-hover:scale-110 transition-transform">
+                    <Wallet className="h-7 w-7" />
+                  </div>
+                  <h3 className="font-black text-xl mb-3">2. Je décide</h3>
+                  <p className="text-muted-foreground font-medium leading-relaxed">
+                    Je choisis comment payer : tout d'un coup (Cash), par petits morceaux chaque mois (Tranches), ou via une épargne de groupe (Tontine).
+                  </p>
+                </div>
+
+                <div className="group p-8 rounded-2xl bg-background border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
+                  <div className="h-14 w-14 bg-green-500/10 rounded-2xl flex items-center justify-center text-green-500 mb-6 group-hover:scale-110 transition-transform">
+                    <MessageCircle className="h-7 w-7" />
+                  </div>
+                  <h3 className="font-black text-xl mb-3">3. Je valide</h3>
+                  <p className="text-muted-foreground font-medium leading-relaxed">
+                    Je clique sur "Payer" pour discuter avec un conseiller sur WhatsApp. On s'occupe de tout pour la livraison à Lomé et partout au Togo !
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
