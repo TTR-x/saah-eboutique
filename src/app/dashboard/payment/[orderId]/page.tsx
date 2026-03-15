@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -17,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 export default function OrderPaymentPage() {
   const { orderId } = useParams();
