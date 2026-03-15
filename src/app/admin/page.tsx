@@ -2,8 +2,8 @@
 'use client'
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { MessageSquare, Package, ShoppingBag, Users, BadgeEuro, TrendingUp, Clock, MessageCircle, CreditCard } from "lucide-react";
-import { useEffect, useState } from "react";
+import { MessageSquare, ShoppingBag, Users, BadgeEuro, TrendingUp, Clock, MessageCircle, CreditCard, CalendarDays } from "lucide-react";
+import { useEffect, useState, useMemo } from "react";
 import { getProducts } from "@/lib/products-service";
 import { getMessages } from "@/lib/messages-service";
 import { getImportOrders } from "@/lib/import-orders-service";
@@ -14,13 +14,15 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { subHours, subDays, subMonths, isAfter } from "date-fns";
 
 function StatCard({ title, value, icon, isLoading, subtext, colorClass = "text-primary" }: { title: string, value: string | number, icon: React.ReactNode, isLoading: boolean, subtext?: string, colorClass?: string }) {
     return (
-        <Card className="border-none shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+        <Card className="border-none shadow-sm rounded-md overflow-hidden hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{title}</CardTitle>
-                <div className={`h-8 w-8 rounded-lg bg-muted flex items-center justify-center ${colorClass}`}>
+                <div className={`h-8 w-8 rounded-md bg-muted flex items-center justify-center ${colorClass}`}>
                     {icon}
                 </div>
             </CardHeader>
@@ -38,6 +40,7 @@ export default function AdminDashboardPage() {
     const [importOrders, setImportOrders] = useState<ImportOrder[]>([]);
     const [sales, setSales] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [timeFilter, setTimeFilter] = useState('all');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -62,37 +65,80 @@ export default function AdminDashboardPage() {
         fetchData();
     }, []);
 
+    const filteredSales = useMemo(() => {
+        if (timeFilter === 'all') return sales;
+        
+        const now = new Date();
+        let cutoff: Date;
+
+        switch (timeFilter) {
+            case '24h':
+                cutoff = subHours(now, 24);
+                break;
+            case 'week':
+                cutoff = subDays(now, 7);
+                break;
+            case 'month':
+                cutoff = subMonths(now, 1);
+                break;
+            default:
+                return sales;
+        }
+
+        return sales.filter(sale => {
+            const saleDate = sale.createdAt instanceof Date ? sale.createdAt : new Date(sale.createdAt);
+            return isAfter(saleDate, cutoff);
+        });
+    }, [sales, timeFilter]);
+
     const recentMessages = messages.slice(0, 5);
-    const recentSales = sales.slice(0, 5);
-    const pendingSalesCount = sales.filter(s => s.status === 'pending').length;
-    const totalPotentialRevenue = sales.reduce((acc, sale) => acc + (sale.status !== 'cancelled' ? sale.amount : 0), 0);
+    const recentSales = filteredSales.slice(0, 5);
+    const pendingSalesCount = filteredSales.filter(s => s.status === 'pending').length;
+    const totalPotentialRevenue = filteredSales.reduce((acc, sale) => acc + (sale.status !== 'cancelled' ? sale.amount : 0), 0);
     
-    // Calcul des tranches et tontines validées
-    const validatedTranchesCount = sales.filter(s => s.paymentMode === 'installments' && (s.status === 'validated' || s.status === 'completed')).length;
-    const validatedTontinesCount = sales.filter(s => s.paymentMode === 'tontine' && (s.status === 'validated' || s.status === 'completed')).length;
+    const validatedTranchesCount = filteredSales.filter(s => s.paymentMode === 'installments' && (s.status === 'validated' || s.status === 'completed')).length;
+    const validatedTontinesCount = filteredSales.filter(s => s.paymentMode === 'tontine' && (s.status === 'validated' || s.status === 'completed')).length;
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-3xl font-black tracking-tight">Tableau de Bord</h2>
-        <p className="text-muted-foreground">Vue d'ensemble de l'activité de SAAH Business.</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h2 className="text-3xl font-black tracking-tight">Tableau de Bord</h2>
+            <p className="text-muted-foreground">Vue d'ensemble de l'activité de SAAH Business.</p>
+        </div>
+        
+        <div className="flex items-center gap-2 bg-white p-1 rounded-md border shadow-sm">
+            <div className="pl-3 text-muted-foreground">
+                <CalendarDays className="h-4 w-4" />
+            </div>
+            <Select value={timeFilter} onValueChange={setTimeFilter}>
+                <SelectTrigger className="w-[180px] border-none shadow-none focus:ring-0 font-bold h-9">
+                    <SelectValue placeholder="Filtrer par période" />
+                </SelectTrigger>
+                <SelectContent className="border-none shadow-xl rounded-md">
+                    <SelectItem value="all" className="font-medium">Tout l'historique</SelectItem>
+                    <SelectItem value="24h" className="font-medium">Dernières 24h</SelectItem>
+                    <SelectItem value="week" className="font-medium">Cette semaine</SelectItem>
+                    <SelectItem value="month" className="font-medium">Ce mois</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <StatCard title="Ventes Totales" value={sales.length} icon={<BadgeEuro className="h-4 w-4" />} isLoading={isLoading} subtext="Historique" />
+        <StatCard title="Ventes Totales" value={filteredSales.length} icon={<BadgeEuro className="h-4 w-4" />} isLoading={isLoading} subtext={timeFilter === 'all' ? "Historique" : "Sur la période"} />
         <StatCard title="En Attente" value={pendingSalesCount} icon={<Clock className="h-4 w-4" />} isLoading={isLoading} subtext="À traiter" colorClass="text-orange-500" />
         <StatCard title="Revenu Potentiel" value={`${totalPotentialRevenue.toLocaleString('fr-FR')} F`} icon={<TrendingUp className="h-4 w-4" />} isLoading={isLoading} subtext="Engagé" colorClass="text-green-500" />
         
-        {/* Nouveaux items demandés */}
         <StatCard title="Par tranche validé" value={validatedTranchesCount} icon={<CreditCard className="h-4 w-4" />} isLoading={isLoading} subtext="Tranches" colorClass="text-blue-500" />
         <StatCard title="Tontine validé" value={validatedTontinesCount} icon={<Users className="h-4 w-4" />} isLoading={isLoading} subtext="Tontines" colorClass="text-purple-500" />
       </div>
       
       <div className="mt-8 grid gap-8 md:grid-cols-3">
-        <Card className="md:col-span-2 border-none shadow-sm rounded-2xl overflow-hidden">
+        <Card className="md:col-span-2 border-none shadow-sm rounded-md overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between bg-white border-b">
             <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
-                <BadgeEuro className="h-4 w-4 text-primary" /> Dernières Ventes
+                <BadgeEuro className="h-4 w-4 text-primary" /> Dernières Ventes {timeFilter !== 'all' && <span className="text-[10px] text-primary lowercase">(filtrées)</span>}
             </CardTitle>
             <Button asChild variant="ghost" size="sm" className="text-xs font-bold">
                 <Link href="/admin/sales">Tout voir</Link>
@@ -108,9 +154,9 @@ export default function AdminDashboardPage() {
                         const whatsappUrl = userPhone ? `https://wa.me/${userPhone.replace(/\s+/g, '')}` : null;
                         
                         return (
-                            <div key={sale.id} className="flex justify-between items-center p-4 hover:bg-muted/30">
+                            <div key={sale.id} className="flex justify-between items-center p-4 hover:bg-muted/30 transition-colors">
                                 <div className="flex items-center gap-3 min-w-0">
-                                    <div className="relative h-10 w-10 rounded-lg overflow-hidden border bg-muted shrink-0">
+                                    <div className="relative h-10 w-10 rounded-md overflow-hidden border bg-muted shrink-0">
                                         {sale.productImage && <Image src={sale.productImage} alt="" fill className="object-cover" />}
                                     </div>
                                     <div className="flex flex-col min-w-0">
@@ -149,13 +195,13 @@ export default function AdminDashboardPage() {
                 </div>
             ) : (
                 <div className="p-10 text-center text-muted-foreground italic text-sm">
-                    Aucune vente enregistrée pour le moment.
+                    Aucune vente trouvée pour cette période.
                 </div>
             )}
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm rounded-2xl overflow-hidden">
+        <Card className="border-none shadow-sm rounded-md overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between bg-white border-b">
             <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-primary" /> Support Client
