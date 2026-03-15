@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -23,7 +22,7 @@ import { addDoc, collection, deleteDoc, doc, serverTimestamp, updateDoc } from "
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-const productCategories = ['high-tech', 'beauté', 'maison', 'artisanat', 'mode', 'divers'];
+const productCategories = ['mode', 'beauté', 'maison', 'artisanat', 'high-tech', 'divers'];
 
 type ImagePreview = {
   file: File;
@@ -65,7 +64,7 @@ export default function AdminProductsPage() {
     name: "",
     description: "",
     price: '',
-    category: "divers",
+    category: "mode",
     brand: "",
     tags: "",
     status: 'active',
@@ -229,7 +228,7 @@ export default function AdminProductsPage() {
       name: "",
       description: "",
       price: '',
-      category: "divers",
+      category: "mode",
       brand: "",
       tags: "",
       status: 'active',
@@ -495,7 +494,7 @@ export default function AdminProductsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="name" className="font-bold">Nom de l'article *</Label>
-                            <Input id="name" name="name" value={productForm.name} onChange={handleInputChange} placeholder="Ex: iPhone 15 Pro Max" className="h-12 rounded-md" required />
+                            <Input id="name" name="name" value={productForm.name} onChange={handleInputChange} placeholder="Ex: Baskets Nike Air Max" className="h-12 rounded-md" required />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="category" className="font-bold">Catégorie *</Label>
@@ -514,7 +513,7 @@ export default function AdminProductsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="brand" className="font-bold">Marque / Fabricant</Label>
-                            <Input id="brand" name="brand" value={productForm.brand} onChange={handleInputChange} placeholder="Ex: Apple, Samsung..." className="h-12 rounded-md" />
+                            <Input id="brand" name="brand" value={productForm.brand} onChange={handleInputChange} placeholder="Ex: Nike, Calvin Klein, Adidas..." className="h-12 rounded-md" />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="tags" className="font-bold flex items-center gap-2"><TagIcon className="h-3 w-3" /> Tags (séparés par des virgules)</Label>

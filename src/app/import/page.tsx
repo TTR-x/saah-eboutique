@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -114,7 +113,7 @@ export default function ImportPage() {
       <div className="text-center mb-16">
         <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">Importez facilement depuis la Chine</h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto">
-          Besoin d'un produit spécifique en grande quantité ou en détail ? Nous sommes votre partenaire de confiance pour trouver, négocier et importer vos marchandises en toute sérénité.
+          Besoin d'un produit spécifique en grande quantité ou en détail ? Nous sommes votre partenaire de confiance pour trouver, négocier et importer vos marchandises (vêtements, chaussures, accessoires) en toute sérénité.
         </p>
       </div>
 
@@ -143,11 +142,11 @@ export default function ImportPage() {
                     <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="productName">Nom ou type de produit recherché</Label>
-                            <Input id="productName" name="productName" value={formState.productName} onChange={handleInputChange} placeholder="Ex: Coques de téléphone, T-shirts..." required />
+                            <Input id="productName" name="productName" value={formState.productName} onChange={handleInputChange} placeholder="Ex: Baskets, Caleçons, Lot de chaussures..." required />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="quantity">Quantité approximative souhaitée</Label>
-                            <Input id="quantity" name="quantity" value={formState.quantity} onChange={handleInputChange} placeholder="Ex: 1000 pièces" required />
+                            <Input id="quantity" name="quantity" value={formState.quantity} onChange={handleInputChange} placeholder="Ex: 500 paires" required />
                         </div>
                     </div>
                      <div className="space-y-2">
@@ -156,12 +155,12 @@ export default function ImportPage() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="description">Description détaillée de votre besoin</Label>
-                        <Textarea id="description" name="description" value={formState.description} onChange={handleInputChange} placeholder="Soyez précis : matériaux, couleurs, dimensions, spécificités techniques, packaging souhaité, etc." rows={5} />
+                        <Textarea id="description" name="description" value={formState.description} onChange={handleInputChange} placeholder="Soyez précis : matériaux, tailles (S, M, L, XL), pointures, couleurs souhaitées, etc." rows={5} />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="image-upload">Image de référence (fortement recommandé)</Label>
                         <Input id="image-upload" type="file" onChange={handleFileChange} accept="image/*" />
-                        <p className="text-xs text-muted-foreground">Une photo, un schéma ou un dessin aide énormément à trouver le bon produit.</p>
+                        <p className="text-xs text-muted-foreground">Une photo ou une capture d'écran du modèle souhaité nous aide énormément.</p>
                     </div>
 
                     <div className="border-t pt-6 space-y-4">

@@ -100,7 +100,7 @@ export default function HomePage() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input 
                         type="search" 
-                        placeholder="Rechercher un article, une marque..." 
+                        placeholder="Rechercher des chaussures, caleçons, soins..." 
                         className="pl-12 h-14 w-full rounded-lg border-2 border-primary/20 focus:border-primary shadow-sm bg-background font-medium"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -227,7 +227,7 @@ export default function HomePage() {
                       width={placeholders.tontine_gift.width} 
                       height={placeholders.tontine_gift.height} 
                       className="object-contain relative z-10" 
-                    />
+                />
                 </div>
                 <div className="space-y-4">
                     <Badge className="bg-primary text-black font-black border-none px-4 py-1">OFFRE EXCLUSIVE</Badge>
@@ -264,7 +264,7 @@ export default function HomePage() {
                 </div>
                 <h2 className="text-3xl md:text-4xl font-black leading-tight">C'est quoi SAAH Business ?</h2>
                 <p className="text-lg text-muted-foreground leading-relaxed font-medium">
-                  SAAH Business est une plateforme simple et moderne pour acheter vos articles préférés (téléphones, vêtements, maison) sans vous ruiner. 
+                  SAAH Business est une plateforme simple et moderne pour acheter vos articles préférés (chaussures, vêtements, beauté) sans vous ruiner. 
                   <br /><br />
                   Notre mission est de rendre le shopping accessible à tous au Togo. Nous vous aidons à obtenir ce que vous voulez, même si vous n'avez pas tout l'argent tout de suite, grâce à des solutions de paiement souples et sécurisées.
                 </p>
@@ -295,7 +295,7 @@ export default function HomePage() {
                   </div>
                   <h3 className="font-black text-xl mb-3">1. Je choisis</h3>
                   <p className="text-muted-foreground font-medium leading-relaxed">
-                    Je parcours le catalogue sur le site et je trouve l'article qui me plaît (iPhone, console, sac, etc.).
+                    Je parcours le catalogue sur le site et je trouve l'article qui me plaît (Baskets, caleçons, soins corps, etc.).
                   </p>
                 </div>
 
