@@ -106,11 +106,18 @@ export default function AdminDashboardPage() {
     const validatedTranchesCount = filteredSales.filter(s => s.paymentMode === 'installments' && (s.status === 'validated' || s.status === 'completed')).length;
     const validatedTontinesCount = filteredSales.filter(s => s.paymentMode === 'tontine' && (s.status === 'validated' || s.status === 'completed')).length;
 
-    // En attente (statistiques pour la carte divisée)
+    // Calcul des sommes payées (validées ou terminées)
+    const installmentPaidSum = filteredSales
+        .filter(s => s.paymentMode === 'installments' && (s.status === 'validated' || s.status === 'completed'))
+        .reduce((acc, s) => acc + s.amount, 0);
+
+    const tontinePaidSum = filteredSales
+        .filter(s => s.paymentMode === 'tontine' && (s.status === 'validated' || s.status === 'completed'))
+        .reduce((acc, s) => acc + s.amount, 0);
+
+    // En attente (pour la zone détaillée en bas)
     const pendingTranchesCount = filteredSales.filter(s => s.status === 'pending' && s.paymentMode === 'installments').length;
     const pendingTontinesCount = filteredSales.filter(s => s.status === 'pending' && s.paymentMode === 'tontine').length;
-
-    // Calcul pour la zone détaillée
     const pendingCashCount = filteredSales.filter(s => s.status === 'pending' && s.paymentMode === 'cash').length;
     const pendingOthersTotalCount = pendingTranchesCount + pendingTontinesCount;
 
@@ -149,12 +156,12 @@ export default function AdminDashboardPage() {
             subtext={timeFilter === 'all' ? "Historique" : "Sur la période"} 
         />
 
-        {/* CARTE EN ATTENTE DIVISÉE (Tranches et Tontines) */}
+        {/* CARTE DIVISÉE : SOMMES PAYÉES PAR MODE */}
         <Card className="border-none shadow-sm rounded-md overflow-hidden hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">En Attente</CardTitle>
-                <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center text-orange-500">
-                    <Clock className="h-4 w-4" />
+                <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Paiements Validés</CardTitle>
+                <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center text-primary">
+                    <TrendingUp className="h-4 w-4" />
                 </div>
             </CardHeader>
             <CardContent className="p-0">
@@ -163,12 +170,12 @@ export default function AdminDashboardPage() {
                 ) : (
                     <div className="divide-y divide-dashed">
                         <div className="px-6 py-2">
-                            <div className="text-xl font-black text-blue-600">{pendingTranchesCount}</div>
-                            <p className="text-[8px] font-bold text-muted-foreground uppercase">Tranches à traiter</p>
+                            <div className="text-lg font-black text-blue-600">{installmentPaidSum.toLocaleString('fr-FR')} F</div>
+                            <p className="text-[8px] font-bold text-muted-foreground uppercase">Somme Tranches Payée</p>
                         </div>
                         <div className="px-6 py-2">
-                            <div className="text-xl font-black text-purple-600">{pendingTontinesCount}</div>
-                            <p className="text-[8px] font-bold text-muted-foreground uppercase">Tontines à traiter</p>
+                            <div className="text-lg font-black text-purple-600">{tontinePaidSum.toLocaleString('fr-FR')} F</div>
+                            <p className="text-[8px] font-bold text-muted-foreground uppercase">Somme Tontines Payée</p>
                         </div>
                     </div>
                 )}
