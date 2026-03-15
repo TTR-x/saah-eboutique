@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { PlusCircle, MoreHorizontal, Pencil, Trash2, X, Copy, Tag as TagIcon, LayoutGrid, Package, CreditCard, Users } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Pencil, Trash2, X, Copy, Tag as TagIcon, LayoutGrid, Package, CreditCard, Users, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { getProducts } from "@/lib/products-service";
@@ -140,8 +140,26 @@ export default function AdminProductsPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const files = Array.from(e.target.files);
-      const newImagePreviews = files.map(file => ({
+      const currentTotal = productForm.existingImages.length + productForm.newImages.length;
+      const remainingSlots = 3 - currentTotal;
+      
+      if (remainingSlots <= 0) {
+        toast({ title: "Limite atteinte", description: "Vous ne pouvez pas ajouter plus de 3 images.", variant: "destructive" });
+        return;
+      }
+
+      const selectedFiles = Array.from(e.target.files);
+      const filesToAdd = selectedFiles.slice(0, remainingSlots);
+      
+      if (selectedFiles.length > remainingSlots) {
+        toast({ 
+          title: "Limite atteinte", 
+          description: `Seules les ${remainingSlots} premières images ont été ajoutées (Max 3).`,
+          variant: "destructive" 
+        });
+      }
+
+      const newImagePreviews = filesToAdd.map(file => ({
         file,
         previewUrl: URL.createObjectURL(file)
       }));
@@ -335,6 +353,8 @@ export default function AdminProductsPage() {
         }
     }
   };
+
+  const currentTotalImages = productForm.existingImages.length + productForm.newImages.length;
 
   return (
     <div className="space-y-6">
@@ -571,16 +591,23 @@ export default function AdminProductsPage() {
 
               {/* SECTION 4: IMAGES */}
               <div className="space-y-4">
-                <h3 className="font-black text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    📸 Galerie Photos *
-                </h3>
+                <div className="flex items-center justify-between">
+                    <h3 className="font-black text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                        <ImageIcon className="h-4 w-4" /> Galerie Photos *
+                    </h3>
+                    <Badge variant="outline" className={cn("font-bold text-[10px]", currentTotalImages >= 3 ? "text-red-500 border-red-200 bg-red-50" : "text-primary border-primary/20 bg-primary/5")}>
+                        {currentTotalImages} / 3 images
+                    </Badge>
+                </div>
                 <Card className="p-6 border shadow-sm rounded-xl">
                     <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
-                        <div className="aspect-square border-2 border-dashed rounded-xl flex flex-col items-center justify-center hover:bg-primary/5 hover:border-primary transition-all cursor-pointer relative group overflow-hidden">
-                            <Input id="images" name="images" type="file" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/*" multiple />
-                            <PlusCircle className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
-                            <span className="text-[10px] font-black mt-2 uppercase text-muted-foreground group-hover:text-primary">Ajouter</span>
-                        </div>
+                        {currentTotalImages < 3 && (
+                            <div className="aspect-square border-2 border-dashed rounded-xl flex flex-col items-center justify-center hover:bg-primary/5 hover:border-primary transition-all cursor-pointer relative group overflow-hidden">
+                                <Input id="images" name="images" type="file" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/*" multiple />
+                                <PlusCircle className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
+                                <span className="text-[10px] font-black mt-2 uppercase text-muted-foreground group-hover:text-primary">Ajouter</span>
+                            </div>
+                        )}
                         
                         {productForm.existingImages.map((image, index) => (
                             <div key={`existing-${index}`} className="relative aspect-square rounded-xl overflow-hidden border shadow-sm group">
@@ -605,6 +632,11 @@ export default function AdminProductsPage() {
                             </div>
                         ))}
                     </div>
+                    {currentTotalImages >= 3 && (
+                        <p className="text-[10px] text-muted-foreground italic mt-4 flex items-center gap-1">
+                            <ImageIcon className="h-3 w-3" /> Limite de 3 images atteinte. Supprimez-en une pour en ajouter une nouvelle.
+                        </p>
+                    )}
                 </Card>
               </div>
             </div>
