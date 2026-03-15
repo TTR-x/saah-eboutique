@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useUser, useDoc, useFirestore, useCollection } from '@/firebase';
@@ -53,16 +54,17 @@ export default function DashboardPage() {
     return orders.filter(o => 
         o.status === 'completed' || 
         o.status === 'validated' || 
-        (o.paymentHistory && o.paymentHistory.length > 0)
+        (o.paymentHistory && Array.isArray(o.paymentHistory) && o.paymentHistory.length > 0)
     );
   }, [orders]);
 
-  // UNE INTENTION/EN ATTENTE est un article avec 0 versement validé
+  // UNE INTENTION est un article avec ZÉRO historique ET qui n'est pas validé/complété
   const newIntentions = useMemo(() => {
-    return orders.filter(o => 
-        !(o.status === 'completed' || o.status === 'validated' || (o.paymentHistory && o.paymentHistory.length > 0)) &&
-        o.status !== 'cancelled'
-    );
+    return orders.filter(o => {
+        const hasHistory = o.paymentHistory && Array.isArray(o.paymentHistory) && o.paymentHistory.length > 0;
+        const isValidated = o.status === 'validated' || o.status === 'completed';
+        return !hasHistory && !isValidated && o.status !== 'cancelled';
+    });
   }, [orders]);
 
   const pendingPaymentsCount = useMemo(() => {
@@ -115,12 +117,12 @@ export default function DashboardPage() {
                         const el = document.getElementById('intentions-section') || document.getElementById('confirmed-section');
                         el?.scrollIntoView({ behavior: 'smooth' });
                     } else {
-                        toast({ title: "Information", description: "Aucun paiement en cours de vérification." });
+                        toast({ title: "Information", description: "Aucun versement en attente de vérification." });
                     }
                 }}
             >
                 <Clock className="h-4 w-4 mr-2" /> 
-                Paiements en attente {pendingPaymentsCount > 0 && `(${pendingPaymentsCount})`}
+                Versement en attente {pendingPaymentsCount > 0 && `(${pendingPaymentsCount})`}
             </Button>
 
             <Button asChild variant="ghost" size="sm" className="rounded-lg text-primary font-black">
@@ -129,7 +131,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* SECTION DES INTENTIONS : Validation en attente */}
+      {/* SECTION DES INTENTIONS : Jamais encore validées */}
       {newIntentions.length > 0 && (
         <div id="intentions-section" className="mb-12 scroll-mt-24">
             <h2 className="text-xl font-black mb-4 flex items-center gap-2 text-orange-600">
@@ -177,7 +179,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* SECTION DES ARTICLES CONFIRMÉS */}
+      {/* SECTION DES ARTICLES CONFIRMÉS : Au moins 1 paiement validé */}
       <div id="confirmed-section" className="scroll-mt-24 mb-16">
         <h2 className="text-xl font-black mb-4 flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-green-600" /> Mes Achats & Plans Confirmés
@@ -190,10 +192,10 @@ export default function DashboardPage() {
         ) : confirmedOrders.length > 0 ? (
             <div className="grid gap-4">
             {confirmedOrders.map((order: any) => {
-                const totalPrice = order.totalPrice || order.amount || 0;
-                const remaining = order.remainingAmount ?? totalPrice;
-                const paidSum = totalPrice - remaining;
-                const progress = (paidSum / totalPrice) * 100;
+                const totalPrice = Number(order.totalPrice || order.amount || 0);
+                const remaining = Number(order.remainingAmount ?? totalPrice);
+                const paidSum = Math.max(0, totalPrice - remaining);
+                const progress = totalPrice > 0 ? (paidSum / totalPrice) * 100 : 0;
                 const isPendingVerif = order.status === 'payment_pending';
 
                 return (
@@ -237,7 +239,7 @@ export default function DashboardPage() {
                             {(order.paymentMode === 'installments' || order.paymentMode === 'tontine') && (
                                 <div className="space-y-1.5">
                                     <div className="flex justify-between text-[9px] font-black uppercase">
-                                        <span className="text-blue-600">Payé: {paidSum.toLocaleString('fr-FR')} F</span>
+                                        <span className="text-blue-600">Déjà versé: {paidSum.toLocaleString('fr-FR')} F</span>
                                         <span className="text-muted-foreground">Reste: {remaining.toLocaleString('fr-FR')} F</span>
                                     </div>
                                     <Progress value={progress} className="h-1.5 bg-gray-100" />
@@ -269,7 +271,7 @@ export default function DashboardPage() {
             </div>
             <h3 className="font-black text-xl">Aucun achat confirmé</h3>
             <p className="text-muted-foreground max-w-sm mx-auto mt-2 text-sm">
-                Vos articles validés apparaîtront ici. Commencez par effectuer votre premier versement.
+                Vos articles avec au moins un versement validé apparaîtront ici.
             </p>
             <Button asChild className="mt-6 rounded-xl font-bold bg-primary text-black" size="lg">
                 <Link href="/products">Découvrir le catalogue</Link>

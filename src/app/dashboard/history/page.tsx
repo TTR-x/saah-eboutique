@@ -34,7 +34,6 @@ export default function GlobalHistoryPage() {
 
   const { data: orders, loading: ordersLoading } = useCollection<any>(ordersQuery);
 
-  // Aplatir tous les historiques de paiements de toutes les commandes
   const allTransactions = useMemo(() => {
     if (!orders) return [];
     
@@ -52,7 +51,6 @@ export default function GlobalHistoryPage() {
       }
     });
 
-    // Trier par date (plus récent en premier)
     return transactions.sort((a, b) => {
       const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
       const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
@@ -90,7 +88,7 @@ export default function GlobalHistoryPage() {
         <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
           <History className="h-8 w-8 text-primary" /> Historique des Paiements
         </h1>
-        <p className="text-muted-foreground font-medium">Retrouvez ici la trace de tous vos versements validés.</p>
+        <p className="text-muted-foreground font-medium">Retrouvez ici la trace de tous vos versements validés par SAAH Business.</p>
       </div>
 
       {ordersLoading ? (
@@ -142,9 +140,9 @@ export default function GlobalHistoryPage() {
       ) : (
         <div className="bg-card rounded-3xl p-16 text-center border-2 border-dashed border-gray-100">
           <History className="h-16 w-16 text-gray-200 mx-auto mb-4" />
-          <h3 className="font-black text-xl">Aucun historique</h3>
+          <h3 className="font-black text-xl">Aucun historique trouvé</h3>
           <p className="text-muted-foreground mt-2">
-            Vos versements apparaîtront ici une fois qu'ils seront validés par l'administrateur.
+            Vos versements apparaîtront ici dès qu'ils seront confirmés par l'administrateur.
           </p>
         </div>
       )}

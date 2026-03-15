@@ -3,7 +3,7 @@
 
 import { useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { CreditCard, CheckCircle2, XCircle, Smartphone, MessageCircle, User, ShoppingBag } from "lucide-react";
+import { CreditCard, CheckCircle2, XCircle, Smartphone, MessageCircle, User } from "lucide-react";
 import type { Order } from "@/lib/types";
 import { LogoSpinner } from "@/components/logo-spinner";
 import { Badge } from "@/components/ui/badge";
@@ -20,13 +20,12 @@ import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import Link from "next/link";
 import { useFirestore, useCollection } from "@/firebase";
-import { collection, query, orderBy, doc, updateDoc, serverTimestamp, arrayUnion } from "firebase/firestore";
+import { collection, query, orderBy, doc, updateDoc, serverTimestamp, arrayUnion, Timestamp } from "firebase/firestore";
 
 export default function AdminPaymentsPage() {
   const db = useFirestore();
   const { toast } = useToast();
 
-  // On utilise une requête simple sur la collection pour éviter le besoin d'index composite
   const allOrdersQuery = useMemo(() => {
     return query(
       collection(db, 'orders'), 
@@ -36,7 +35,6 @@ export default function AdminPaymentsPage() {
 
   const { data: allOrders, loading: isLoading } = useCollection<Order>(allOrdersQuery);
 
-  // Filtrage côté client pour une robustesse maximale
   const orders = useMemo(() => {
     return allOrders?.filter(order => order.status === 'payment_pending') || [];
   }, [allOrders]);
@@ -45,16 +43,18 @@ export default function AdminPaymentsPage() {
     try {
       const orderRef = doc(db, 'orders', order.id);
       
-      // Calcul du nouveau reste à payer
-      const currentRemaining = order.remainingAmount ?? order.totalPrice;
-      const amountPaid = order.amount || 0;
+      // Sécurisation des calculs avec des nombres stricts
+      const totalPrice = Number(order.totalPrice || order.amount || 0);
+      const currentRemaining = Number(order.remainingAmount ?? totalPrice);
+      const amountPaid = Number(order.amount || 0);
+      
       const newRemaining = Math.max(0, currentRemaining - amountPaid);
       const isFinished = newRemaining <= 0;
 
-      // Nouvelle entrée d'historique
+      // Nouvelle entrée d'historique avec Timestamp natif
       const newHistoryEntry = {
         amount: amountPaid,
-        date: new Date(), // Utilise une date JS pour l'insertion dans l'array
+        date: Timestamp.now(),
         transferId: order.transferId || 'N/A',
         status: 'validated'
       };
@@ -63,12 +63,11 @@ export default function AdminPaymentsPage() {
       await updateDoc(orderRef, {
         status: isFinished ? 'completed' : 'validated',
         remainingAmount: newRemaining,
+        totalPrice: totalPrice, // On s'assure qu'il est bien présent
         paymentValidatedAt: serverTimestamp(),
         lastPaymentValidatedAt: serverTimestamp(),
-        // Utilisation de arrayUnion pour garantir qu'on ne perd aucune donnée
         paymentHistory: arrayUnion(newHistoryEntry),
-        // On vide le transferId pour permettre le prochain versement
-        transferId: "", 
+        transferId: "", // On vide pour le prochain versement
       });
       
       toast({ 
@@ -77,19 +76,19 @@ export default function AdminPaymentsPage() {
       });
     } catch (error) {
       console.error("Validation error:", error);
-      toast({ title: "Erreur", description: "Échec de la validation.", variant: "destructive" });
+      toast({ title: "Erreur", description: "Échec de la validation Firestore.", variant: "destructive" });
     }
   };
 
   const handleReject = async (orderId: string) => {
-    if (!confirm("Rejeter ce paiement ? Le client recevra une notification pour recommencer.")) return;
+    if (!confirm("Rejeter ce paiement ? Le client pourra recommencer sa soumission.")) return;
     try {
       const orderRef = doc(db, 'orders', orderId);
       await updateDoc(orderRef, {
         status: 'rejected',
-        transferId: "" // On vide pour qu'il puisse corriger
+        transferId: "" 
       });
-      toast({ title: "Paiement rejeté", description: "Le client a été notifié de l'échec." });
+      toast({ title: "Paiement rejeté", description: "Le client a été notifié." });
     } catch (error) {
       toast({ title: "Erreur", description: "Échec de l'opération.", variant: "destructive" });
     }

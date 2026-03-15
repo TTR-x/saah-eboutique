@@ -56,11 +56,15 @@
         "productName": { "type": "string" },
         "productImage": { "type": "string" },
         "amount": { "type": "number" },
+        "totalPrice": { "type": "number" },
+        "remainingAmount": { "type": "number" },
         "paymentMode": { "type": "string", "enum": ["cash", "installments", "tontine"] },
-        "status": { "type": "string", "enum": ["pending", "validated", "completed", "cancelled"] },
+        "status": { "type": "string", "enum": ["pending", "validated", "completed", "cancelled", "payment_pending", "rejected"] },
         "createdAt": { "type": "string", "format": "date-time" },
+        "paymentHistory": { "type": "array", "items": { "type": "object" } },
         "isDelivery": { "type": "boolean" },
-        "address": { "type": "string" }
+        "address": { "type": "string" },
+        "transferId": { "type": "string" }
       }
     },
     "GiftRequest": {
