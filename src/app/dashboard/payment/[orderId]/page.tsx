@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
@@ -8,7 +9,7 @@ import type { Order } from '@/lib/types';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy, MapPin, Clock, RefreshCw, AlertCircle, Sparkles, History, Calendar, CheckCircle, BookmarkCheck } from 'lucide-react';
+import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy, MapPin, Clock, RefreshCw, AlertCircle, Sparkles, History, Calendar, CheckCircle, BookmarkCheck, PhoneCall } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -58,9 +59,12 @@ export default function OrderPaymentPage() {
   const totalPrice = order?.totalPrice || order?.amount || 0;
   const remainingAmount = order?.remainingAmount ?? totalPrice;
 
+  // Syntaxe Tmoney Marchand: *145*5*MONTANT*1155686#
+  const tmoneySyntax = `*145*5*${customAmount}*1155686#`;
+
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({ title: "Copié !", description: "Le numéro a été copié." });
+    toast({ title: "Copié !", description: "Le code a été copié dans votre presse-papier." });
   };
 
   const handleRegisterForStore = async () => {
@@ -295,21 +299,30 @@ Merci de valider mon paiement.`;
                 <Card className="border-none shadow-2xl rounded-2xl overflow-hidden bg-white animate-in zoom-in-95 duration-300">
                     <CardHeader className="bg-primary p-8 text-black text-center">
                         <div className="flex justify-center mb-4">
-                            <div className="bg-black/10 p-3 rounded-full"><Smartphone className="h-8 w-8" /></div>
+                            <div className="bg-black/10 p-3 rounded-full"><PhoneCall className="h-8 w-8" /></div>
                         </div>
-                        <CardTitle className="text-3xl font-black tracking-tighter">92 39 20 62</CardTitle>
-                        <CardDescription className="text-black/70 font-bold uppercase text-xs tracking-widest mt-2">
-                            Envoyez <span className="text-black font-black underline">{customAmount.toLocaleString('fr-FR')} F</span> sur notre Tmoney
+                        <p className="text-black/70 font-bold uppercase text-[10px] tracking-[0.2em] mb-2">Composez ce code sur votre téléphone</p>
+                        <CardTitle className="text-2xl sm:text-3xl font-black tracking-tight break-all">
+                            {tmoneySyntax}
+                        </CardTitle>
+                        <CardDescription className="text-black font-bold text-xs mt-4">
+                            Paiement Marchand SAAH Business
                         </CardDescription>
-                        <Button variant="ghost" size="sm" onClick={() => handleCopy('92392062')} className="mt-4 bg-white/20 hover:bg-white/30 text-black font-black">
-                            Copier le numéro
+                        <Button variant="ghost" size="sm" onClick={() => handleCopy(tmoneySyntax)} className="mt-6 bg-black/10 hover:bg-black/20 text-black font-black h-12 px-6 rounded-xl border border-black/10">
+                            <Copy className="mr-2 h-4 w-4" /> Copier le code
                         </Button>
                     </CardHeader>
                     <CardContent className="p-8 space-y-6">
+                        <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl flex gap-3 items-start">
+                            <AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                            <p className="text-xs text-blue-800 font-medium leading-relaxed">
+                                Une fois le transfert effectué, veuillez saisir le <strong>numéro de transaction</strong> (ou l'ID de transfert) reçu par SMS ci-dessous.
+                            </p>
+                        </div>
                         <div className="space-y-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="transferId" className="font-black text-[10px] uppercase text-muted-foreground ml-1">Numéro du transfert (ou ID de transaction) *</Label>
-                                <Input id="transferId" value={transferId} onChange={e => setTransferId(e.target.value)} placeholder="Saisissez ici le code reçu..." className="h-14 rounded-xl border-2 border-gray-100 bg-gray-50 font-bold text-lg" />
+                                <Label htmlFor="transferId" className="font-black text-[10px] uppercase text-muted-foreground ml-1">ID de transaction (Reçu par SMS) *</Label>
+                                <Input id="transferId" value={transferId} onChange={e => setTransferId(e.target.value)} placeholder="Ex: 12345678" className="h-14 rounded-xl border-2 border-gray-100 bg-gray-50 font-bold text-lg" />
                             </div>
                             <Button onClick={handleAlreadySent} disabled={!transferId || isSubmitting} className="w-full h-16 rounded-xl bg-black text-white hover:bg-gray-800 font-black text-xl shadow-xl">
                                 {isSubmitting ? <LogoSpinner /> : <><CheckCircle2 className="mr-2 h-6 w-6" /> Valider mon paiement</>}
