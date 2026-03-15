@@ -26,6 +26,7 @@ import {
   Clock,
   Gift,
   BarChart3,
+  CreditCard,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Logo } from '@/components/layout/logo';
@@ -70,6 +71,7 @@ export default function AdminLayout({
     const [unreadOrders, setUnreadOrders] = useState(0);
     const [pendingSales, setPendingSales] = useState(0);
     const [pendingGifts, setPendingGifts] = useState(0);
+    const [pendingPayments, setPendingPayments] = useState(0);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
@@ -97,6 +99,7 @@ export default function AdminLayout({
                 setUnreadOrders(ordersCount);
                 setPendingSales(salesData.filter(s => s.status === 'pending').length);
                 setPendingGifts(giftsData.filter((g: any) => g.status === 'pending').length);
+                setPendingPayments(salesData.filter(s => s.status === 'payment_pending').length);
             };
             fetchUnreadCounts();
             
@@ -141,6 +144,15 @@ export default function AdminLayout({
                     <Link href="/admin/traffic">
                       <BarChart3 />
                       Trafic
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={pathname === '/admin/payments'}>
+                    <Link href="/admin/payments">
+                      <CreditCard />
+                      Paiements
+                      {pendingPayments > 0 && <SidebarMenuBadge className="bg-red-500 text-white">{pendingPayments}</SidebarMenuBadge>}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

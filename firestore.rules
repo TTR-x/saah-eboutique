@@ -26,7 +26,9 @@ service cloud.firestore {
     match /orders/{orderId} {
       allow create: if true; 
       allow read: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
-      allow update, delete: if isAdmin();
+      // Permettre au client de mettre à jour sa commande (ex: ajouter son transferId)
+      allow update: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
+      allow delete: if isAdmin();
     }
 
     match /gift-requests/{requestId} {

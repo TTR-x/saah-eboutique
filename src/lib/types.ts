@@ -38,7 +38,9 @@ export type Order = {
   productImage: string;
   amount: number;
   paymentMode: 'cash' | 'installments' | 'tontine';
-  status: 'pending' | 'validated' | 'completed' | 'cancelled';
+  status: 'pending' | 'validated' | 'completed' | 'cancelled' | 'payment_pending';
+  transferId?: string;
+  paymentValidatedAt?: any;
   createdAt: any;
   isDelivery?: boolean;
   address?: string;

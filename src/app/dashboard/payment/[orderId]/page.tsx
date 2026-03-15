@@ -4,12 +4,12 @@
 import { useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useDoc, useFirestore } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy, MapPin } from 'lucide-react';
+import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy, MapPin, Clock, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -31,25 +31,53 @@ export default function OrderPaymentPage() {
   
   const [paymentType, setPaymentType] = useState<'online' | 'store' | null>(null);
   const [transferId, setTransferId] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({ title: "Copié !", description: "Le numéro a été copié dans votre presse-papier." });
   };
 
-  const handleAlreadySent = () => {
-    const phoneNumber = "22890101392";
-    const message = `Bonjour SAAH Business, je viens d'effectuer mon versement Tmoney pour ma commande :
+  const handleAlreadySent = async () => {
+    if (!orderRef || !transferId) return;
     
-*ARTICLE:* ${order?.productName} ${order?.productSku ? `(Réf: ${order.productSku})` : ''}
-*MONTANT ENVOYÉ:* ${order?.amount.toLocaleString('fr-FR')} FCFA
-*NUMÉRO DE TRANSFERT:* ${transferId}
+    setIsSubmitting(true);
+    try {
+      await updateDoc(orderRef, {
+        transferId: transferId,
+        status: 'payment_pending',
+        updatedAt: serverTimestamp()
+      });
+
+      toast({ 
+        title: "Demande envoyée", 
+        description: "Votre preuve de paiement a été transmise pour validation." 
+      });
+
+      // Ouvrir WhatsApp en arrière-plan pour informer l'admin
+      const phoneNumber = "22890101392";
+      const message = `Bonjour SAAH Business, je viens d'effectuer mon versement Tmoney pour ma commande :
+    
+*ARTICLE:* ${order?.productName}
+*MONTANT:* ${order?.amount.toLocaleString('fr-FR')} FCFA
+*ID TRANSFERT:* ${transferId}
 
 Merci de valider mon paiement.`;
 
+      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+    } catch (error) {
+      toast({ title: "Erreur", description: "Impossible de mettre à jour la commande.", variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRelancer = () => {
+    const phoneNumber = "22890101392";
+    const message = `Bonjour SAAH Business, je relance ma demande de validation pour mon paiement Tmoney (ID: ${order?.transferId}). Merci !`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
-    router.push('/dashboard');
   };
 
   const handleStoreWhatsApp = () => {
@@ -80,6 +108,54 @@ Je suis en route !`;
       <div className="container mx-auto px-4 py-20 text-center">
         <h1 className="text-2xl font-black">Commande introuvable</h1>
         <Button onClick={() => router.push('/dashboard')} variant="link" className="mt-4">Retour au tableau de bord</Button>
+      </div>
+    );
+  }
+
+  // ÉCRAN DE VALIDATION EN ATTENTE
+  if (order.status === 'payment_pending') {
+    return (
+      <div className="container mx-auto px-4 py-12 max-w-2xl animate-in fade-in duration-500">
+        <Card className="border-none shadow-2xl rounded-3xl overflow-hidden bg-white text-center">
+          <div className="bg-orange-500 p-12 flex justify-center">
+            <div className="h-24 w-24 rounded-full bg-white/20 flex items-center justify-center text-white relative">
+              <Clock className="h-12 w-12 animate-pulse" />
+              <div className="absolute inset-0 rounded-full border-4 border-white/30 border-t-transparent animate-spin" />
+            </div>
+          </div>
+          <CardContent className="p-10 space-y-6">
+            <div>
+              <h1 className="text-3xl font-black tracking-tight mb-2">Validation en attente</h1>
+              <p className="text-muted-foreground font-medium">Nous avons bien reçu votre preuve de transfert.</p>
+            </div>
+
+            <div className="bg-muted/30 p-6 rounded-2xl border border-dashed border-orange-200">
+              <p className="text-sm font-bold text-orange-700 mb-1">ID de transaction enregistré :</p>
+              <code className="text-lg font-black tracking-widest">{order.transferId}</code>
+            </div>
+
+            <div className="space-y-4 pt-4">
+              <div className="flex items-center gap-3 text-left bg-blue-50 p-4 rounded-xl border border-blue-100">
+                <Clock className="h-5 w-5 text-blue-600 shrink-0" />
+                <p className="text-xs font-bold text-blue-800 leading-relaxed">
+                  Les confirmations sont traitées manuellement tous les jours entre <span className="underline">08h00 et 19h00</span>.
+                </p>
+              </div>
+              
+              <Button 
+                onClick={handleRelancer}
+                variant="outline" 
+                className="w-full h-14 rounded-xl border-2 border-gray-100 hover:border-primary font-black text-lg transition-all"
+              >
+                <MessageSquare className="mr-2 h-6 w-6 text-green-600" /> Nous relancer
+              </Button>
+
+              <Button asChild variant="ghost" className="w-full text-muted-foreground font-bold uppercase text-xs tracking-widest">
+                <Link href="/dashboard">Retourner au tableau de bord</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -179,10 +255,10 @@ Je suis en route !`;
                         </div>
                         <Button 
                             onClick={handleAlreadySent}
-                            disabled={!transferId}
+                            disabled={!transferId || isSubmitting}
                             className="w-full h-16 rounded-xl bg-black text-white hover:bg-gray-800 font-black text-xl shadow-xl transition-all active:scale-95"
                         >
-                            <CheckCircle2 className="mr-2 h-6 w-6" /> Valider mon paiement
+                            {isSubmitting ? <LogoSpinner /> : <><CheckCircle2 className="mr-2 h-6 w-6" /> Valider mon paiement</>}
                         </Button>
                     </div>
                     <p className="text-[10px] text-center text-muted-foreground font-medium italic">Une fois validé, votre dossier sera mis à jour sous 30 minutes.</p>
