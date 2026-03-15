@@ -269,13 +269,12 @@ export default function HomePage() {
                   Notre mission est de rendre le shopping accessible à tous au Togo. Nous vous aidons à obtenir ce que vous voulez, même si vous n'avez pas tout l'argent tout de suite, grâce à des solutions de paiement souples et sécurisées.
                 </p>
               </div>
-              <div className="relative aspect-video rounded-lg overflow-hidden shadow-xl border-4 border-white dark:border-zinc-800">
+              <div className="relative aspect-video rounded-lg overflow-hidden shadow-xl border-4 border-white dark:border-zinc-800 bg-white">
                 <Image 
-                  src="https://picsum.photos/seed/saah-concept/800/450" 
-                  alt="Concept SAAH" 
+                  src="/logo.png" 
+                  alt="Logo SAAH Business" 
                   fill 
-                  className="object-cover"
-                  data-ai-hint="happy shoppers" 
+                  className="object-contain p-8"
                 />
               </div>
             </div>
