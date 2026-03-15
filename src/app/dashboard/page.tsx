@@ -3,9 +3,9 @@
 
 import { useUser, useDoc, useFirestore, useCollection } from '@/firebase';
 import { doc, collection, query, where } from 'firebase/firestore';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { LogoSpinner } from '@/components/logo-spinner';
-import { User, Package, Clock, CreditCard, ShoppingBag, ChevronRight, Gift, CheckCircle2, AlertCircle } from 'lucide-react';
+import { User, ShoppingBag, Clock, ChevronRight, Gift, CheckCircle2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
@@ -49,7 +49,7 @@ export default function DashboardPage() {
     });
   }, [rawOrders]);
 
-  // LOGIQUE DE FILTRAGE : Un article est confirmé s'il a été validé au moins une fois
+  // UN ARTICLE EST CONFIRMÉ s'il est validé, complété ou s'il a au moins un versement dans l'historique
   const confirmedOrders = useMemo(() => {
     return orders.filter(o => 
         o.status === 'completed' || 
@@ -58,7 +58,7 @@ export default function DashboardPage() {
     );
   }, [orders]);
 
-  // Une intention est une demande qui n'a JAMAIS été validée
+  // UNE INTENTION est un article avec 0 versement validé (historique vide et pas de statut validé)
   const newIntentions = useMemo(() => {
     return orders.filter(o => 
         !(o.status === 'completed' || o.status === 'validated' || (o.paymentHistory && o.paymentHistory.length > 0)) &&
@@ -116,12 +116,12 @@ export default function DashboardPage() {
                         const el = document.getElementById('intentions-section') || document.getElementById('confirmed-section');
                         el?.scrollIntoView({ behavior: 'smooth' });
                     } else {
-                        toast({ title: "Information", description: "Aucun versement en attente de vérification." });
+                        toast({ title: "Information", description: "Aucun paiement en cours de vérification." });
                     }
                 }}
             >
                 <Clock className="h-4 w-4 mr-2" /> 
-                Vérifications {pendingPaymentsCount > 0 && `(${pendingPaymentsCount})`}
+                Paiements en attente {pendingPaymentsCount > 0 && `(${pendingPaymentsCount})`}
             </Button>
 
             <Button asChild variant="ghost" size="sm" className="rounded-lg text-primary font-black">
@@ -130,7 +130,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* SECTION DES INTENTIONS : Uniquement les vrais nouveaux articles */}
+      {/* SECTION DES INTENTIONS : Uniquement les nouveaux articles (0 versement) */}
       {newIntentions.length > 0 && (
         <div id="intentions-section" className="mb-12 scroll-mt-24">
             <h2 className="text-xl font-black mb-4 flex items-center gap-2 text-orange-600">
@@ -138,31 +138,33 @@ export default function DashboardPage() {
             </h2>
             <div className="grid gap-4">
                 {newIntentions.map((order: any) => (
-                    <Card key={order.id} className="border-none shadow-sm rounded-2xl bg-orange-50/50 border-orange-100 overflow-hidden hover:shadow-md transition-all">
-                        <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
-                            <div className="relative h-14 w-14 rounded-xl overflow-hidden bg-white border shrink-0 mx-auto sm:mx-0">
-                                {order.productImage && <Image src={order.productImage} alt="" fill className="object-cover" sizes="56px" />}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex justify-between items-start">
-                                    <h3 className="font-bold text-sm truncate">{order.productName}</h3>
-                                    <Badge className={cn(
-                                        "font-black uppercase text-[8px] px-2 h-4",
-                                        order.status === 'payment_pending' ? 'bg-orange-500 text-white animate-pulse' : 
-                                        order.status === 'rejected' ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600'
-                                    )}>
-                                        {order.status === 'payment_pending' ? 'En vérification' : order.status === 'rejected' ? 'Refusé' : 'À régler'}
-                                    </Badge>
+                    <Link key={order.id} href={`/dashboard/payment/${order.id}`} className="block transition-transform active:scale-[0.98] group">
+                        <Card className="border-none shadow-sm rounded-2xl bg-orange-50/50 border-orange-100 overflow-hidden group-hover:shadow-md transition-all">
+                            <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                                <div className="relative h-14 w-14 rounded-xl overflow-hidden bg-white border shrink-0 mx-auto sm:mx-0">
+                                    {order.productImage && <Image src={order.productImage} alt="" fill className="object-cover" sizes="56px" />}
                                 </div>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1">
-                                    Mode: {order.paymentMode === 'installments' ? 'Tranches' : order.paymentMode === 'tontine' ? 'Tontine' : 'Cash'} • {order.amount.toLocaleString('fr-FR')} F
-                                </p>
-                            </div>
-                            <Button asChild size="sm" className="rounded-lg font-black text-xs h-9 bg-orange-500 hover:bg-orange-600 text-white">
-                                <Link href={`/dashboard/payment/${order.id}`}>Finaliser l'achat <ChevronRight className="h-3 w-3 ml-1" /></Link>
-                            </Button>
-                        </CardContent>
-                    </Card>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex justify-between items-start">
+                                        <h3 className="font-bold text-sm truncate">{order.productName}</h3>
+                                        <Badge className={cn(
+                                            "font-black uppercase text-[8px] px-2 h-4",
+                                            order.status === 'payment_pending' ? 'bg-orange-500 text-white animate-pulse' : 
+                                            order.status === 'rejected' ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600'
+                                        )}>
+                                            {order.status === 'payment_pending' ? 'En vérification' : order.status === 'rejected' ? 'Refusé' : 'À régler'}
+                                        </Badge>
+                                    </div>
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1">
+                                        Mode: {order.paymentMode === 'installments' ? 'Tranches' : order.paymentMode === 'tontine' ? 'Tontine' : 'Cash'} • {order.amount.toLocaleString('fr-FR')} F
+                                    </p>
+                                </div>
+                                <div className="rounded-lg font-black text-xs h-9 px-4 bg-orange-500 text-white flex items-center justify-center shrink-0 group-hover:bg-orange-600 transition-colors">
+                                    Finaliser l'achat <ChevronRight className="h-3 w-3 ml-1" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </Link>
                 ))}
             </div>
         </div>
@@ -188,74 +190,68 @@ export default function DashboardPage() {
                 const isPendingVerif = order.status === 'payment_pending';
 
                 return (
-                <Card key={order.id} className="border-none shadow-sm rounded-2xl bg-card overflow-hidden hover:shadow-md transition-all group">
-                    <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
-                    <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-gray-50 dark:bg-zinc-800 border shrink-0 mx-auto sm:mx-0">
-                        {order.productImage ? (
-                        <Image src={order.productImage} alt={order.productName} fill className="object-cover" sizes="64px" />
-                        ) : (
-                        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                            <ShoppingBag className="h-6 w-6" />
-                        </div>
-                        )}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start mb-1">
-                        <h3 className="font-black text-sm sm:text-base truncate pr-2">{order.productName}</h3>
-                        <div className="flex gap-2">
-                            {isPendingVerif && (
-                                <Badge className="bg-orange-500 text-white font-bold uppercase text-[8px] animate-pulse">Vérification...</Badge>
+                <Link key={order.id} href={`/dashboard/payment/${order.id}`} className="block transition-transform active:scale-[0.98] group">
+                    <Card className="border-none shadow-sm rounded-2xl bg-card overflow-hidden group-hover:shadow-md transition-all">
+                        <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-gray-50 dark:bg-zinc-800 border shrink-0 mx-auto sm:mx-0">
+                            {order.productImage ? (
+                            <Image src={order.productImage} alt={order.productName} fill className="object-cover" sizes="64px" />
+                            ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                                <ShoppingBag className="h-6 w-6" />
+                            </div>
                             )}
-                            <Badge className={cn(
-                                "font-bold uppercase text-[9px] px-2 h-5",
-                                order.status === 'completed' ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
-                            )}>
-                                {order.status === 'completed' ? 'Payé / Livré ✅' : 'Cycle Actif ⚡'}
-                            </Badge>
-                        </div>
                         </div>
                         
-                        <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-tighter text-muted-foreground mb-3">
-                        <span className="text-primary font-black">{totalPrice.toLocaleString('fr-FR')} FCFA</span>
-                        <span className="opacity-30">•</span>
-                        <span className={order.paymentMode !== 'cash' ? 'text-blue-600' : ''}>
-                            {order.paymentMode === 'installments' ? 'Tranches' : order.paymentMode === 'tontine' ? 'Tontine' : 'Cash'}
-                        </span>
+                        <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-start mb-1">
+                            <h3 className="font-black text-sm sm:text-base truncate pr-2">{order.productName}</h3>
+                            <div className="flex gap-2">
+                                {isPendingVerif && (
+                                    <Badge className="bg-orange-500 text-white font-bold uppercase text-[8px] animate-pulse">Vérification...</Badge>
+                                )}
+                                <Badge className={cn(
+                                    "font-bold uppercase text-[9px] px-2 h-5",
+                                    order.status === 'completed' ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
+                                )}>
+                                    {order.status === 'completed' ? 'Payé / Livré ✅' : 'Cycle Actif ⚡'}
+                                </Badge>
+                            </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-tighter text-muted-foreground mb-3">
+                            <span className="text-primary font-black">{totalPrice.toLocaleString('fr-FR')} FCFA</span>
+                            <span className="opacity-30">•</span>
+                            <span className={order.paymentMode !== 'cash' ? 'text-blue-600' : ''}>
+                                {order.paymentMode === 'installments' ? 'Tranches' : order.paymentMode === 'tontine' ? 'Tontine' : 'Cash'}
+                            </span>
+                            </div>
+
+                            {(order.paymentMode === 'installments' || order.paymentMode === 'tontine') && (
+                                <div className="space-y-1.5">
+                                    <div className="flex justify-between text-[9px] font-black uppercase">
+                                        <span className="text-blue-600">Payé: {paidSum.toLocaleString('fr-FR')} F</span>
+                                        <span className="text-muted-foreground">Reste: {remaining.toLocaleString('fr-FR')} F</span>
+                                    </div>
+                                    <Progress value={progress} className="h-1.5 bg-gray-100" />
+                                </div>
+                            )}
                         </div>
 
-                        {(order.paymentMode === 'installments' || order.paymentMode === 'tontine') && (
-                            <div className="space-y-1.5">
-                                <div className="flex justify-between text-[9px] font-black uppercase">
-                                    <span className="text-blue-600">Payé: {paidSum.toLocaleString('fr-FR')} F</span>
-                                    <span className="text-muted-foreground">Reste: {remaining.toLocaleString('fr-FR')} F</span>
-                                </div>
-                                <Progress value={progress} className="h-1.5 bg-gray-100" />
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="flex items-center justify-center sm:justify-end gap-2 shrink-0">
-                        {order.status !== 'completed' ? (
-                            <Button asChild size="sm" className={cn(
-                                "rounded-lg font-black text-xs px-4 h-9 shadow-sm transition-all",
+                        <div className="flex items-center justify-center sm:justify-end gap-2 shrink-0">
+                            <div className={cn(
+                                "rounded-lg font-black text-xs px-4 h-9 shadow-sm transition-all flex items-center justify-center",
                                 isPendingVerif 
-                                    ? "bg-orange-500 text-white hover:bg-orange-600" 
-                                    : "bg-primary text-black hover:bg-primary/90"
+                                    ? "bg-orange-500 text-white" 
+                                    : order.status === 'completed' ? "bg-gray-100 text-gray-600 border border-gray-200" : "bg-primary text-black"
                             )}>
-                                <Link href={`/dashboard/payment/${order.id}`}>
-                                    {isPendingVerif ? "Suivre ma validation" : "Nouveau versement"} 
-                                    <ChevronRight className="h-3 w-3 ml-1" />
-                                </Link>
-                            </Button>
-                        ) : (
-                            <Button asChild variant="outline" size="sm" className="rounded-lg font-black text-xs h-9 border-2">
-                                <Link href={`/dashboard/payment/${order.id}`}>Historique & Détails</Link>
-                            </Button>
-                        )}
-                    </div>
-                    </CardContent>
-                </Card>
+                                {isPendingVerif ? "Suivre ma validation" : order.status === 'completed' ? "Voir détails" : "Nouveau versement"} 
+                                <ChevronRight className="h-3 w-3 ml-1" />
+                            </div>
+                        </div>
+                        </CardContent>
+                    </Card>
+                </Link>
                 );
             })}
             </div>
