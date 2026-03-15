@@ -35,7 +35,7 @@ export type Order = {
   productName: string;
   productImage: string;
   amount: number;
-  paymentMode: 'cash' | 'installments';
+  paymentMode: 'cash' | 'installments' | 'tontine';
   status: 'pending' | 'validated' | 'completed' | 'cancelled';
   createdAt: any;
   isDelivery?: boolean;

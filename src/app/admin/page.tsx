@@ -2,7 +2,7 @@
 'use client'
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { MessageSquare, Package, ShoppingBag, Users, BadgeEuro, TrendingUp, Clock, MessageCircle } from "lucide-react";
+import { MessageSquare, Package, ShoppingBag, Users, BadgeEuro, TrendingUp, Clock, MessageCircle, CreditCard } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getProducts } from "@/lib/products-service";
 import { getMessages } from "@/lib/messages-service";
@@ -19,14 +19,14 @@ function StatCard({ title, value, icon, isLoading, subtext, colorClass = "text-p
     return (
         <Card className="border-none shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">{title}</CardTitle>
+                <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{title}</CardTitle>
                 <div className={`h-8 w-8 rounded-lg bg-muted flex items-center justify-center ${colorClass}`}>
                     {icon}
                 </div>
             </CardHeader>
             <CardContent>
                 {isLoading ? <LogoSpinner className="h-6 w-6" /> : <div className="text-2xl font-black">{value}</div>}
-                {subtext && <p className="text-[10px] font-bold text-muted-foreground mt-1">{subtext}</p>}
+                {subtext && <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">{subtext}</p>}
             </CardContent>
         </Card>
     );
@@ -66,6 +66,10 @@ export default function AdminDashboardPage() {
     const recentSales = sales.slice(0, 5);
     const pendingSalesCount = sales.filter(s => s.status === 'pending').length;
     const totalPotentialRevenue = sales.reduce((acc, sale) => acc + (sale.status !== 'cancelled' ? sale.amount : 0), 0);
+    
+    // Calcul des tranches et tontines validées
+    const validatedTranchesCount = sales.filter(s => s.paymentMode === 'installments' && (s.status === 'validated' || s.status === 'completed')).length;
+    const validatedTontinesCount = sales.filter(s => s.paymentMode === 'tontine' && (s.status === 'validated' || s.status === 'completed')).length;
 
   return (
     <div className="space-y-8">
@@ -75,11 +79,13 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <StatCard title="Ventes Totales" value={sales.length} icon={<BadgeEuro className="h-4 w-4" />} isLoading={isLoading} subtext="Total historique" />
+        <StatCard title="Ventes Totales" value={sales.length} icon={<BadgeEuro className="h-4 w-4" />} isLoading={isLoading} subtext="Historique" />
         <StatCard title="En Attente" value={pendingSalesCount} icon={<Clock className="h-4 w-4" />} isLoading={isLoading} subtext="À traiter" colorClass="text-orange-500" />
-        <StatCard title="Revenu Potentiel" value={`${totalPotentialRevenue.toLocaleString('fr-FR')} F`} icon={<TrendingUp className="h-4 w-4" />} isLoading={isLoading} subtext="Engagé (Hors annulé)" colorClass="text-green-500" />
-        <StatCard title="Demandes Import" value={importOrders.length} icon={<Package className="h-4 w-4" />} isLoading={isLoading} subtext="Projets Chine" colorClass="text-blue-500" />
-        <StatCard title="Messages" value={messages.length} icon={<MessageSquare className="h-4 w-4" />} isLoading={isLoading} subtext="Support" colorClass="text-purple-500" />
+        <StatCard title="Revenu Potentiel" value={`${totalPotentialRevenue.toLocaleString('fr-FR')} F`} icon={<TrendingUp className="h-4 w-4" />} isLoading={isLoading} subtext="Engagé" colorClass="text-green-500" />
+        
+        {/* Nouveaux items demandés */}
+        <StatCard title="Par tranche validé" value={validatedTranchesCount} icon={<CreditCard className="h-4 w-4" />} isLoading={isLoading} subtext="Tranches" colorClass="text-blue-500" />
+        <StatCard title="Tontine validé" value={validatedTontinesCount} icon={<Users className="h-4 w-4" />} isLoading={isLoading} subtext="Tontines" colorClass="text-purple-500" />
       </div>
       
       <div className="mt-8 grid gap-8 md:grid-cols-3">
