@@ -30,7 +30,6 @@ export default function DashboardPage() {
   const userRef = useMemo(() => (user ? doc(db, 'users', user.uid) : null), [db, user]);
   const { data: profile } = useDoc(userRef);
 
-  // Récupération de toutes les commandes de l'utilisateur sans tri Firestore pour éviter les problèmes d'index
   const ordersQuery = useMemo(() => {
     if (!db || !user) return null;
     return query(
@@ -41,7 +40,6 @@ export default function DashboardPage() {
 
   const { data: rawOrders, loading: ordersLoading } = useCollection(ordersQuery);
 
-  // Tri et filtrage intelligent côté client
   const orders = useMemo(() => {
     if (!rawOrders) return [];
     return [...rawOrders].sort((a: any, b: any) => {
@@ -51,10 +49,9 @@ export default function DashboardPage() {
     });
   }, [rawOrders]);
 
-  // 1. Les achats "Officiellement Validés" 
-  // Un article est considéré comme validé s'il est complété, validé par l'admin, 
-  // ou s'il possède au moins une entrée dans son historique de paiement.
-  const officiallyValidatedOrders = useMemo(() => {
+  // LOGIQUE DES SECTIONS
+  // 1. Les articles confirmés : Tout ce qui a au moins un historique OU est marqué comme complété/validé
+  const confirmedOrders = useMemo(() => {
     return orders.filter(o => 
         o.status === 'completed' || 
         o.status === 'validated' || 
@@ -62,8 +59,7 @@ export default function DashboardPage() {
     );
   }, [orders]);
 
-  // 2. Les "Nouvelles Intentions"
-  // Uniquement les articles qui n'ont AUCUN historique et qui ne sont pas encore validés une seule fois.
+  // 2. Les intentions pures : Jamais de versement validé, pas encore de cycle commencé
   const newIntentions = useMemo(() => {
     return orders.filter(o => 
         o.status !== 'completed' && 
@@ -77,6 +73,18 @@ export default function DashboardPage() {
   const pendingPaymentsCount = useMemo(() => {
     return orders.filter(o => o.status === 'payment_pending').length;
   }, [orders]);
+
+  // CALCUL DES STATISTIQUES (Basé sur l'historique réel)
+  const totalValuePaid = useMemo(() => {
+    return orders.reduce((total, order) => {
+        const historySum = order.paymentHistory?.reduce((sum: number, entry: any) => {
+            return entry.status === 'validated' ? sum + entry.amount : sum;
+        }, 0) || 0;
+        return total + historySum;
+    }, 0);
+  }, [orders]);
+
+  const activePlansCount = confirmedOrders.filter(o => o.status !== 'completed').length;
 
   useEffect(() => {
     if (!authLoading && !user && mounted) {
@@ -94,24 +102,12 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
-  // Statistiques basées UNIQUEMENT sur les articles validés
-  const activePlansCount = officiallyValidatedOrders.filter(o => o.status !== 'completed').length;
-  
-  const totalValuePaid = officiallyValidatedOrders.reduce((acc, o) => {
-    const totalPrice = o.totalPrice || o.amount;
-    const remaining = o.remainingAmount ?? totalPrice;
-    return acc + (totalPrice - remaining);
-  }, 0);
-
   const handlePendingClick = () => {
     if (pendingPaymentsCount > 0) {
         const el = document.getElementById('pending-section');
         if (el) el.scrollIntoView({ behavior: 'smooth' });
     } else {
-        toast({
-            title: "Information",
-            description: "Aucune vérification de paiement en cours.",
-        });
+        toast({ title: "Information", description: "Aucune vérification de paiement en cours." });
     }
   };
 
@@ -126,7 +122,7 @@ export default function DashboardPage() {
             <h1 className="text-3xl font-black tracking-tight">
               {profile?.displayName || user.displayName || 'Client SAAH'}
             </h1>
-            <p className="text-muted-foreground text-sm font-medium">Compte Client</p>
+            <p className="text-muted-foreground text-sm font-medium">Espace Personnel</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 bg-white dark:bg-zinc-900 p-2 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800">
@@ -159,8 +155,8 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black">{officiallyValidatedOrders.length}</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Articles en main ou en plan</p>
+            <div className="text-3xl font-black">{confirmedOrders.length}</div>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Cycles en cours ou terminés</p>
           </CardContent>
         </Card>
 
@@ -172,7 +168,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-black text-blue-600">{totalValuePaid.toLocaleString('fr-FR')} F</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Somme totale encaissée</p>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Somme totale déjà réglée</p>
           </CardContent>
         </Card>
 
@@ -184,12 +180,12 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-black text-orange-500">{activePlansCount}</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Cycles en cours</p>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Articles en cours de paiement</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* SECTION DES NOUVELLES DEMANDES (Uniquement celles jamais validées) */}
+      {/* SECTION DES INTENTIONS (Uniquement les nouveaux articles jamais payés) */}
       {newIntentions.length > 0 && (
         <div id="pending-section" className="mb-12 scroll-mt-24">
             <h2 className="text-xl font-black mb-4 flex items-center gap-2 text-orange-600">
@@ -227,7 +223,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* SECTION PRINCIPALE : LES ARTICLES DÉJÀ VALIDÉS AU MOINS UNE FOIS */}
+      {/* SECTION DES ARTICLES CONFIRMÉS (Cycles commencés ou terminés) */}
       <h2 className="text-xl font-black mb-4 flex items-center gap-2">
         <CheckCircle2 className="h-5 w-5 text-green-600" /> Mes Achats & Plans Confirmés
       </h2>
@@ -236,9 +232,9 @@ export default function DashboardPage() {
         <div className="flex justify-center py-12">
             <LogoSpinner className="h-8 w-8 text-primary" />
         </div>
-      ) : officiallyValidatedOrders.length > 0 ? (
+      ) : confirmedOrders.length > 0 ? (
         <div className="grid gap-4">
-          {officiallyValidatedOrders.map((order: any) => {
+          {confirmedOrders.map((order: any) => {
             const totalPrice = order.totalPrice || order.amount;
             const remaining = order.remainingAmount ?? totalPrice;
             const progress = ((totalPrice - remaining) / totalPrice) * 100;
@@ -306,10 +302,9 @@ export default function DashboardPage() {
                             </Link>
                         </Button>
                     ) : (
-                        <div className="flex items-center gap-2 bg-green-50 text-green-600 px-3 py-1.5 rounded-lg border border-green-100">
-                            <CheckCircle2 className="h-4 w-4" />
-                            <span className="text-[10px] font-black uppercase">Terminé</span>
-                        </div>
+                        <Button asChild variant="outline" size="sm" className="rounded-lg font-black text-xs h-9 border-2">
+                            <Link href={`/dashboard/payment/${order.id}`}>Voir historique</Link>
+                        </Button>
                     )}
                   </div>
                 </CardContent>
@@ -322,9 +317,9 @@ export default function DashboardPage() {
           <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 className="h-10 w-10 text-gray-300" />
           </div>
-          <h3 className="font-black text-xl">Aucun achat validé</h3>
+          <h3 className="font-black text-xl">Aucun achat confirmé</h3>
           <p className="text-muted-foreground max-w-sm mx-auto mt-2 text-sm">
-            Vos articles apparaîtront ici dès que votre premier versement sera confirmé.
+            Vos articles validés apparaîtront ici. Commencez par effectuer votre premier versement.
           </p>
           <Button asChild className="mt-6 rounded-xl font-bold bg-primary text-black" size="lg">
             <Link href="/products">Découvrir le catalogue</Link>

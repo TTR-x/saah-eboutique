@@ -87,6 +87,8 @@ export function CheckoutDialog({ product, open, onOpenChange, initialMode }: Che
       productName: product.name,
       productImage: product.images[0],
       amount: totalToPay,
+      totalPrice: product.price,
+      remainingAmount: product.price,
       paymentMode: formData.paymentMode,
       status: 'pending',
       createdAt: serverTimestamp(),
@@ -110,7 +112,7 @@ export function CheckoutDialog({ product, open, onOpenChange, initialMode }: Che
     const totalEstimate = formData.paymentMode === 'cash' ? product.price : (formData.paymentMode === 'installments' ? (product.installmentPrice || 0) : (product.tontineDailyRate || 0));
     saveOrderToFirestore(totalEstimate);
 
-    const message = `Bonjour SAAH Business, je suis intéressé par l'article : *${product.name}*
+    const message = `Bonjour SAAH Business, je suis intéressé par l'article : *${product.name}* (Ref: ${product.sku || product.id})
 Mode de paiement souhaité : *${modeLabel}*
 
 Merci de m'indiquer la marche à suivre pour finaliser mon achat rapidement.`;
@@ -141,7 +143,7 @@ Merci de m'indiquer la marche à suivre pour finaliser mon achat rapidement.`;
 
     const message = `Bonjour SAAH Business, voici ma commande détaillée :
 
-*PRODUIT:* ${product.name}
+*PRODUIT:* ${product.name} (Ref: ${product.sku || product.id})
 *MODE:* ${modeLabel}
 ${formData.paymentMode === 'installments' ? `💰 Mensualité: ${product.installmentPrice?.toLocaleString('fr-FR')} FCFA x ${product.installmentMonths} mois` : ''}
 ${formData.paymentMode === 'tontine' ? `🤝 Cotisation: ${product.tontineDailyRate?.toLocaleString('fr-FR')} FCFA / jour\n📅 Durée: ${product.tontineDuration}` : ''}
