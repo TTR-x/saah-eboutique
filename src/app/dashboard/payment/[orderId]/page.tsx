@@ -8,12 +8,13 @@ import type { Order } from '@/lib/types';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy, MapPin, Clock, RefreshCw, AlertCircle, Sparkles, History, Calendar, CheckCircle } from 'lucide-react';
+import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy, MapPin, Clock, RefreshCw, AlertCircle, Sparkles, History, Calendar, CheckCircle, BookmarkCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
+import Image from 'next/image';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -36,6 +37,7 @@ export default function OrderPaymentPage() {
   const [transferId, setTransferId] = useState('');
   const [customAmount, setCustomAmount] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   // Initialiser le montant avec le montant de la commande
   useEffect(() => {
@@ -44,7 +46,7 @@ export default function OrderPaymentPage() {
     }
   }, [order]);
 
-  // Scroll automatique quand on choisit un mode de paiement (En Ligne ou Boutique)
+  // Scroll automatique quand on choisit un mode de paiement
   useEffect(() => {
     if (paymentType) {
       setTimeout(() => {
@@ -59,6 +61,25 @@ export default function OrderPaymentPage() {
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({ title: "Copié !", description: "Le numéro a été copié." });
+  };
+
+  const handleRegisterForStore = async () => {
+    if (!orderRef) return;
+    setIsRegistering(true);
+    try {
+      await updateDoc(orderRef, {
+        isStoreRegistered: true,
+        updatedAt: serverTimestamp()
+      });
+      toast({ 
+        title: "Produit enregistré !", 
+        description: "L'admin verra cet article en priorité à votre arrivée." 
+      });
+    } catch (error) {
+      toast({ title: "Erreur", description: "Impossible d'enregistrer.", variant: "destructive" });
+    } finally {
+      setIsRegistering(false);
+    }
   };
 
   const handleAlreadySent = async () => {
@@ -116,12 +137,12 @@ Merci de valider mon paiement.`;
     return (
       <div className="container mx-auto px-4 py-20 text-center">
         <h1 className="text-2xl font-black">Commande introuvable</h1>
-        <Button onClick={() => router.push('/dashboard')} variant="link" className="mt-4">Retour au tableau de bord</Button>
+        <button onClick={() => router.push('/dashboard')} className="mt-4 text-primary font-bold underline">Retour au tableau de bord</button>
       </div>
     );
   }
 
-  // --- ÉCRAN FINAL (COMPLÈTEMENT PAYÉ) ---
+  // --- ÉCRANS DE STATUT (COMPLÉTÉ / REJETÉ / EN ATTENTE) ---
   if (order.status === 'completed') {
     return (
       <div className="container mx-auto px-4 py-12 max-w-2xl animate-in fade-in duration-500">
@@ -134,9 +155,7 @@ Merci de valider mon paiement.`;
           <CardContent className="p-10 space-y-8">
             <div className="space-y-2">
               <h1 className="text-3xl font-black tracking-tight">Félicitations ! 🥳</h1>
-              <p className="text-muted-foreground font-medium text-lg">
-                Cet article est désormais entièrement payé.
-              </p>
+              <p className="text-muted-foreground font-medium text-lg">Cet article est désormais entièrement payé.</p>
             </div>
             <Button asChild className="w-full h-16 rounded-2xl bg-black text-white hover:bg-gray-800 font-black text-xl shadow-xl transition-all">
               <Link href="/dashboard">Voir mon tableau de bord</Link>
@@ -147,7 +166,6 @@ Merci de valider mon paiement.`;
     );
   }
 
-  // --- ÉCRAN DE REFUS (REJETÉ) ---
   if (order.status === 'rejected') {
     return (
       <div className="container mx-auto px-4 py-12 max-w-2xl animate-in fade-in duration-500">
@@ -158,23 +176,12 @@ Merci de valider mon paiement.`;
             </div>
           </div>
           <CardContent className="p-10 space-y-6">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-black tracking-tight">Paiement Refusé ❌</h1>
-              <p className="text-muted-foreground font-medium">
-                Nous n'avons pas pu confirmer votre transfert Tmoney.
-              </p>
-            </div>
-
+            <h1 className="text-3xl font-black tracking-tight">Paiement Refusé ❌</h1>
+            <p className="text-muted-foreground font-medium">Nous n'avons pas pu confirmer votre transfert Tmoney.</p>
             <div className="bg-red-50 p-6 rounded-2xl border border-dashed border-red-200 text-left">
-              <p className="text-sm font-bold text-red-800 leading-relaxed">
-                Il se peut que le numéro de transfert soit incorrect ou que le paiement n'ait pas encore été reçu. Veuillez vérifier vos reçus et recommencer la soumission.
-              </p>
+              <p className="text-sm font-bold text-red-800 leading-relaxed">Veuillez vérifier vos reçus et recommencer la soumission de l'ID.</p>
             </div>
-
-            <Button 
-              onClick={handleRetryAfterReject}
-              className="w-full h-16 rounded-2xl bg-primary text-black font-black text-xl shadow-xl transition-all"
-            >
+            <Button onClick={handleRetryAfterReject} className="w-full h-16 rounded-2xl bg-primary text-black font-black text-xl shadow-xl transition-all">
               <RefreshCw className="mr-2 h-6 w-6" /> Réessayer maintenant
             </Button>
           </CardContent>
@@ -183,7 +190,6 @@ Merci de valider mon paiement.`;
     );
   }
 
-  // --- ÉCRAN D'ATTENTE (PAYMENT_PENDING) ---
   if (order.status === 'payment_pending') {
     return (
       <div className="container mx-auto px-4 py-12 max-w-2xl animate-in fade-in duration-500">
@@ -195,35 +201,17 @@ Merci de valider mon paiement.`;
             </div>
           </div>
           <CardContent className="p-10 space-y-6">
-            <div>
-              <h1 className="text-3xl font-black tracking-tight mb-2">Validation en attente</h1>
-              <p className="text-muted-foreground font-medium">Nous vérifions votre versement...</p>
-            </div>
-
+            <h1 className="text-3xl font-black tracking-tight mb-2">Validation en attente</h1>
+            <p className="text-muted-foreground font-medium">Nous vérifions votre versement Tmoney...</p>
             <div className="bg-muted/30 p-6 rounded-2xl border border-dashed border-orange-200">
-              <p className="text-sm font-bold text-orange-700 mb-1">ID de transaction enregistré :</p>
+              <p className="text-sm font-bold text-orange-700 mb-1">ID de transaction :</p>
               <code className="text-lg font-black tracking-widest">{order.transferId}</code>
-              <p className="text-xs font-bold text-muted-foreground mt-2 uppercase">Montant: {order.amount.toLocaleString('fr-FR')} F</p>
             </div>
-
-            <div className="space-y-4 pt-4">
-              <div className="flex items-center gap-3 text-left bg-blue-50 p-4 rounded-xl border border-blue-100">
-                <Clock className="h-5 w-5 text-blue-600 shrink-0" />
-                <p className="text-xs font-bold text-blue-800 leading-relaxed">
-                  Les confirmations sont traitées manuellement entre <span className="underline">08h00 et 19h00</span>.
-                </p>
-              </div>
-              
-              <Button asChild variant="outline" className="w-full h-14 rounded-xl border-2 border-gray-100 hover:border-primary font-black text-lg transition-all">
-                <Link href={`https://wa.me/22890101392?text=${encodeURIComponent(`Bonjour, je relance ma validation Tmoney ID: ${order.transferId}`)}`} target="_blank">
-                    <MessageSquare className="mr-2 h-6 w-6 text-green-600" /> Nous relancer
-                </Link>
-              </Button>
-
-              <Button asChild variant="ghost" className="w-full text-muted-foreground font-bold uppercase text-xs tracking-widest">
-                <Link href="/dashboard">Retourner au tableau de bord</Link>
-              </Button>
-            </div>
+            <Button asChild variant="outline" className="w-full h-14 rounded-xl border-2 border-gray-100 font-black text-lg">
+              <Link href={`https://wa.me/22890101392?text=${encodeURIComponent(`Bonjour, je relance ma validation Tmoney ID: ${order.transferId}`)}`} target="_blank">
+                  <MessageSquare className="mr-2 h-6 w-6 text-green-600" /> Nous relancer sur WhatsApp
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -235,24 +223,21 @@ Merci de valider mon paiement.`;
     <div className="container mx-auto px-4 py-8 max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       <div className="space-y-8">
         
-        {/* BANNIÈRE DE SUCCÈS SI LE PRÉCÉDENT EST VALIDÉ */}
         {order.status === 'validated' && (
-            <div className="bg-green-500 text-white rounded-2xl p-6 flex items-center gap-4 shadow-lg shadow-green-100 animate-in zoom-in-95">
-                <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center text-green-600 shrink-0 shadow-sm">
+            <div className="bg-green-500 text-white rounded-2xl p-6 flex items-center gap-4 shadow-lg shadow-green-100">
+                <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center text-green-600 shrink-0">
                     <CheckCircle className="h-7 w-7" />
                 </div>
                 <div className="flex-1">
                     <p className="font-black text-lg leading-none">Dernier versement validé ! 🥳</p>
-                    <p className="text-xs font-bold opacity-90 mt-1 uppercase">Continuez pour le prochain versement ci-dessous.</p>
+                    <p className="text-xs font-bold opacity-90 mt-1 uppercase">Prêt pour le prochain versement ci-dessous.</p>
                 </div>
             </div>
         )}
 
         <div className="text-center space-y-2">
             <h1 className="text-3xl font-black tracking-tight">Effectuer un versement</h1>
-            <p className="text-muted-foreground font-medium leading-relaxed">
-                Choisissez votre mode de paiement pour <strong>{order.productName}</strong>.
-            </p>
+            <p className="text-muted-foreground font-medium">Choisissez votre mode de paiement pour <strong>{order.productName}</strong>.</p>
         </div>
 
         <Card className="border-none shadow-xl rounded-2xl overflow-hidden bg-card">
@@ -279,9 +264,9 @@ Merci de valider mon paiement.`;
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button 
                     onClick={() => setPaymentType('online')}
-                    className={`flex flex-col items-center gap-4 p-8 rounded-2xl border-2 transition-all group ${paymentType === 'online' ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
+                    className={`flex flex-col items-center gap-4 p-8 rounded-2xl border-2 transition-all ${paymentType === 'online' ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
                 >
-                    <div className={`h-16 w-16 rounded-2xl flex items-center justify-center transition-colors ${paymentType === 'online' ? 'bg-primary text-black' : 'bg-muted text-gray-400 group-hover:bg-gray-100'}`}>
+                    <div className={`h-16 w-16 rounded-2xl flex items-center justify-center ${paymentType === 'online' ? 'bg-primary text-black' : 'bg-muted text-gray-400'}`}>
                         <Smartphone className="h-8 w-8" />
                     </div>
                     <div className="text-center">
@@ -292,9 +277,9 @@ Merci de valider mon paiement.`;
 
                 <button 
                     onClick={() => setPaymentType('store')}
-                    className={`flex flex-col items-center gap-4 p-8 rounded-2xl border-2 transition-all group ${paymentType === 'store' ? 'border-black bg-black text-white' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
+                    className={`flex flex-col items-center gap-4 p-8 rounded-2xl border-2 transition-all ${paymentType === 'store' ? 'border-black bg-black text-white' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
                 >
-                    <div className={`h-16 w-16 rounded-2xl flex items-center justify-center transition-colors ${paymentType === 'store' ? 'bg-white/20 text-white' : 'bg-muted text-gray-400 group-hover:bg-gray-100'}`}>
+                    <div className={`h-16 w-16 rounded-2xl flex items-center justify-center ${paymentType === 'store' ? 'bg-white/20 text-white' : 'bg-muted text-gray-400'}`}>
                         <Store className="h-8 w-8" />
                     </div>
                     <div className="text-center">
@@ -324,19 +309,9 @@ Merci de valider mon paiement.`;
                         <div className="space-y-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="transferId" className="font-black text-[10px] uppercase text-muted-foreground ml-1">Numéro du transfert (ou ID de transaction) *</Label>
-                                <Input 
-                                    id="transferId" 
-                                    value={transferId} 
-                                    onChange={e => setTransferId(e.target.value)}
-                                    placeholder="Saisissez ici le numéro ou code reçu..." 
-                                    className="h-14 rounded-xl border-2 border-gray-100 bg-gray-50 focus:ring-primary font-bold text-lg"
-                                />
+                                <Input id="transferId" value={transferId} onChange={e => setTransferId(e.target.value)} placeholder="Saisissez ici le code reçu..." className="h-14 rounded-xl border-2 border-gray-100 bg-gray-50 font-bold text-lg" />
                             </div>
-                            <Button 
-                                onClick={handleAlreadySent}
-                                disabled={!transferId || isSubmitting}
-                                className="w-full h-16 rounded-xl bg-black text-white hover:bg-gray-800 font-black text-xl shadow-xl transition-all"
-                            >
+                            <Button onClick={handleAlreadySent} disabled={!transferId || isSubmitting} className="w-full h-16 rounded-xl bg-black text-white hover:bg-gray-800 font-black text-xl shadow-xl">
                                 {isSubmitting ? <LogoSpinner /> : <><CheckCircle2 className="mr-2 h-6 w-6" /> Valider mon paiement</>}
                             </Button>
                         </div>
@@ -351,28 +326,48 @@ Merci de valider mon paiement.`;
                             <div className="bg-black/10 p-3 rounded-full"><MapPin className="h-8 w-8" /></div>
                         </div>
                         <CardTitle className="text-2xl font-black tracking-tight uppercase">Rendez-vous en boutique</CardTitle>
-                        <CardDescription className="text-black/70 font-bold uppercase text-xs tracking-widest mt-2">
-                            Agoè échangeur (Lomé)
-                        </CardDescription>
+                        <CardDescription className="text-black/70 font-bold uppercase text-xs tracking-widest mt-2">Agoè échangeur (Lomé)</CardDescription>
                     </CardHeader>
-                    <CardContent className="p-8 space-y-6">
-                        <div className="bg-muted/30 p-6 rounded-2xl text-center space-y-3 border border-dashed border-primary/30">
-                            <p className="font-black text-gray-800 leading-tight text-xl">
-                                Nous sommes à 150m de l'échangeur d'agoè.
-                            </p>
-                            <p className="text-primary font-black uppercase text-sm tracking-widest animate-pulse">
-                                On se revoit tout de suite !
-                            </p>
+                    <CardContent className="p-8 space-y-8">
+                        {/* SECTION ENREGISTREMENT PHOTO ARTICLE */}
+                        <div className="p-6 rounded-2xl border-2 border-primary/20 bg-primary/5 flex flex-col items-center gap-4">
+                            <div className="relative h-24 w-24 rounded-xl overflow-hidden border bg-white shadow-sm">
+                                <Image src={order.productImage} alt="" fill className="object-cover" />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-black text-sm">{order.productName}</p>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase">Reste: {remainingAmount.toLocaleString('fr-FR')} F</p>
+                            </div>
+                            <Button 
+                                onClick={handleRegisterForStore}
+                                disabled={isRegistering || order.isStoreRegistered}
+                                className={cn(
+                                    "w-full h-12 rounded-xl font-black text-sm",
+                                    order.isStoreRegistered ? "bg-green-500 hover:bg-green-500" : "bg-black text-white"
+                                )}
+                            >
+                                {isRegistering ? <LogoSpinner /> : order.isStoreRegistered ? <><BookmarkCheck className="mr-2 h-5 w-5" /> Produit Enregistré</> : "Enregistrer le produit pour boutique"}
+                            </Button>
+                            {!order.isStoreRegistered && (
+                                <p className="text-[9px] font-bold text-muted-foreground uppercase text-center leading-tight">
+                                    Cliquez sur ce bouton pour que l'admin retrouve <br/> votre article instantanément en boutique.
+                                </p>
+                            )}
                         </div>
+
+                        <div className="bg-muted/30 p-6 rounded-2xl text-center space-y-3 border border-dashed border-primary/30">
+                            <p className="font-black text-gray-800 leading-tight text-xl">Nous sommes à 150m de l'échangeur d'agoè.</p>
+                        </div>
+                        
                         <div className="grid gap-4">
-                            <Button asChild className="w-full h-16 rounded-xl bg-black text-white hover:bg-gray-800 font-black text-lg shadow-xl">
+                            <Button asChild className="w-full h-16 rounded-xl bg-black text-white font-black text-lg shadow-xl">
                                 <Link href="https://maps.app.goo.gl/HSZCvJGxY1CfpUNp8" target="_blank">
                                     <MapPin className="mr-2 h-6 w-6" /> Voir la localisation
                                 </Link>
                             </Button>
-                            <Button asChild variant="outline" className="w-full h-16 rounded-xl border-2 border-gray-100 hover:border-primary font-black text-lg transition-all">
+                            <Button asChild variant="outline" className="w-full h-16 rounded-xl border-2 border-gray-100 font-black text-lg">
                                 <Link href={`https://wa.me/22890101392?text=${encodeURIComponent(`Bonjour, je souhaite passer en boutique pour un versement de ${customAmount} F pour l'article ${order.productName}`)}`} target="_blank">
-                                    <MessageSquare className="mr-2 h-6 w-6 text-green-600" /> Écrivez-nous
+                                    <MessageSquare className="mr-2 h-6 w-6 text-green-600" /> Écrivez-nous sur WhatsApp
                                 </Link>
                             </Button>
                         </div>

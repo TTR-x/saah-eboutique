@@ -1,9 +1,8 @@
-
 'use client'
 
 import { useState, useMemo, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { CreditCard, CheckCircle2, XCircle, Smartphone, MessageCircle, Store, Search, User, ArrowRight, Wallet } from "lucide-react";
+import { CreditCard, CheckCircle2, XCircle, Smartphone, MessageCircle, Store, Search, User, ArrowRight, Wallet, BookmarkCheck } from "lucide-react";
 import type { Order, UserProfile } from "@/lib/types";
 import { LogoSpinner } from "@/components/logo-spinner";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +30,7 @@ import Link from "next/link";
 import { useFirestore, useCollection } from "@/firebase";
 import { collection, query, orderBy, doc, updateDoc, serverTimestamp, arrayUnion, Timestamp, addDoc, getDocs, where } from "firebase/firestore";
 import { getUsers } from "@/lib/users-service";
+import { cn } from "@/lib/utils";
 
 export default function AdminPaymentsPage() {
   const db = useFirestore();
@@ -55,8 +55,8 @@ export default function AdminPaymentsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
-  const [userOrders, setUserOrders] = useState<Order[]>([]);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [userOrders, setUserOrders] = useState<any[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [boutiqueAmount, setBoutiqueAmount] = useState<number>(0);
   const [isProcessing, setIsSubmitting] = useState(false);
 
@@ -79,14 +79,17 @@ export default function AdminPaymentsPage() {
     setSearchQuery('');
     const q = query(collection(db, 'orders'), where('userId', '==', user.uid));
     const snap = await getDocs(q);
-    const orders = snap.docs.map(d => ({ id: d.id, ...d.data() } as Order))
+    const orders = snap.docs.map(d => ({ id: d.id, ...d.data() } as any))
         .filter(o => o.status !== 'cancelled' && o.status !== 'completed');
-    setUserOrders(orders);
+    
+    // Trier pour mettre les "Enregistrés pour boutique" en haut
+    const sorted = orders.sort((a, b) => (b.isStoreRegistered ? 1 : 0) - (a.isStoreRegistered ? 1 : 0));
+    setUserOrders(sorted);
   };
 
-  const handleSelectOrder = (order: Order) => {
+  const handleSelectOrder = (order: any) => {
     setSelectedOrder(order);
-    setBoutiqueAmount(order.amount); // Proposer le montant de la tranche par défaut
+    setBoutiqueAmount(order.amount);
   };
 
   const processBoutiquePayment = async () => {
@@ -112,7 +115,7 @@ export default function AdminPaymentsPage() {
         productName: selectedOrder.productName,
         productImage: selectedOrder.productImage || '',
         paymentMode: selectedOrder.paymentMode,
-        transferId: 'BOUTIQUE', // Identifiant spécial
+        transferId: 'BOUTIQUE',
         remainingAmountAfter: newRemaining,
         status: 'validated'
       };
@@ -124,6 +127,7 @@ export default function AdminPaymentsPage() {
         status: isFinished ? 'completed' : 'validated',
         remainingAmount: newRemaining,
         totalPrice: totalPrice,
+        isStoreRegistered: false, // On reset le flag après paiement
         paymentValidatedAt: serverTimestamp(),
         lastPaymentValidatedAt: serverTimestamp(),
         paymentHistory: arrayUnion({
@@ -355,15 +359,23 @@ export default function AdminPaymentsPage() {
                                         <button 
                                             key={o.id} 
                                             onClick={() => handleSelectOrder(o)}
-                                            className="w-full p-4 border-2 border-gray-100 rounded-xl hover:border-primary flex items-center gap-4 transition-all text-left"
+                                            className={cn(
+                                                "w-full p-4 border-2 rounded-xl flex items-center gap-4 transition-all text-left group",
+                                                o.isStoreRegistered ? "border-primary bg-primary/5" : "border-gray-100 hover:border-primary"
+                                            )}
                                         >
-                                            <div className="relative h-12 w-12 rounded-lg overflow-hidden border shrink-0">
+                                            <div className="relative h-12 w-12 rounded-lg overflow-hidden border shrink-0 bg-white">
                                                 <Image src={o.productImage} alt="" fill className="object-cover" />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-bold text-sm truncate">{o.productName}</p>
+                                                <div className="flex items-center justify-between">
+                                                    <p className="font-bold text-sm truncate">{o.productName}</p>
+                                                    {o.isStoreRegistered && (
+                                                        <Badge className="h-4 px-1.5 text-[8px] font-black bg-primary text-black border-none animate-pulse">À ENCAISSER</Badge>
+                                                    )}
+                                                </div>
                                                 <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
-                                                    <span className="text-primary uppercase">{o.paymentMode}</span>
+                                                    <span className={cn(o.isStoreRegistered ? "text-primary" : "text-gray-400", "uppercase")}>{o.paymentMode}</span>
                                                     <span>•</span>
                                                     <span>Reste: {o.remainingAmount?.toLocaleString('fr-FR')} F</span>
                                                 </div>
@@ -380,7 +392,7 @@ export default function AdminPaymentsPage() {
                     ) : (
                         <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                             <div className="flex items-center gap-4 p-4 border rounded-xl bg-primary/5">
-                                <div className="relative h-12 w-12 rounded-lg overflow-hidden border shrink-0">
+                                <div className="relative h-12 w-12 rounded-lg overflow-hidden border shrink-0 bg-white">
                                     <Image src={selectedOrder.productImage} alt="" fill className="object-cover" />
                                 </div>
                                 <div className="flex-1">
