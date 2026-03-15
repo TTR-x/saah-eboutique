@@ -26,6 +26,13 @@ export type Product = {
   tontineDailyRate?: number; // Somme par jour
 };
 
+export type PaymentHistoryEntry = {
+  amount: number;
+  date: any;
+  transferId?: string;
+  status: string;
+};
+
 export type Order = {
   id: string;
   userId: string;
@@ -36,7 +43,7 @@ export type Order = {
   productSku?: string;
   productName: string;
   productImage: string;
-  amount: number; // Somme du versement actuel
+  amount: number; // Somme du versement actuel/prochain
   paymentMode: 'cash' | 'installments' | 'tontine';
   status: 'pending' | 'validated' | 'completed' | 'cancelled' | 'payment_pending' | 'rejected';
   transferId?: string;
@@ -48,6 +55,7 @@ export type Order = {
   neighborhood?: string;
   totalPrice: number; // Prix total de l'article au moment de l'achat
   remainingAmount: number; // Ce qu'il reste à payer
+  paymentHistory?: PaymentHistoryEntry[];
 };
 
 export type UserProfile = {

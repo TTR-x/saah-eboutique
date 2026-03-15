@@ -50,11 +50,22 @@ export default function AdminPaymentsPage() {
       const newRemaining = Math.max(0, currentRemaining - order.amount);
       const isFinished = newRemaining <= 0;
 
+      // Mise à jour de l'historique
+      const newHistoryEntry = {
+        amount: order.amount,
+        date: new Date(),
+        transferId: order.transferId || 'N/A',
+        status: 'validated'
+      };
+
+      const updatedHistory = [...(order.paymentHistory || []), newHistoryEntry];
+
       await updateDoc(orderRef, {
         status: isFinished ? 'completed' : 'validated',
         remainingAmount: newRemaining,
         paymentValidatedAt: serverTimestamp(),
         lastPaymentValidatedAt: serverTimestamp(),
+        paymentHistory: updatedHistory,
         // On vide le transferId pour permettre le prochain versement
         transferId: "", 
       });

@@ -9,12 +9,14 @@ import type { Order } from '@/lib/types';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy, MapPin, Clock, RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
+import { Wallet, Store, Smartphone, CheckCircle2, ArrowRight, MessageSquare, Copy, MapPin, Clock, RefreshCw, AlertCircle, Sparkles, History, Calendar } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 export default function OrderPaymentPage() {
   const { orderId } = useParams();
@@ -77,7 +79,9 @@ Merci de valider mon paiement.`;
     if (!orderRef) return;
     // On repasse en pending simple pour permettre le prochain versement
     await updateDoc(orderRef, { status: 'pending' });
-    router.push('/dashboard');
+    // On reste sur la page pour voir le choix du prochain paiement
+    setPaymentType(null);
+    setTransferId('');
   };
 
   const handleRetryAfterReject = async () => {
@@ -119,7 +123,7 @@ Merci de valider mon paiement.`;
             <div className="space-y-2">
               <h1 className="text-3xl font-black tracking-tight">Paiement Accepté ! 🥳</h1>
               <p className="text-muted-foreground font-medium text-lg">
-                Votre versement de <strong>{order.amount.toLocaleString('fr-FR')} F</strong> a été validé avec succès.
+                Votre dernier versement a été validé avec succès.
               </p>
             </div>
 
@@ -138,7 +142,7 @@ Merci de valider mon paiement.`;
               onClick={handleAcknowledgeSuccess}
               className="w-full h-16 rounded-2xl bg-black text-white hover:bg-gray-800 font-black text-xl shadow-xl transition-all"
             >
-              C'est noté, merci !
+              {order.status === 'completed' ? "Voir mon tableau de bord" : "Préparer le prochain versement"}
             </Button>
           </CardContent>
         </Card>
@@ -240,7 +244,7 @@ Merci de valider mon paiement.`;
             <Badge className="bg-green-100 text-green-700 border-none font-black text-[10px] uppercase px-3">Engagement Validé</Badge>
             <h1 className="text-3xl font-black tracking-tight">C'est parti ! 🚀</h1>
             <p className="text-muted-foreground font-medium leading-relaxed">
-                Vous venez de commencer votre paiement {order.paymentMode === 'tontine' ? 'par tontine' : 'par tranches'} pour <strong>{order.productName}</strong>.
+                Continuez votre paiement {order.paymentMode === 'tontine' ? 'par tontine' : 'par tranches'} pour <strong>{order.productName}</strong>.
             </p>
         </div>
 
@@ -364,6 +368,39 @@ Merci de valider mon paiement.`;
                     </div>
                 </CardContent>
             </Card>
+        )}
+
+        {/* SECTION HISTORIQUE (Visible uniquement si déjà des transactions) */}
+        {order.paymentHistory && order.paymentHistory.length > 0 && (
+            <div className="pt-10">
+                <div className="flex items-center gap-2 mb-4">
+                    <History className="h-5 w-5 text-muted-foreground" />
+                    <h3 className="font-black text-sm uppercase tracking-widest text-muted-foreground">Historique des versements</h3>
+                </div>
+                <div className="space-y-3">
+                    {order.paymentHistory.map((item, idx) => (
+                        <div key={idx} className="bg-white border rounded-xl p-4 flex justify-between items-center shadow-sm">
+                            <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 rounded-full bg-green-50 flex items-center justify-center text-green-600">
+                                    <CheckCircle2 className="h-4 w-4" />
+                                </div>
+                                <div className="space-y-0.5">
+                                    <p className="font-bold text-sm">{item.amount.toLocaleString('fr-FR')} FCFA</p>
+                                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
+                                        <Calendar className="h-3 w-3" />
+                                        {item.date?.toDate ? format(item.date.toDate(), 'dd MMMM yyyy', { locale: fr }) : format(new Date(item.date), 'dd MMMM yyyy', { locale: fr })}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <Badge variant="outline" className="font-mono text-[9px] bg-gray-50 border-gray-100">
+                                    ID: {item.transferId}
+                                </Badge>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
         )}
 
         <div className="text-center pt-8 border-t border-dashed">
