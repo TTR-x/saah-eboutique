@@ -129,11 +129,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* SECTION DES INTENTIONS : Uniquement les nouveaux articles (0 versement) */}
+      {/* SECTION DES INTENTIONS : Validation en attente */}
       {newIntentions.length > 0 && (
         <div id="intentions-section" className="mb-12 scroll-mt-24">
             <h2 className="text-xl font-black mb-4 flex items-center gap-2 text-orange-600">
-                <Clock className="h-5 w-5" /> Mes demandes à finaliser ({newIntentions.length})
+                <Clock className="h-5 w-5" /> Validation en attente ({newIntentions.length})
             </h2>
             <div className="grid gap-4">
                 {newIntentions.map((order: any) => (
@@ -159,7 +159,7 @@ export default function DashboardPage() {
                                     </p>
                                 </div>
                                 <div className="rounded-lg font-black text-xs h-9 px-4 bg-orange-500 text-white flex items-center justify-center shrink-0 group-hover:bg-orange-600 transition-colors">
-                                    Finaliser l'achat <ChevronRight className="h-3 w-3 ml-1" />
+                                    Détails & Paiement <ChevronRight className="h-3 w-3 ml-1" />
                                 </div>
                             </CardContent>
                         </Card>
