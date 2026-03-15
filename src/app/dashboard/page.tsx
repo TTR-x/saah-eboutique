@@ -41,7 +41,7 @@ export default function DashboardPage() {
 
   const { data: rawOrders, loading: ordersLoading } = useCollection(ordersQuery);
 
-  // Tri et filtrage côté client
+  // Tri côté client
   const orders = useMemo(() => {
     if (!rawOrders) return [];
     return [...rawOrders].sort((a: any, b: any) => {
@@ -51,9 +51,24 @@ export default function DashboardPage() {
     });
   }, [rawOrders]);
 
-  // Filtres par statut
-  const validatedOrders = useMemo(() => orders.filter(o => o.status === 'validated' || o.status === 'completed'), [orders]);
-  const pendingOrders = useMemo(() => orders.filter(o => o.status === 'payment_pending' || o.status === 'pending' || o.status === 'rejected'), [orders]);
+  /**
+   * NOUVELLE LOGIQUE DE FILTRAGE
+   */
+  
+  // 1. Les achats "Officiellement Validés" (Au moins un versement dans l'historique ou complété)
+  const officiallyValidatedOrders = useMemo(() => {
+    return orders.filter(o => (o.paymentHistory && o.paymentHistory.length > 0) || o.status === 'completed');
+  }, [orders]);
+
+  // 2. Les "Nouvelles Intentions" (Pas encore validées une seule fois par l'admin)
+  const newIntentions = useMemo(() => {
+    return orders.filter(o => (!o.paymentHistory || o.paymentHistory.length === 0) && o.status !== 'completed');
+  }, [orders]);
+
+  // 3. Compteur global des paiements en attente de vérification admin (pour le bouton clignotant)
+  const pendingPaymentsCount = useMemo(() => {
+    return orders.filter(o => o.status === 'payment_pending').length;
+  }, [orders]);
 
   useEffect(() => {
     if (!authLoading && !user && mounted) {
@@ -71,17 +86,15 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
-  // Statistiques basées UNIQUEMENT sur les paiements validés
-  const activeInstallments = validatedOrders.filter(o => (o.paymentMode === 'installments' || o.paymentMode === 'tontine') && o.status !== 'completed').length;
+  // Statistiques basées UNIQUEMENT sur les articles ayant déjà eu au moins une validation
+  const activePlansCount = officiallyValidatedOrders.filter(o => o.status !== 'completed').length;
   
-  // Correction : On calcule la somme REELLEMENT PAYÉE (Total - Reste) au lieu du prix total de l'article
-  const totalValue = validatedOrders.reduce((acc, o) => {
+  // Valeur totale payée : Somme de (Prix Total - Reste à payer) pour tous les articles validés
+  const totalValuePaid = officiallyValidatedOrders.reduce((acc, o) => {
     const totalPrice = o.totalPrice || o.amount;
     const remaining = o.remainingAmount ?? totalPrice;
     return acc + (totalPrice - remaining);
   }, 0);
-
-  const pendingPaymentsCount = pendingOrders.length;
 
   const handlePendingClick = () => {
     if (pendingPaymentsCount > 0) {
@@ -90,7 +103,7 @@ export default function DashboardPage() {
     } else {
         toast({
             title: "Information",
-            description: "Vous n'avez aucun paiement en attente de validation.",
+            description: "Aucune vérification de paiement en cours.",
         });
     }
   };
@@ -135,12 +148,12 @@ export default function DashboardPage() {
         <Card className="border-none shadow-sm rounded-2xl bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <ShoppingBag className="h-3 w-3 text-primary" /> Achats Validés
+              <ShoppingBag className="h-3 w-3 text-primary" /> Achats Confirmés
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black">{validatedOrders.length}</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Articles confirmés</p>
+            <div className="text-3xl font-black">{officiallyValidatedOrders.length}</div>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Articles en main ou en plan</p>
           </CardContent>
         </Card>
 
@@ -151,8 +164,8 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black text-blue-600">{totalValue.toLocaleString('fr-FR')} F</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Somme totale payée</p>
+            <div className="text-3xl font-black text-blue-600">{totalValuePaid.toLocaleString('fr-FR')} F</div>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Somme totale encaissée</p>
           </CardContent>
         </Card>
 
@@ -163,20 +176,20 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black text-orange-500">{activeInstallments}</div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Tranches & Tontines</p>
+            <div className="text-3xl font-black text-orange-500">{activePlansCount}</div>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">Cycles en cours</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* SECTION DES ATTENTES (Visible si existantes ou si on clique sur le bouton) */}
-      {pendingOrders.length > 0 && (
+      {/* SECTION DES NOUVELLES DEMANDES (Pas encore de premier versement validé) */}
+      {newIntentions.length > 0 && (
         <div id="pending-section" className="mb-12 scroll-mt-24">
             <h2 className="text-xl font-black mb-4 flex items-center gap-2 text-orange-600">
-                <Clock className="h-5 w-5" /> Mes demandes à finaliser ({pendingOrders.length})
+                <Clock className="h-5 w-5" /> Mes demandes à finaliser ({newIntentions.length})
             </h2>
             <div className="grid gap-4">
-                {pendingOrders.map((order: any) => (
+                {newIntentions.map((order: any) => (
                     <Card key={order.id} className="border-none shadow-sm rounded-2xl bg-orange-50/50 border-orange-100 overflow-hidden hover:shadow-md transition-all">
                         <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
                             <div className="relative h-14 w-14 rounded-xl overflow-hidden bg-white border shrink-0 mx-auto sm:mx-0">
@@ -207,7 +220,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* SECTION PRINCIPALE : UNIQUEMENT LES VALIDES */}
+      {/* SECTION PRINCIPALE : LES ARTICLES DÉJÀ VALIDÉS AU MOINS UNE FOIS */}
       <h2 className="text-xl font-black mb-4 flex items-center gap-2">
         <CheckCircle2 className="h-5 w-5 text-green-600" /> Mes Achats & Plans Validés
       </h2>
@@ -216,12 +229,13 @@ export default function DashboardPage() {
         <div className="flex justify-center py-12">
             <LogoSpinner className="h-8 w-8 text-primary" />
         </div>
-      ) : validatedOrders.length > 0 ? (
+      ) : officiallyValidatedOrders.length > 0 ? (
         <div className="grid gap-4">
-          {validatedOrders.map((order: any) => {
+          {officiallyValidatedOrders.map((order: any) => {
             const totalPrice = order.totalPrice || order.amount;
             const remaining = order.remainingAmount ?? totalPrice;
             const progress = ((totalPrice - remaining) / totalPrice) * 100;
+            const isPendingVerif = order.status === 'payment_pending';
 
             return (
               <Card key={order.id} className="border-none shadow-sm rounded-2xl bg-card overflow-hidden hover:shadow-md transition-all group">
@@ -239,12 +253,17 @@ export default function DashboardPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start mb-1">
                       <h3 className="font-black text-sm sm:text-base truncate pr-2">{order.productName}</h3>
-                      <Badge className={cn(
-                          "font-bold uppercase text-[9px] px-2 h-5",
-                          order.status === 'completed' ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
-                      )}>
-                          {order.status === 'completed' ? 'Terminé ✅' : 'Actif ⚡'}
-                      </Badge>
+                      <div className="flex gap-2">
+                        {isPendingVerif && (
+                            <Badge className="bg-orange-500 text-white font-bold uppercase text-[8px] animate-pulse">Vérification en cours...</Badge>
+                        )}
+                        <Badge className={cn(
+                            "font-bold uppercase text-[9px] px-2 h-5",
+                            order.status === 'completed' ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
+                        )}>
+                            {order.status === 'completed' ? 'Terminé ✅' : 'Actif ⚡'}
+                        </Badge>
+                      </div>
                     </div>
                     
                     <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-tighter text-muted-foreground mb-3">
@@ -268,8 +287,16 @@ export default function DashboardPage() {
 
                   <div className="flex items-center justify-center sm:justify-end gap-2 shrink-0">
                     {order.status !== 'completed' ? (
-                        <Button asChild size="sm" className="rounded-lg font-black text-xs px-4 h-9 shadow-sm bg-primary text-black hover:bg-primary/90">
-                            <Link href={`/dashboard/payment/${order.id}`}>Effectuer versement <ChevronRight className="h-3 w-3 ml-1" /></Link>
+                        <Button asChild size="sm" className={cn(
+                            "rounded-lg font-black text-xs px-4 h-9 shadow-sm transition-all",
+                            isPendingVerif 
+                                ? "bg-orange-500 text-white hover:bg-orange-600" 
+                                : "bg-primary text-black hover:bg-primary/90"
+                        )}>
+                            <Link href={`/dashboard/payment/${order.id}`}>
+                                {isPendingVerif ? "Suivre ma validation" : "Nouvel versement"} 
+                                <ChevronRight className="h-3 w-3 ml-1" />
+                            </Link>
                         </Button>
                     ) : (
                         <div className="flex items-center gap-2 bg-green-50 text-green-600 px-3 py-1.5 rounded-lg border border-green-100">
