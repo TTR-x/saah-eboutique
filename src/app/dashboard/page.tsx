@@ -56,6 +56,7 @@ export default function DashboardPage() {
   if (!user) return null;
 
   const activeInstallments = orders?.filter(o => (o.paymentMode === 'installments' || o.paymentMode === 'tontine') && o.status !== 'completed').length || 0;
+  const pendingPaymentsCount = orders?.filter(o => o.status === 'payment_pending').length || 0;
   const totalValue = orders?.reduce((acc, o) => acc + (o.totalPrice || o.amount), 0) || 0;
 
   return (
@@ -72,8 +73,18 @@ export default function DashboardPage() {
             <p className="text-muted-foreground text-sm font-medium">UID: <span className="font-mono text-xs opacity-50">{user.uid.slice(0, 8)}...</span></p>
           </div>
         </div>
-        <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 p-2 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800">
-            <Badge variant="outline" className="border-none font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-3">Compte Actif</Badge>
+        <div className="flex flex-wrap items-center gap-2 bg-white dark:bg-zinc-900 p-2 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800">
+            <Badge variant="outline" className="border-none font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-3 hidden sm:inline-flex">Compte Actif</Badge>
+            
+            {pendingPaymentsCount > 0 && (
+                <Button asChild variant="ghost" size="sm" className="rounded-lg text-orange-600 font-black animate-pulse bg-orange-50 dark:bg-orange-950/20">
+                    <Link href="#orders-list">
+                        <Clock className="h-4 w-4 mr-2" /> 
+                        {pendingPaymentsCount} Paiement{pendingPaymentsCount > 1 ? 's' : ''} en attente
+                    </Link>
+                </Button>
+            )}
+
             <Button asChild variant="ghost" size="sm" className="rounded-lg text-primary font-black">
                 <Link href="/dashboard/gifts"><Gift className="h-4 w-4 mr-2" /> Mes Cadeaux</Link>
             </Button>
@@ -118,7 +129,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <h2 className="text-xl font-black mb-4 flex items-center gap-2">
+      <h2 id="orders-list" className="text-xl font-black mb-4 flex items-center gap-2 scroll-mt-20">
         <Package className="h-5 w-5 text-primary" /> Mes Commandes & Suivi
       </h2>
 
