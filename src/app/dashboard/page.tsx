@@ -57,7 +57,7 @@ export default function DashboardPage() {
     );
   }, [orders]);
 
-  // UNE INTENTION est un article avec 0 versement validé (historique vide et pas de statut validé)
+  // UNE INTENTION/EN ATTENTE est un article avec 0 versement validé
   const newIntentions = useMemo(() => {
     return orders.filter(o => 
         !(o.status === 'completed' || o.status === 'validated' || (o.paymentHistory && o.paymentHistory.length > 0)) &&
@@ -136,35 +136,43 @@ export default function DashboardPage() {
                 <Clock className="h-5 w-5" /> Validation en attente ({newIntentions.length})
             </h2>
             <div className="grid gap-4">
-                {newIntentions.map((order: any) => (
-                    <Link key={order.id} href={`/dashboard/payment/${order.id}`} className="block transition-transform active:scale-[0.98] group">
-                        <Card className="border-none shadow-sm rounded-2xl bg-orange-50/50 border-orange-100 overflow-hidden group-hover:shadow-md transition-all">
-                            <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
-                                <div className="relative h-14 w-14 rounded-xl overflow-hidden bg-white border shrink-0 mx-auto sm:mx-0">
-                                    {order.productImage && <Image src={order.productImage} alt="" fill className="object-cover" sizes="56px" />}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex justify-between items-start">
-                                        <h3 className="font-bold text-sm truncate">{order.productName}</h3>
-                                        <Badge className={cn(
-                                            "font-black uppercase text-[8px] px-2 h-4",
-                                            order.status === 'payment_pending' ? 'bg-orange-500 text-white animate-pulse' : 
-                                            order.status === 'rejected' ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600'
-                                        )}>
-                                            {order.status === 'payment_pending' ? 'En vérification' : order.status === 'rejected' ? 'Refusé' : 'À régler'}
-                                        </Badge>
+                {newIntentions.map((order: any) => {
+                    const isPending = order.status === 'payment_pending';
+                    const isRejected = order.status === 'rejected';
+                    
+                    return (
+                        <Link key={order.id} href={`/dashboard/payment/${order.id}`} className="block transition-transform active:scale-[0.98] group">
+                            <Card className="border-none shadow-sm rounded-2xl bg-orange-50/50 border-orange-100 overflow-hidden group-hover:shadow-md transition-all">
+                                <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                                    <div className="relative h-14 w-14 rounded-xl overflow-hidden bg-white border shrink-0 mx-auto sm:mx-0">
+                                        {order.productImage && <Image src={order.productImage} alt="" fill className="object-cover" sizes="56px" />}
                                     </div>
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1">
-                                        Mode: {order.paymentMode === 'installments' ? 'Tranches' : order.paymentMode === 'tontine' ? 'Tontine' : 'Cash'} • {order.amount.toLocaleString('fr-FR')} F
-                                    </p>
-                                </div>
-                                <div className="rounded-lg font-black text-xs h-9 px-4 bg-orange-500 text-white flex items-center justify-center shrink-0 group-hover:bg-orange-600 transition-colors">
-                                    Statut <ChevronRight className="h-3 w-3 ml-1" />
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </Link>
-                ))}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-start">
+                                            <h3 className="font-bold text-sm truncate">{order.productName}</h3>
+                                            <Badge className={cn(
+                                                "font-black uppercase text-[8px] px-2 h-4",
+                                                isPending ? 'bg-orange-500 text-white animate-pulse' : 
+                                                isRejected ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600'
+                                            )}>
+                                                {isPending ? 'En vérification' : isRejected ? 'Refusé' : 'À régler'}
+                                            </Badge>
+                                        </div>
+                                        <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1">
+                                            Mode: {order.paymentMode === 'installments' ? 'Tranches' : order.paymentMode === 'tontine' ? 'Tontine' : 'Cash'} • {order.amount.toLocaleString('fr-FR')} F
+                                        </p>
+                                    </div>
+                                    <div className={cn(
+                                        "rounded-lg font-black text-xs h-9 px-4 flex items-center justify-center shrink-0 transition-colors",
+                                        isPending ? "bg-orange-500 text-white" : "bg-primary text-black"
+                                    )}>
+                                        {isPending ? 'Statut' : isRejected ? 'Réessayer' : 'Finaliser'} <ChevronRight className="h-3 w-3 ml-1" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                    );
+                })}
             </div>
         </div>
       )}
