@@ -42,6 +42,8 @@ export function ProductCard({ product }: ProductCardProps) {
     });
   };
 
+  const hasAdvancedPayment = product.allowInstallments || product.isTontine;
+
   return (
     <Card className="flex flex-col h-full border border-gray-200 dark:border-zinc-800 shadow-sm rounded-lg overflow-hidden bg-card group transition-all hover:shadow-md">
       <CardContent className="p-0">
@@ -87,15 +89,19 @@ export function ProductCard({ product }: ProductCardProps) {
       </CardContent>
 
       <CardFooter className="p-2 sm:p-3 pt-0 flex flex-col gap-2 mt-auto">
-        {product.allowInstallments && (
+        {hasAdvancedPayment && (
           <div className="w-full bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-md p-1.5 flex items-center gap-2">
             <div className="bg-blue-600 p-1 rounded-sm text-white">
               <CreditCard className="h-3 w-3" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-[9px] font-black text-blue-700 dark:text-blue-400 uppercase leading-none">Payer par tranche</span>
-              <span className="text-[10px] font-bold text-blue-600 dark:text-blue-300 leading-tight">
-                {product.installmentPrice?.toLocaleString('fr-FR')} F / mois
+            <div className="flex flex-col min-w-0">
+              <span className="text-[9px] font-black text-blue-700 dark:text-blue-400 uppercase leading-none truncate">
+                {product.allowInstallments && product.isTontine ? "Tranche / Tontine" : product.allowInstallments ? "Payer par tranche" : "Plan Tontine"}
+              </span>
+              <span className="text-[10px] font-bold text-blue-600 dark:text-blue-300 leading-tight truncate">
+                {product.allowInstallments && `${product.installmentPrice?.toLocaleString('fr-FR')} F/m`}
+                {product.allowInstallments && product.isTontine && " ou "}
+                {product.isTontine && `${product.tontineDailyRate?.toLocaleString('fr-FR')} F/j`}
               </span>
             </div>
           </div>
