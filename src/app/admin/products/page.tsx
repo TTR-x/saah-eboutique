@@ -1,7 +1,7 @@
 
 'use client'
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -59,6 +59,7 @@ export default function AdminProductsPage() {
   const [submissionStatus, setSubmissionStatus] = useState('');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [productForm, setProductForm] = useState<ProductFormData>({
     name: "",
@@ -125,6 +126,35 @@ export default function AdminProductsPage() {
     }
   }, [editingProduct, isDialogOpen]);
 
+  const addFilesToForm = useCallback((selectedFiles: File[]) => {
+    setProductForm(prev => {
+      const currentTotal = prev.existingImages.length + prev.newImages.length;
+      const remainingSlots = 3 - currentTotal;
+      
+      if (remainingSlots <= 0) {
+        toast({ title: "Limite atteinte", description: "Vous ne pouvez pas ajouter plus de 3 images.", variant: "destructive" });
+        return prev;
+      }
+
+      const filesToAdd = selectedFiles.slice(0, remainingSlots);
+      
+      if (selectedFiles.length > remainingSlots) {
+        toast({ 
+          title: "Limite atteinte", 
+          description: `Seules les ${remainingSlots} premières images ont été ajoutées (Max 3).`,
+          variant: "destructive" 
+        });
+      }
+
+      const newImagePreviews = filesToAdd.map(file => ({
+        file,
+        previewUrl: URL.createObjectURL(file)
+      }));
+      
+      return { ...prev, newImages: [...prev.newImages, ...newImagePreviews] };
+    });
+  }, [toast]);
+
   // Handle Ctrl+V Paste
   const handlePaste = useCallback((e: ClipboardEvent) => {
     if (!isDialogOpen) return;
@@ -143,38 +173,12 @@ export default function AdminProductsPage() {
     if (files.length > 0) {
       addFilesToForm(files);
     }
-  }, [isDialogOpen, productForm.existingImages.length, productForm.newImages.length]);
+  }, [isDialogOpen, addFilesToForm]);
 
   useEffect(() => {
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
   }, [handlePaste]);
-
-  const addFilesToForm = (selectedFiles: File[]) => {
-    const currentTotal = productForm.existingImages.length + productForm.newImages.length;
-    const remainingSlots = 3 - currentTotal;
-    
-    if (remainingSlots <= 0) {
-      toast({ title: "Limite atteinte", description: "Vous ne pouvez pas ajouter plus de 3 images.", variant: "destructive" });
-      return;
-    }
-
-    const filesToAdd = selectedFiles.slice(0, remainingSlots);
-    
-    if (selectedFiles.length > remainingSlots) {
-      toast({ 
-        title: "Limite atteinte", 
-        description: `Seules les ${remainingSlots} premières images ont été ajoutées (Max 3).`,
-        variant: "destructive" 
-      });
-    }
-
-    const newImagePreviews = filesToAdd.map(file => ({
-      file,
-      previewUrl: URL.createObjectURL(file)
-    }));
-    setProductForm(prev => ({ ...prev, newImages: [...prev.newImages, ...newImagePreviews] }));
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -193,6 +197,8 @@ export default function AdminProductsPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       addFilesToForm(Array.from(e.target.files));
+      // Reset input to allow selecting same file again
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
   
@@ -632,8 +638,18 @@ export default function AdminProductsPage() {
                     <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-hide min-h-[120px]">
                         {/* BOUTON AJOUTER (TOUJOURS À GAUCHE) */}
                         {currentTotalImages < 3 && (
-                            <div className="flex-shrink-0 w-28 h-28 border-2 border-dashed rounded-xl flex flex-col items-center justify-center hover:bg-primary/5 hover:border-primary transition-all cursor-pointer relative group overflow-hidden bg-white">
-                                <Input id="images" name="images" type="file" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/*" multiple />
+                            <div 
+                                onClick={() => fileInputRef.current?.click()}
+                                className="flex-shrink-0 w-28 h-28 border-2 border-dashed rounded-xl flex flex-col items-center justify-center hover:bg-primary/5 hover:border-primary transition-all cursor-pointer bg-white relative group overflow-hidden"
+                            >
+                                <Input 
+                                    ref={fileInputRef}
+                                    type="file" 
+                                    onChange={handleFileChange} 
+                                    className="hidden" 
+                                    accept="image/*" 
+                                    multiple 
+                                />
                                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2 group-hover:scale-110 transition-transform">
                                     <PlusCircle className="h-6 w-6" />
                                 </div>
