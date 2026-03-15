@@ -20,7 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import Link from "next/link";
 import { useFirestore, useCollection } from "@/firebase";
-import { collection, query, orderBy, doc, updateDoc, serverTimestamp, arrayUnion, Timestamp } from "firebase/firestore";
+import { collection, query, orderBy, doc, updateDoc, serverTimestamp, arrayUnion, Timestamp, addDoc } from "firebase/firestore";
 
 export default function AdminPaymentsPage() {
   const db = useFirestore();
@@ -43,7 +43,6 @@ export default function AdminPaymentsPage() {
     try {
       const orderRef = doc(db, 'orders', order.id);
       
-      // Sécurisation des calculs avec des nombres stricts
       const totalPrice = Number(order.totalPrice || order.amount || 0);
       const currentRemaining = Number(order.remainingAmount ?? totalPrice);
       const amountPaid = Number(order.amount || 0);
@@ -51,44 +50,57 @@ export default function AdminPaymentsPage() {
       const newRemaining = Math.max(0, currentRemaining - amountPaid);
       const isFinished = newRemaining <= 0;
 
-      // Nouvelle entrée d'historique avec Timestamp natif
-      const newHistoryEntry = {
+      // 1. Créer la COPIE du paiement (Historique indépendant)
+      const paymentCopy = {
+        orderId: order.id,
+        userId: order.userId,
         amount: amountPaid,
-        date: Timestamp.now(),
-        transferId: order.transferId || 'N/A',
+        date: serverTimestamp(),
+        productName: order.productName,
+        productImage: order.productImage || '',
+        paymentMode: order.paymentMode,
+        transferId: order.transferId || 'BOUTIQUE',
+        remainingAmountAfter: newRemaining,
         status: 'validated'
       };
 
-      // Mise à jour atomique
+      await addDoc(collection(db, 'payments'), paymentCopy);
+
+      // 2. Mettre à jour l'ordre principal (Compteurs)
       await updateDoc(orderRef, {
         status: isFinished ? 'completed' : 'validated',
         remainingAmount: newRemaining,
-        totalPrice: totalPrice, // On s'assure qu'il est bien présent
+        totalPrice: totalPrice,
         paymentValidatedAt: serverTimestamp(),
         lastPaymentValidatedAt: serverTimestamp(),
-        paymentHistory: arrayUnion(newHistoryEntry),
-        transferId: "", // On vide pour le prochain versement
+        // On garde arrayUnion en backup mais la source de vérité sera la collection 'payments'
+        paymentHistory: arrayUnion({
+            amount: amountPaid,
+            date: Timestamp.now(),
+            transferId: order.transferId || 'N/A'
+        }),
+        transferId: "", 
       });
       
       toast({ 
         title: "Paiement validé", 
-        description: `Transfert de ${order.userName} confirmé. Reste : ${newRemaining.toLocaleString('fr-FR')} F` 
+        description: `La copie du paiement a été archivée. Reste : ${newRemaining.toLocaleString('fr-FR')} F` 
       });
     } catch (error) {
       console.error("Validation error:", error);
-      toast({ title: "Erreur", description: "Échec de la validation Firestore.", variant: "destructive" });
+      toast({ title: "Erreur", description: "Échec de l'archivage du paiement.", variant: "destructive" });
     }
   };
 
   const handleReject = async (orderId: string) => {
-    if (!confirm("Rejeter ce paiement ? Le client pourra recommencer sa soumission.")) return;
+    if (!confirm("Rejeter ce paiement ?")) return;
     try {
       const orderRef = doc(db, 'orders', orderId);
       await updateDoc(orderRef, {
         status: 'rejected',
         transferId: "" 
       });
-      toast({ title: "Paiement rejeté", description: "Le client a été notifié." });
+      toast({ title: "Paiement rejeté", description: "Le client devra renvoyer un ID valide." });
     } catch (error) {
       toast({ title: "Erreur", description: "Échec de l'opération.", variant: "destructive" });
     }
@@ -99,7 +111,7 @@ export default function AdminPaymentsPage() {
       <div className="flex justify-between items-center">
         <div>
             <h2 className="text-3xl font-extrabold tracking-tight">Validation des Paiements</h2>
-            <p className="text-muted-foreground">Vérifiez les transferts Tmoney reçus sur le 92 39 20 62.</p>
+            <p className="text-muted-foreground">Vérifiez les transferts Tmoney et archivez les copies.</p>
         </div>
         <div className="h-12 px-6 rounded-xl bg-white border flex items-center gap-3 shadow-sm">
             <Smartphone className="h-5 w-5 text-primary" />
@@ -112,7 +124,7 @@ export default function AdminPaymentsPage() {
         <CardHeader className="bg-white border-b">
           <CardTitle className="text-lg flex items-center gap-2">
             <CreditCard className="h-5 w-5 text-primary" />
-            Demandes de confirmation Tmoney
+            Vérification ID Transaction
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -125,7 +137,7 @@ export default function AdminPaymentsPage() {
                   <TableHead className="font-bold">Client</TableHead>
                   <TableHead className="font-bold">Article</TableHead>
                   <TableHead className="font-bold">ID Transfert</TableHead>
-                  <TableHead className="font-bold text-right">Montant Versement</TableHead>
+                  <TableHead className="font-bold text-right">Montant</TableHead>
                   <TableHead className="font-bold text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -137,9 +149,7 @@ export default function AdminPaymentsPage() {
                     <TableRow key={order.id} className="hover:bg-muted/20 transition-colors">
                       <TableCell className="py-4">
                         <div className="flex flex-col">
-                          <span className="font-bold flex items-center gap-1">
-                            <User className="h-3 w-3" /> {order.userName}
-                          </span>
+                          <span className="font-bold">{order.userName}</span>
                           <span className="text-[10px] text-muted-foreground">{order.userPhone}</span>
                         </div>
                       </TableCell>
@@ -148,11 +158,11 @@ export default function AdminPaymentsPage() {
                           <div className="relative h-8 w-8 rounded-md overflow-hidden border bg-muted shrink-0">
                             {order.productImage && <Image src={order.productImage} alt="" fill className="object-cover" sizes="32px" />}
                           </div>
-                          <span className="font-medium text-xs max-w-[150px] truncate">{order.productName}</span>
+                          <span className="font-medium text-xs truncate max-w-[120px]">{order.productName}</span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="font-mono bg-blue-50 text-blue-700 border-blue-100 px-3 py-1">
+                        <Badge variant="outline" className="font-mono bg-blue-50 text-blue-700 px-3 py-1">
                           {order.transferId}
                         </Badge>
                       </TableCell>
@@ -163,24 +173,13 @@ export default function AdminPaymentsPage() {
                         <div className="flex items-center justify-center gap-2">
                           {whatsappUrl && (
                             <Button asChild size="icon" variant="ghost" className="h-9 w-9 rounded-full text-green-600 hover:bg-green-50">
-                              <Link href={whatsappUrl} target="_blank">
-                                <MessageCircle className="h-5 w-5" />
-                              </Link>
+                              <Link href={whatsappUrl} target="_blank"><MessageCircle className="h-5 w-5" /></Link>
                             </Button>
                           )}
-                          <Button 
-                            onClick={() => handleValidate(order)}
-                            size="sm" 
-                            className="bg-green-600 hover:bg-green-700 text-white font-black h-9 px-4 rounded-lg"
-                          >
-                            <CheckCircle2 className="h-4 w-4 mr-1" /> Confirmer
+                          <Button onClick={() => handleValidate(order)} size="sm" className="bg-green-600 hover:bg-green-700 text-white font-black h-9 px-4 rounded-lg">
+                            Confirmer
                           </Button>
-                          <Button 
-                            onClick={() => handleReject(order.id)}
-                            size="icon" 
-                            variant="ghost" 
-                            className="h-9 w-9 text-red-500 hover:bg-red-50"
-                          >
+                          <Button onClick={() => handleReject(order.id)} size="icon" variant="ghost" className="h-9 w-9 text-red-500 hover:bg-red-50">
                             <XCircle className="h-5 w-5" />
                           </Button>
                         </div>
@@ -193,7 +192,7 @@ export default function AdminPaymentsPage() {
           ) : (
             <div className="text-center py-24">
               <CheckCircle2 className="mx-auto h-12 w-12 text-green-500/20 mb-4" />
-              <p className="text-muted-foreground font-medium">Tous les paiements sont à jour !</p>
+              <p className="text-muted-foreground font-medium">Aucun paiement en attente.</p>
             </div>
           )}
         </CardContent>

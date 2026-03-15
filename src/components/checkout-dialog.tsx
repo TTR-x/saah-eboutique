@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Product } from '@/lib/types';
-import { Wallet, Truck, User, CheckCircle2, ChevronLeft, ArrowRight, MessageSquare, FileEdit, CreditCard, Users, Store, Smartphone } from 'lucide-react';
+import { Wallet, Truck, User, CheckCircle2, ChevronLeft, ArrowRight, MessageSquare, FileEdit, CreditCard, Users } from 'lucide-react';
 import { useUser, useFirestore } from '@/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -77,7 +77,7 @@ export function CheckoutDialog({ product, open, onOpenChange, initialMode }: Che
     else if (step === 'summary') setStep('details');
   };
 
-  const saveOrderToFirestore = (totalToPay: number) => {
+  const saveOrderToFirestore = (currentAmount: number) => {
     const orderData = {
       userId: user?.uid || 'guest',
       userEmail: formData.email || user?.email || 'non-renseigné',
@@ -86,9 +86,10 @@ export function CheckoutDialog({ product, open, onOpenChange, initialMode }: Che
       productId: product.id,
       productName: product.name,
       productImage: product.images[0],
-      amount: totalToPay,
-      totalPrice: product.price,
-      remainingAmount: product.price,
+      amount: currentAmount,
+      // INITIALISATION CRUCIALE
+      totalPrice: Number(product.price),
+      remainingAmount: Number(product.price),
       paymentMode: formData.paymentMode,
       status: 'pending',
       createdAt: serverTimestamp(),
@@ -109,8 +110,12 @@ export function CheckoutDialog({ product, open, onOpenChange, initialMode }: Che
     const phoneNumber = "22890101392";
     const modeLabel = formData.paymentMode === 'cash' ? 'Paiement Cash' : (formData.paymentMode === 'installments' ? 'Paiement par tranches' : 'Plan Tontine');
     
-    const totalEstimate = formData.paymentMode === 'cash' ? product.price : (formData.paymentMode === 'installments' ? (product.installmentPrice || 0) : (product.tontineDailyRate || 0));
-    saveOrderToFirestore(totalEstimate);
+    // On fixe le montant du premier versement prévu
+    let firstAmount = product.price;
+    if (formData.paymentMode === 'installments') firstAmount = product.installmentPrice || 0;
+    if (formData.paymentMode === 'tontine') firstAmount = product.tontineDailyRate || 0;
+
+    saveOrderToFirestore(firstAmount);
 
     const message = `Bonjour SAAH Business, je suis intéressé par l'article : *${product.name}* (Ref: ${product.sku || product.id})
 Mode de paiement souhaité : *${modeLabel}*
@@ -127,10 +132,6 @@ Merci de m'indiquer la marche à suivre pour finaliser mon achat rapidement.`;
     const phoneNumber = "22890101392";
     const modeLabel = formData.paymentMode === 'cash' ? 'Paiement Cash' : (formData.paymentMode === 'installments' ? 'Paiement par tranches' : 'Plan Tontine');
     
-    const deliveryInfo = formData.isDelivery 
-      ? `✅ Livraison demandée\n📍 Adresse: ${formData.address}\n🚚 Frais: ${product.deliveryFees || 0} FCFA`
-      : `🏪 Retrait en boutique (Lomé, Agoè échangeur)`;
-
     let baseAmount = product.price;
     if (formData.paymentMode === 'installments') baseAmount = product.installmentPrice || 0;
     if (formData.paymentMode === 'tontine') baseAmount = product.tontineDailyRate || 0;
@@ -139,24 +140,14 @@ Merci de m'indiquer la marche à suivre pour finaliser mon achat rapidement.`;
       ? baseAmount + product.deliveryFees
       : baseAmount;
 
-    saveOrderToFirestore(totalToPay);
+    saveOrderToFirestore(baseAmount); // On enregistre le montant de base sans livraison dans 'amount'
 
     const message = `Bonjour SAAH Business, voici ma commande détaillée :
 
 *PRODUIT:* ${product.name} (Ref: ${product.sku || product.id})
 *MODE:* ${modeLabel}
-${formData.paymentMode === 'installments' ? `💰 Mensualité: ${product.installmentPrice?.toLocaleString('fr-FR')} FCFA x ${product.installmentMonths} mois` : ''}
-${formData.paymentMode === 'tontine' ? `🤝 Cotisation: ${product.tontineDailyRate?.toLocaleString('fr-FR')} FCFA / jour\n📅 Durée: ${product.tontineDuration}` : ''}
-
-*CLIENT:*
 👤 ${formData.name}
 📞 ${formData.phone}
-${formData.email ? `📧 ${formData.email}` : ''}
-
-*LIVRAISON:*
-${deliveryInfo}
-
-*TOTAL ESTIMÉ:* ${totalToPay.toLocaleString('fr-FR')} FCFA
 
 Merci de valider ma commande.`;
 
@@ -179,13 +170,10 @@ Merci de valider ma commande.`;
         <DialogHeader className="p-6 border-b bg-white">
           <DialogTitle className="flex items-center gap-3 text-xl font-black">
             {step === 'payment' && <><div className="h-8 w-8 rounded-sm bg-primary/10 flex items-center justify-center text-primary"><Wallet className="h-5 w-5" /></div> Mode de paiement</>}
-            {step === 'choice' && <><div className="h-8 w-8 rounded-sm bg-primary/10 flex items-center justify-center text-primary"><ArrowRight className="h-5 w-5" /></div> Comment commander ?</>}
-            {step === 'details' && <><div className="h-8 w-8 rounded-sm bg-primary/10 flex items-center justify-center text-primary"><User className="h-5 w-5" /></div> Vos informations</>}
+            {step === 'choice' && <><div className="h-8 w-8 rounded-sm bg-primary/10 flex items-center justify-center text-primary"><ArrowRight className="h-5 w-5" /></div> Action</>}
+            {step === 'details' && <><div className="h-8 w-8 rounded-sm bg-primary/10 flex items-center justify-center text-primary"><User className="h-5 w-5" /></div> Informations</>}
             {step === 'summary' && <><div className="h-8 w-8 rounded-sm bg-green-500/10 flex items-center justify-center text-green-500"><CheckCircle2 className="h-5 w-5" /></div> Résumé</>}
           </DialogTitle>
-          <DialogDescription className="text-xs font-medium text-muted-foreground">
-            Suivez les étapes pour finaliser votre commande de {product.name}.
-          </DialogDescription>
         </DialogHeader>
 
         <div className="p-6">
@@ -193,7 +181,7 @@ Merci de valider ma commande.`;
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="grid gap-4">
                 <div 
-                  className="group cursor-pointer border-2 rounded-md p-5 flex items-center gap-4 transition-all hover:border-primary hover:bg-primary/5 border-gray-100 bg-white shadow-sm"
+                  className="group cursor-pointer border-2 rounded-md p-5 flex items-center gap-4 transition-all hover:border-primary hover:bg-primary/5 border-gray-100 bg-white"
                   onClick={() => handleModeSelect('cash')}
                 >
                     <div className="h-12 w-12 rounded-sm bg-gray-100 group-hover:bg-primary/20 flex items-center justify-center text-gray-600 group-hover:text-primary transition-colors">
@@ -201,14 +189,14 @@ Merci de valider ma commande.`;
                     </div>
                     <div className="flex-1">
                       <p className="font-black text-base">Paiement Cash</p>
-                      <p className="text-xs text-muted-foreground">Règlement immédiat</p>
+                      <p className="text-xs text-muted-foreground">Tout payé maintenant</p>
                     </div>
                     <div className="text-right font-black text-primary">{product.price.toLocaleString('fr-FR')} F</div>
                 </div>
 
                 {product.allowInstallments && (
                   <div 
-                    className="group cursor-pointer border-2 rounded-md p-5 flex items-center gap-4 transition-all hover:border-blue-500 hover:bg-blue-50/50 border-gray-100 bg-white shadow-sm"
+                    className="group cursor-pointer border-2 rounded-md p-5 flex items-center gap-4 transition-all hover:border-blue-500 hover:bg-blue-50/50 border-gray-100 bg-white"
                     onClick={() => handleModeSelect('installments')}
                   >
                       <div className="h-12 w-12 rounded-sm bg-gray-100 group-hover:bg-blue-100 flex items-center justify-center text-gray-600 group-hover:text-blue-600 transition-colors">
@@ -216,15 +204,15 @@ Merci de valider ma commande.`;
                       </div>
                       <div className="flex-1">
                         <p className="font-black text-base">Par tranches</p>
-                        <p className="text-xs text-muted-foreground">{product.installmentMonths} mois</p>
+                        <p className="text-xs text-muted-foreground">{product.installmentMonths} mensualités</p>
                       </div>
-                      <div className="text-right font-black text-blue-600">{product.installmentPrice?.toLocaleString('fr-FR')} F/m</div>
+                      <div className="text-right font-black text-blue-600">{product.installmentPrice?.toLocaleString('fr-FR')} F</div>
                   </div>
                 )}
 
                 {product.isTontine && (
                   <div 
-                    className="group cursor-pointer border-2 rounded-md p-5 flex items-center gap-4 transition-all hover:border-green-500 hover:bg-green-50/50 border-gray-100 bg-white shadow-sm"
+                    className="group cursor-pointer border-2 rounded-md p-5 flex items-center gap-4 transition-all hover:border-green-500 hover:bg-green-50/50 border-gray-100 bg-white"
                     onClick={() => handleModeSelect('tontine')}
                   >
                       <div className="h-12 w-12 rounded-sm bg-gray-100 group-hover:bg-green-100 flex items-center justify-center text-gray-600 group-hover:text-green-600 transition-colors">
@@ -232,46 +220,39 @@ Merci de valider ma commande.`;
                       </div>
                       <div className="flex-1">
                         <p className="font-black text-base">Plan Tontine</p>
-                        <p className="text-xs text-muted-foreground">{product.tontineDuration}</p>
+                        <p className="text-xs text-muted-foreground">Épargne collective</p>
                       </div>
-                      <div className="text-right font-black text-green-600">{product.tontineDailyRate?.toLocaleString('fr-FR')} F/j</div>
+                      <div className="text-right font-black text-green-600">{product.tontineDailyRate?.toLocaleString('fr-FR')} F</div>
                   </div>
                 )}
               </div>
-              <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest font-bold mt-4">Sélectionnez une option pour continuer</p>
             </div>
           )}
 
           {step === 'choice' && (
             <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                <div className="grid gap-4">
-                    <Button 
-                        onClick={handleDirectWhatsApp}
-                        className="h-20 rounded-md bg-green-600 hover:bg-green-700 text-white flex items-center justify-start px-6 gap-4 border-none shadow-lg shadow-green-100"
-                    >
-                        <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
-                            <MessageSquare className="h-6 w-6" />
-                        </div>
-                        <div className="text-left">
-                            <p className="font-black text-base">Direct sur WhatsApp</p>
-                            <p className="text-[10px] opacity-80 font-bold uppercase tracking-tighter">Rapide et sans formulaire</p>
-                        </div>
-                    </Button>
+                <Button 
+                    onClick={handleDirectWhatsApp}
+                    className="w-full h-20 rounded-md bg-green-600 hover:bg-green-700 text-white flex items-center justify-start px-6 gap-4"
+                >
+                    <MessageSquare className="h-6 w-6" />
+                    <div className="text-left">
+                        <p className="font-black text-base">WhatsApp Direct</p>
+                        <p className="text-[10px] opacity-80 uppercase">Le plus rapide</p>
+                    </div>
+                </Button>
 
-                    <Button 
-                        variant="outline"
-                        onClick={() => setStep('details')}
-                        className="h-20 rounded-md border-2 border-gray-100 hover:border-primary hover:bg-primary/5 flex items-center justify-start px-6 gap-4 transition-all"
-                    >
-                        <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 group-hover:text-primary">
-                            <FileEdit className="h-6 w-6" />
-                        </div>
-                        <div className="text-left text-gray-800">
-                            <p className="font-black text-base">Remplir le formulaire</p>
-                            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Pour un devis avec livraison</p>
-                        </div>
-                    </Button>
-                </div>
+                <Button 
+                    variant="outline"
+                    onClick={() => setStep('details')}
+                    className="w-full h-20 rounded-md border-2 border-gray-100 hover:border-primary flex items-center justify-start px-6 gap-4"
+                >
+                    <FileEdit className="h-6 w-6 text-gray-400" />
+                    <div className="text-left">
+                        <p className="font-black text-base text-gray-800">Remplir le formulaire</p>
+                        <p className="text-[10px] text-muted-foreground uppercase">Pour livraison précise</p>
+                    </div>
+                </Button>
             </div>
           )}
 
@@ -279,16 +260,12 @@ Merci de valider ma commande.`;
             <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="space-y-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name" className="font-bold text-xs uppercase text-muted-foreground">Nom Complet *</Label>
-                  <Input id="name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Jean Dupont" className="h-12 rounded-sm border-gray-100 bg-gray-50 focus:ring-primary" required />
+                  <Label className="font-bold text-[10px] uppercase text-muted-foreground ml-1">Nom Complet *</Label>
+                  <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Jean Dupont" className="h-12 rounded-sm border-gray-100 bg-gray-50" required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="phone" className="font-bold text-xs uppercase text-muted-foreground">Numéro WhatsApp *</Label>
-                  <Input id="phone" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="90 00 00 00" className="h-12 rounded-sm border-gray-100 bg-gray-50 focus:ring-primary" required />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="email" className="font-bold text-xs uppercase text-muted-foreground">Adresse Email (Optionnel)</Label>
-                  <Input id="email" type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="votre@email.com" className="h-12 rounded-sm border-gray-100 bg-gray-50 focus:ring-primary" />
+                  <Label className="font-bold text-[10px] uppercase text-muted-foreground ml-1">Numéro WhatsApp *</Label>
+                  <Input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="90 00 00 00" className="h-12 rounded-sm border-gray-100 bg-gray-50" required />
                 </div>
                 
                 <div className="pt-2">
@@ -298,32 +275,25 @@ Merci de valider ma commande.`;
                       checked={formData.isDelivery} 
                       disabled={!product.allowDelivery}
                       onCheckedChange={checked => setFormData({...formData, isDelivery: !!checked})} 
-                      className="h-5 w-5 rounded-sm"
                     />
                     <Label htmlFor="isDelivery" className="font-black text-sm cursor-pointer">Je souhaite être livré</Label>
                   </div>
 
-                  {formData.isDelivery && product.allowDelivery && (
-                    <div className="mt-3 grid gap-2 pl-4 border-l-2 border-primary animate-in slide-in-from-top-2 duration-200">
+                  {formData.isDelivery && (
+                    <div className="mt-3 grid gap-2 pl-4 border-l-2 border-primary">
                       <Input 
-                        id="address" 
                         value={formData.address} 
                         onChange={e => setFormData({...formData, address: e.target.value})} 
-                        placeholder="Quartier, Maison, Ville..." 
-                        className="h-12 rounded-sm border-gray-100 bg-white focus:ring-primary"
+                        placeholder="Quartier, Maison..." 
+                        className="h-12 rounded-sm"
                         required 
                       />
-                      <p className="text-[10px] font-bold text-green-600 uppercase tracking-tight">Frais: {product.deliveryFees ? `${product.deliveryFees.toLocaleString('fr-FR')} FCFA` : 'Gratuit'}</p>
                     </div>
                   )}
                 </div>
               </div>
 
-              <Button 
-                onClick={() => setStep('summary')} 
-                disabled={!isDetailsValid()} 
-                className="w-full h-14 rounded-md font-black text-lg shadow-xl bg-primary text-black hover:bg-primary/90 mt-4"
-              >
+              <Button onClick={() => setStep('summary')} disabled={!isDetailsValid()} className="w-full h-14 rounded-md font-black text-lg bg-primary text-black">
                 Voir le résumé <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
@@ -339,44 +309,20 @@ Merci de valider ma commande.`;
                   </div>
                   <div className="text-right space-y-1">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase">Mode</p>
-                    <p className="font-black text-sm text-primary uppercase">
-                        {formData.paymentMode === 'cash' ? 'Cash' : (formData.paymentMode === 'installments' ? 'Tranches' : 'Tontine')}
-                    </p>
+                    <p className="font-black text-sm text-primary uppercase">{formData.paymentMode}</p>
                   </div>
                 </div>
 
                 <div className="space-y-3 text-sm">
-                  <div className="flex justify-between font-medium">
-                    <span className="text-muted-foreground">Prix article</span>
-                    <span>
-                        {formData.paymentMode === 'cash' 
-                            ? product.price.toLocaleString('fr-FR') 
-                            : (formData.paymentMode === 'installments' 
-                                ? product.installmentPrice?.toLocaleString('fr-FR') 
-                                : product.tontineDailyRate?.toLocaleString('fr-FR'))} F
-                    </span>
-                  </div>
-                  {formData.isDelivery && (
-                    <div className="flex justify-between font-medium">
-                        <span className="text-muted-foreground">Livraison</span>
-                        <span>{product.deliveryFees?.toLocaleString('fr-FR') || 0} F</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between border-t border-gray-200 pt-3 mt-3">
-                    <span className="font-black text-lg">TOTAL</span>
-                    <span className="font-black text-xl text-primary">
-                      {((formData.paymentMode === 'cash' 
-                        ? product.price 
-                        : (formData.paymentMode === 'installments' 
-                            ? (product.installmentPrice || 0) 
-                            : (product.tontineDailyRate || 0))) + (formData.isDelivery ? (product.deliveryFees || 0) : 0)).toLocaleString('fr-FR')} FCFA
-                    </span>
+                  <div className="flex justify-between border-t pt-3 mt-3">
+                    <span className="font-black text-lg">TOTAL À PAYER</span>
+                    <span className="font-black text-xl text-primary">{product.price.toLocaleString('fr-FR')} FCFA</span>
                   </div>
                 </div>
               </div>
 
-              <Button onClick={handleFinish} className="w-full h-16 rounded-md bg-green-600 hover:bg-green-700 text-white font-black text-lg shadow-xl shadow-green-200 transition-all active:scale-95">
-                Confirmer sur WhatsApp
+              <Button onClick={handleFinish} className="w-full h-16 rounded-md bg-green-600 hover:bg-green-700 text-white font-black text-lg">
+                Confirmer ma commande
               </Button>
             </div>
           )}
@@ -384,7 +330,7 @@ Merci de valider ma commande.`;
 
         {step !== 'payment' && (
           <DialogFooter className="p-4 bg-gray-50/50 border-t flex flex-row items-center justify-start">
-            <Button variant="ghost" onClick={prevStep} className="font-bold text-muted-foreground hover:bg-transparent">
+            <Button variant="ghost" onClick={prevStep} className="font-bold text-muted-foreground">
               <ChevronLeft className="h-4 w-4 mr-1" /> Retour
             </Button>
           </DialogFooter>

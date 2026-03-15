@@ -67,6 +67,22 @@
         "transferId": { "type": "string" }
       }
     },
+    "Payment": {
+      "title": "Payment",
+      "description": "Copie d'un paiement validé pour l'historique.",
+      "type": "object",
+      "properties": {
+        "orderId": { "type": "string" },
+        "userId": { "type": "string" },
+        "amount": { "type": "number" },
+        "date": { "type": "string", "format": "date-time" },
+        "productName": { "type": "string" },
+        "productImage": { "type": "string" },
+        "paymentMode": { "type": "string" },
+        "transferId": { "type": "string" },
+        "remainingAmountAfter": { "type": "number" }
+      }
+    },
     "GiftRequest": {
       "title": "GiftRequest",
       "description": "Demande de cadeau effectuée par un client.",
@@ -79,16 +95,6 @@
         "status": { "type": "string", "enum": ["pending", "processed"] },
         "createdAt": { "type": "string", "format": "date-time" }
       }
-    },
-    "Gift": {
-      "title": "Gift",
-      "description": "Cadeau envoyé par l'administrateur à un client.",
-      "type": "object",
-      "properties": {
-        "title": { "type": "string" },
-        "description": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      }
     }
   },
   "auth": {
@@ -99,10 +105,6 @@
       "schema": "#/backend/entities/UserProfile",
       "description": "Données privées de l'utilisateur."
     },
-    "/users/{userId}/gifts/{giftId}": {
-      "schema": "#/backend/entities/Gift",
-      "description": "Cadeaux reçus par l'utilisateur."
-    },
     "/products/{productId}": {
       "schema": "#/backend/entities/Product",
       "description": "Catalogue des articles."
@@ -111,17 +113,13 @@
       "schema": "#/backend/entities/Order",
       "description": "Historique des commandes et intentions d'achat."
     },
+    "/payments/{paymentId}": {
+      "schema": "#/backend/entities/Payment",
+      "description": "Copies des paiements validés (Historique immuable)."
+    },
     "/gift-requests/{requestId}": {
       "schema": "#/backend/entities/GiftRequest",
       "description": "Demandes de cadeaux en attente."
-    },
-    "/contact-messages/{messageId}": {
-      "schema": "object",
-      "description": "Messages envoyés via le support."
-    },
-    "/import-orders/{orderId}": {
-      "schema": "object",
-      "description": "Demandes d'importation."
     }
   }
 }

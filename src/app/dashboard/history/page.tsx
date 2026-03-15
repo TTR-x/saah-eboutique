@@ -2,7 +2,7 @@
 'use client';
 
 import { useUser, useFirestore, useCollection } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query, where, orderBy } from 'firebase/firestore';
 import { Card, CardContent } from '@/components/ui/card';
 import { LogoSpinner } from '@/components/logo-spinner';
 import { History, ArrowLeft, Calendar, BadgeEuro, CreditCard, Users, CheckCircle2 } from 'lucide-react';
@@ -24,39 +24,17 @@ export default function GlobalHistoryPage() {
     setMounted(true);
   }, []);
 
-  const ordersQuery = useMemo(() => {
+  // Lecture des copies de paiements (Système robuste)
+  const paymentsQuery = useMemo(() => {
     if (!db || !user) return null;
     return query(
-      collection(db, 'orders'),
-      where('userId', '==', user.uid)
+      collection(db, 'payments'),
+      where('userId', '==', user.uid),
+      orderBy('date', 'desc')
     );
   }, [db, user]);
 
-  const { data: orders, loading: ordersLoading } = useCollection<any>(ordersQuery);
-
-  const allTransactions = useMemo(() => {
-    if (!orders) return [];
-    
-    const transactions: any[] = [];
-    orders.forEach(order => {
-      if (order.paymentHistory && Array.isArray(order.paymentHistory)) {
-        order.paymentHistory.forEach((payment: any) => {
-          transactions.push({
-            ...payment,
-            productName: order.productName,
-            paymentMode: order.paymentMode,
-            orderId: order.id
-          });
-        });
-      }
-    });
-
-    return transactions.sort((a, b) => {
-      const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
-      const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
-      return dateB.getTime() - dateA.getTime();
-    });
-  }, [orders]);
+  const { data: payments, loading: paymentsLoading } = useCollection<any>(paymentsQuery);
 
   useEffect(() => {
     if (!authLoading && !user && mounted) {
@@ -86,21 +64,21 @@ export default function GlobalHistoryPage() {
 
       <div className="flex flex-col gap-2 mb-10">
         <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-          <History className="h-8 w-8 text-primary" /> Historique des Paiements
+          <History className="h-8 w-8 text-primary" /> Historique des Copies
         </h1>
-        <p className="text-muted-foreground font-medium">Retrouvez ici la trace de tous vos versements validés par SAAH Business.</p>
+        <p className="text-muted-foreground font-medium">Chaque ligne ci-dessous est une copie certifiée de vos versements.</p>
       </div>
 
-      {ordersLoading ? (
+      {paymentsLoading ? (
         <div className="flex justify-center py-20">
           <LogoSpinner className="h-10 w-10 text-primary" />
         </div>
-      ) : allTransactions.length > 0 ? (
+      ) : payments && payments.length > 0 ? (
         <div className="space-y-4">
-          {allTransactions.map((tx, idx) => {
-            const txDate = tx.date?.toDate ? tx.date.toDate() : new Date(tx.date);
+          {payments.map((tx, idx) => {
+            const txDate = tx.date?.toDate ? tx.date.toDate() : new Date();
             return (
-              <Card key={idx} className="border-none shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-all bg-card">
+              <Card key={tx.id || idx} className="border-none shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-all bg-card">
                 <CardContent className="p-5 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <div className={cn(
@@ -119,7 +97,7 @@ export default function GlobalHistoryPage() {
                           <Calendar className="h-3 w-3" />
                           {format(txDate, 'dd MMMM yyyy', { locale: fr })}
                         </span>
-                        <Badge variant="outline" className="text-[9px] h-4 font-mono border-gray-100 bg-gray-50">
+                        <Badge variant="outline" className="text-[9px] font-mono bg-gray-50">
                           ID: {tx.transferId || 'N/A'}
                         </Badge>
                       </div>
@@ -140,9 +118,9 @@ export default function GlobalHistoryPage() {
       ) : (
         <div className="bg-card rounded-3xl p-16 text-center border-2 border-dashed border-gray-100">
           <History className="h-16 w-16 text-gray-200 mx-auto mb-4" />
-          <h3 className="font-black text-xl">Aucun historique trouvé</h3>
+          <h3 className="font-black text-xl">Aucune copie trouvée</h3>
           <p className="text-muted-foreground mt-2">
-            Vos versements apparaîtront ici dès qu'ils seront confirmés par l'administrateur.
+            Vos versements apparaîtront ici dès qu'ils seront certifiés par l'admin.
           </p>
         </div>
       )}
